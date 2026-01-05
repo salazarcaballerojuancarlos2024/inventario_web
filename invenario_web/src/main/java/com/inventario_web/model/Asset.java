@@ -8,7 +8,10 @@ import jakarta.persistence.*;
 public class Asset {
 
     @Id
-    @Column(name = "asset_tag")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // <--- ESTA ES LA CLAVE PRIMARIA REAL
+
+    @Column(name = "asset_tag", unique = true) // El tag es único, pero no es la PK
     private String assetTag;
 
     @Column(name = "_nombre_usuario_")
@@ -37,21 +40,22 @@ public class Asset {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "planta_id", referencedColumnName = "id")
-    @JsonBackReference // <--- EVITA EL BUCLE INFINITO (Lado hijo)
+    @JsonBackReference 
     private Planta planta;
     
-    @Column(name = "tipo_equipo") // Asegúrate que el nombre coincida con la columna en SQL
+    @Column(name = "tipo_equipo") 
     private String tipoEquipo;
 
     public Asset() {}
 
-    public boolean tieneUbicacion() {
-        return posX != null && posY != null && (posX > 0 || posY > 0);
-    }
-
     // --- GETTERS Y SETTERS ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getAssetTag() { return assetTag; }
     public void setAssetTag(String assetTag) { this.assetTag = assetTag; }
+
+    // ... (Mantén el resto de tus getters y setters exactamente igual) ...
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
     public String getRam() { return ram; }
@@ -70,11 +74,6 @@ public class Asset {
     public void setPosY(Integer posY) { this.posY = posY; }
     public Planta getPlanta() { return planta; }
     public void setPlanta(Planta planta) { this.planta = planta; }
-    public String getTipoEquipo() {
-        return tipoEquipo;
-    }
-
-    public void setTipoEquipo(String tipoEquipo) {
-        this.tipoEquipo = tipoEquipo;
-    }
+    public String getTipoEquipo() { return tipoEquipo; }
+    public void setTipoEquipo(String tipoEquipo) { this.tipoEquipo = tipoEquipo; }
 }

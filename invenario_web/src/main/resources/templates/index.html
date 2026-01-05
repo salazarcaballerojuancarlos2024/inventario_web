@@ -47,11 +47,18 @@
         
         /* ALMACÉN */
         .almacen-wrapper { display: flex; flex-direction: column; height: 100vh; gap: 10px; padding: 20px; box-sizing: border-box; }
+        
         .zona-arrastre-almacen {
-            height: 45vh; background-color: white; border: 2px dashed #6c757d; position: relative; border-radius: 10px;
-            background-image: radial-gradient(#ccc 1px, transparent 1px);
-            background-size: 25px 25px; overflow: hidden; touch-action: none;
-        }
+    height: 65vh; /* Antes 45vh, ahora más alto */
+    background-color: white; 
+    border: 2px dashed #6c757d; 
+    position: relative; 
+    border-radius: 10px;
+    background-image: radial-gradient(#ccc 1px, transparent 1px);
+    background-size: 25px 25px; 
+    overflow: hidden; 
+    touch-action: none;
+}
 
         /* MARCA DE AGUA ZONA ALMACÉN */
         /* MARCA DE AGUA ZONA ALMACÉN MEJORADA */
@@ -85,26 +92,108 @@
     letter-spacing: 10px;
 }
 
-        /* ICONOS EQUIPOS */
-        .pc-almacen-icon { 
-            position: absolute; width: 60px; display: flex; flex-direction: column; 
-            align-items: center; z-index: 20; cursor: move; touch-action: none;
-        }
-        .pc-almacen-icon img { width: 45px; height: 45px; pointer-events: none; }
-        .pc-almacen-icon span { font-size: 10px; background: #333; color: white; padding: 1px 5px; border-radius: 3px; margin-top: 2px; font-weight: bold; }
+        /* ICONOS EQUIPOS GENERALIZADOS (Reducidos un 25%) */
+.pc-icon { 
+    position: absolute; 
+    width: 45px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    z-index: 20; 
+    cursor: move; 
+    touch-action: none;
+    /* Mejora opcional: suave escalado al pasar el ratón */
+    transition: transform 0.1s ease;
+}
 
-        /* TOOLTIP */
-        .tooltip-datos {
-            visibility: hidden; width: 280px; background-color: rgba(0, 0, 0, 0.95); color: #fff;
-            padding: 12px; position: absolute; z-index: 1001; bottom: 125%; left: 50%;
-            transform: translateX(-50%); border-radius: 8px; opacity: 0; transition: 0.3s; pointer-events: none;
-            border: 1px solid #2e7d32; font-size: 0.82rem; line-height: 1.4; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .pc-almacen-icon:hover .tooltip-datos { visibility: visible; opacity: 1; }
-        .label-tt { color: #a5d6a7; font-weight: bold; margin-right: 5px; }
+.pc-icon img { 
+    width: 34px; 
+    height: 34px; 
+    pointer-events: none; 
+}
+
+.pc-icon span { 
+    font-size: 9px; 
+    background: #333; 
+    color: white; 
+    padding: 1px 4px; 
+    border-radius: 3px; 
+    margin-top: 1px; 
+    font-weight: bold; 
+    white-space: nowrap;
+}
+
+/* TOOLTIP AJUSTADO Y CORREGIDO */
+.tooltip-datos {
+    visibility: hidden; 
+    width: 280px; 
+    background-color: rgba(0, 0, 0, 0.95); 
+    color: #fff;
+    padding: 12px; 
+    position: absolute; 
+    z-index: 1001; 
+    bottom: 110%; /* Ajustado un poco más cerca del icono pequeño */
+    left: 50%;
+    transform: translateX(-50%); 
+    border-radius: 8px; 
+    opacity: 0; 
+    transition: opacity 0.3s ease; /* Transición solo en opacidad para evitar saltos */
+    pointer-events: none; 
+    border: 1px solid #2e7d32; 
+    font-size: 0.82rem; 
+    line-height: 1.4; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Disparador del Tooltip */
+.pc-icon:hover .tooltip-datos { 
+    visibility: visible; 
+    opacity: 1; 
+}
         
         /* TABLA Y CONTENEDORES */
-        .scroll-container { flex: 1; background: white; border-radius: 10px; border: 1px solid #ddd; overflow: auto; }
+        .scroll-container {
+    flex: 1; 
+    background: white; 
+    border-radius: 10px; 
+    border: 1px solid #ddd; 
+    overflow: auto; /* Permite scroll vertical y horizontal */
+    max-height: 25vh; /* Limita el alto para que no empuje todo fuera de la pantalla */
+}
+
+/* 3. Tabla ultra-compacta */
+.table-almacen-compacta {
+    font-size: 0.72rem !important; /* Texto más pequeño */
+    width: 100%;
+    table-layout: auto;
+    white-space: nowrap; /* Impide que el texto salte de línea, forzando scroll horizontal */
+}
+
+.table-almacen-compacta th, 
+.table-almacen-compacta td {
+    padding: 2px 8px !important; /* Filas mucho más delgadas */
+    height: 28px; /* Altura mínima controlada */
+    border-bottom: 1px solid #eee;
+}
+
+/* Cabecera siempre visible al hacer scroll */
+.table-almacen-compacta thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #212529; /* Color oscuro para contraste */
+}
+
+/* Reducción de filas y texto de la tabla */
+.table-compacta {
+    font-size: 0.75rem !important; /* Texto más pequeño */
+    white-space: nowrap; /* Fuerza el scroll horizontal si hay muchas columnas */
+}
+
+.table-compacta td, .table-compacta th {
+    padding: 4px 8px !important; /* Reduce el alto de las filas (relleno) */
+    vertical-align: middle;
+}
         .fila-resaltada { background-color: #e8f5e9 !important; box-shadow: inset 0 0 0 2px #2e7d32; }
         .menu-icon { width: 22px; height: 22px; margin-right: 12px; }
         .submenu-icon-fixed { width: 20px; height: 20px; margin-right: 12px; filter: invert(1); }
@@ -191,6 +280,70 @@ td {
     height: 18px;
     filter: brightness(0) invert(1); /* Hace que los iconos sean blancos */
 }
+
+/* CONTENEDOR DE ZONAS DE DROP */
+.contenedor-zonas-drop {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    flex-wrap: wrap; /* Por si tienes muchas plantas, que bajen a la siguiente línea */
+    gap: 12px;
+    z-index: 5; 
+}
+
+.zona-drop {
+    width: 110px;
+    height: 75px;
+    background-color: #e8f5e9; /* Verde pastel claro */
+    border: 2px dashed #a5d6a7;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* MARCA DE AGUA DENTRO DE LA ZONA */
+.zona-drop::before {
+    content: "PLANTA";
+    position: absolute;
+    font-size: 14px;
+    font-weight: 900;
+    color: #2e7d32;
+    opacity: 0.1; /* Efecto marca de agua */
+    transform: rotate(-15deg);
+}
+
+.zona-drop span {
+    position: relative; /* Para estar sobre la marca de agua */
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #2e7d32;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+/* Efecto al pasar el icono por encima */
+.zona-drop.drop-active {
+    background-color: #c8e6c9;
+    border-style: solid;
+    border-color: #2e7d32;
+    transform: scale(1.05);
+}
+
+.sort-icon {
+    font-size: 0.6rem;
+    margin-left: 5px;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+thead th:hover .sort-icon {
+    opacity: 0.8;
+}
     </style>
 </head>
 <body>
@@ -273,91 +426,117 @@ td {
      								   </button>
     						</div>
 						</div>
-                        <div class="card-body p-0">
-                            <div class="zona-arrastre-almacen" id="contenedor-almacen">
-                                <div class="watermark-almacen">
-   									<img th:src="@{/imagenes/almacen.png}" alt="Almacén">
-    									<span>Zona de Almacén</span>
-								</div>
-                                
-                                <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 8}"
-                                     class="pc-almacen-icon drag-item" 
-                                     th:id="'icono-' + ${asset.assetTag}"
-                                     th:data-tag="${asset.assetTag}"
-                                     th:data-x="${asset.posX}" th:data-y="${asset.posY}"
-                                     th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
-                                     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
-                                     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
-                                     onclick="manejarClickIcono(this, event)">
-                                    
-                                    <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono Equipo">
-                                    <span th:text="${asset.assetTag}"></span>
+                       <div class="card-body p-0">
+    <div class="zona-arrastre-almacen" id="contenedor-almacen">
+        
+        <div class="contenedor-zonas-drop">
+            <div th:each="p : ${plantas}" 
+                 th:if="${p.id != 8}" 
+                 class="zona-drop dropzone" 
+                 th:data-planta-id="${p.id}">
+                <span th:text="${p.nombre}"></span>
+            </div>
+        </div>
 
-                                    <div class="tooltip-datos shadow">
-                                        <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
-                                        <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
-										<div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
-                                        <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-                                        <hr style="border-color: #444; margin: 5px 0;">
-                                        <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-                                        <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-                                        <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-                                        <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-                                        <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
-                                        <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta != null ? asset.planta.nombre : 'Sin asignar'}"></span></div>
-                                        <hr style="border-color: #444; margin: 5px 0;">
-                                        <div class="text-end text-info" style="font-size: 0.75rem;">
-                                            X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | 
-                                            Y: <span class="tt-pos-y" th:text="${asset.posY}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="watermark-almacen">
+            <img th:src="@{/imagenes/almacen.png}" alt="Almacén">
+            <span>Zona de Almacén</span>
+        </div>
+        
+        <div th:each="asset : ${assets}" 
+             th:if="${asset.planta != null and asset.planta.id == 8}"
+             class="pc-icon drag-item" 
+             th:id="'icono-' + ${asset.assetTag}"
+             th:data-tag="${asset.assetTag}"
+             th:data-x="${asset.posX}" 
+             th:data-y="${asset.posY}"
+             th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
+             th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
+             th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
+             onclick="manejarClickIcono(this, event)">
+            
+            <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" 
+                 alt="Icono Equipo">
+            
+            <span th:text="${asset.assetTag}"></span>
+
+            <div class="tooltip-datos shadow">
+                <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
+                <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
+                <div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
+                <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
+                <hr style="border-color: #444; margin: 5px 0;">
+                <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
+                <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
+                <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
+                <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
+                <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
+                <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta != null ? asset.planta.nombre : 'Sin asignar'}"></span></div>
+                <hr style="border-color: #444; margin: 5px 0;">
+                <div class="text-end text-info" style="font-size: 0.75rem;">
+                    X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | 
+                    Y: <span class="tt-pos-y" th:text="${asset.posY}"></span>
+                </div>
+            </div>
+        </div> </div> </div>
                     </div>
                     
-                    <div class="scroll-container shadow">
-                        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.82rem;">
-                            <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
-                                <tr>
-                                    <th>Equipo</th>
-                                    <th>Tipo</th>
-                                    <th>Usuario</th>
-                                    <th>RAM</th>
-                                    <th>CPU</th>
-                                    <th>Disco</th>
-                                    <th>S.O</th>
-                                    <th>Planta</th>
-                                    <th>Otros</th>
-                                    <th>X / Y</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 8}" th:id="'fila-' + ${asset.assetTag}">
-                                    <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
-                                    <td th:text="${asset.tipoEquipo}" class="text-uppercase"></td> 
-                                    <td th:text="${asset.nombreUsuario}"></td>
-                                    <td th:text="${asset.ram}"></td>
-                                    <td th:text="${asset.cpu}"></td>
-                                    <td th:text="${asset.disco}"></td>
-                                    <td th:text="${asset.versionSo}"></td>
-                                    <td th:text="${asset.planta.nombre}" class="text-muted"></td>
-                                    <td th:text="${asset.otros}"></td>
-                                    <td>
-                                        <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> / 
-                                        <span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
-                                    </td>
-                                    <td>
-   										 <button class="btn btn-primary btn-sm px-3" 
-   											 th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]], [[${asset.tipoEquipo}]])">
-  											  Edit
-											</button>
-									</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                   <div class="scroll-container shadow">
+    <table class="table table-hover align-middle m-0 table-almacen-compacta">
+        <thead class="table-dark">
+    <tr style="cursor: pointer;">
+        <th onclick="ordenarTabla(0)">Equipo <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(1)">Tipo <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(2)">Usuario <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(3)">RAM <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(4)">CPU <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(5)">Disco <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(6)">S.O <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(7)">Planta <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(8)">Otros <span class="sort-icon">↕</span></th>
+        <th onclick="ordenarTabla(9)" class="text-center">X / Y <span class="sort-icon">↕</span></th>
+        <th class="text-center">Acciones</th> </tr>
+	</thead>
+        <tbody>
+            <tr th:each="asset : ${assets}" 
+                th:if="${asset.planta != null and asset.planta.id == 8}" 
+                th:id="'fila-' + ${asset.assetTag}">
+                
+                <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
+                <td th:text="${asset.tipoEquipo}" class="text-uppercase text-muted" style="font-size: 0.65rem;"></td> 
+                <td th:text="${asset.nombreUsuario}"></td>
+                <td th:text="${asset.ram}"></td>
+                <td th:text="${asset.cpu}"></td>
+                <td th:text="${asset.disco}"></td>
+                <td th:text="${asset.versionSo}"></td>
+                <td th:text="${asset.planta.nombre}" class="text-muted"></td>
+                <td th:text="${asset.otros}"></td>
+                
+                <td class="text-center font-monospace" style="color: #666;">
+                    <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> / 
+                    <span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+                </td>
+                
+                <td class="text-center">
+    <div class="d-flex justify-content-center gap-1">
+        <button class="btn btn-danger btn-sm py-0 px-2 d-flex align-items-center justify-content-center" 
+                style="font-size: 0.8rem; width: 22px; height: 22px; border-radius: 50%;"
+                th:onclick="confirmarEliminarAsset([[${asset.assetTag}]])"
+                title="Eliminar Asset">
+            -
+        </button>
+
+        <button class="btn btn-outline-primary btn-sm py-0 px-2" 
+                style="font-size: 0.65rem; height: 22px;"
+                th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]], [[${asset.tipoEquipo}]])">
+            Editar
+        </button>
+    </div>
+</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
                 </div>
             </div>
 
@@ -441,35 +620,36 @@ td {
     <div th:if="${plantaSeleccionada != null}" 
          th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
         
-        <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
-             class="pc-almacen-icon" 
-             th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
-             th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
-             th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'">
-            
-           <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono Equipo">
-            <span th:text="${asset.assetTag}"></span>
+        <div th:each="asset : ${assets}" 
+     th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
+     class="pc-icon" 
+     th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
+     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
+     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'">
+    
+    <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" 
+         alt="Icono Equipo">
+    
+    <span th:text="${asset.assetTag}"></span>
 
-            <div class="tooltip-datos shadow">
-                <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
-                <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
-				<div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
-                <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-                <hr style="border-color: #444; margin: 5px 0;">
-                <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-                <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-                <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-                <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-                <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
-                
-                <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta.nombre}"></span></div>
-                
-                <hr style="border-color: #444; margin: 5px 0;">
-                <div class="text-end text-info" style="font-size: 0.75rem;">
-                    Ubicación en Plano (X: <span th:text="${asset.posX}"></span> | Y: <span th:text="${asset.posY}"></span>)
-                </div>
-            </div>
+    <div class="tooltip-datos shadow">
+        <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
+        <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
+        <div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
+        <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
+        <hr style="border-color: #444; margin: 5px 0;">
+        <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
+        <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
+        <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
+        <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
+        <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
+        <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta.nombre}"></span></div>
+        <hr style="border-color: #444; margin: 5px 0;">
+        <div class="text-end text-info" style="font-size: 0.75rem;">
+            Ubicación en Plano (X: <span th:text="${asset.posX}"></span> | Y: <span th:text="${asset.posY}"></span>)
         </div>
+    </div>
+</div>
     </div>
 </div>
         </div>
@@ -520,206 +700,315 @@ td {
     </div>
 
     <script th:inline="javascript">
-        let modalInstancia = null;
+    let modalInstancia = null;
 
-        window.onload = function() {
-            const modalElement = document.getElementById('modalEditAsset');
-            if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
-            const params = new URLSearchParams(window.location.search);
-            mostrarSeccion(params.get('seccion') || 'vista-plano');
-        };
-        
-        function exportarAlmacen() {
-            // 1. Definir las cabeceras del CSV según tus requerimientos
-            const headers = [
-                "Asset Tag", "Tipo", "Usuario", "RAM", "CPU", 
-                "Disco", "S.O.", "Otros", "Planta", "Pos_X", "Pos_Y"
-            ];
+    window.onload = function() {
+        const modalElement = document.getElementById('modalEditAsset');
+        if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
+        const params = new URLSearchParams(window.location.search);
+        mostrarSeccion(params.get('seccion') || 'vista-plano');
+    };
 
-            // 2. Obtener todas las filas de la tabla de ALMACÉN
-            // Filtramos por las filas que están dentro del contenedor de la tabla de almacén
-            const filas = document.querySelectorAll('#vista-almacen tbody tr');
-            let csvContent = "\uFEFF"; // Byte Order Mark para que Excel reconozca tildes y ñ
-
-            // Añadir cabeceras al contenido
-            csvContent += headers.join(";") + "\n";
-
-            // 3. Recorrer cada fila y extraer los datos
-            filas.forEach(fila => {
-                const cels = fila.querySelectorAll('td');
-                if (cels.length > 0) {
-                    const datosFila = [
-                        cels[0].innerText.trim(), // Asset Tag
-                        cels[1].innerText.trim(), // Tipo
-                        cels[2].innerText.trim(), // Usuario
-                        cels[3].innerText.trim(), // RAM
-                        cels[4].innerText.trim(), // CPU
-                        cels[5].innerText.trim(), // Disco
-                        cels[6].innerText.trim(), // S.O.
-                        cels[8].innerText.trim(), // Otros (el índice 7 es planta, 8 es otros en tu tabla)
-                        cels[7].innerText.trim(), // Planta
-                        cels[9].innerText.trim().split('/')[0].trim(), // Pos_X (limpiando el separador /)
-                        cels[9].innerText.trim().split('/')[1].trim()  // Pos_Y
-                    ];
+    // --- NUEVA FUNCIONALIDAD: INTERACT JS CON DROPZONES ---
+    function initInteract() {
+        // Draggable: Mover iconos dentro del almacén
+        interact('.drag-item').draggable({
+            inertia: true,
+            modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })],
+            listeners: {
+                move(event) {
+                    const target = event.target;
+                    const tag = target.getAttribute('data-tag');
+                    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
                     
-                    // Limpiar posibles puntos y comas dentro de los textos para no romper el CSV
-                    const filaLimpia = datosFila.map(texto => `"${texto.replace(/"/g, '""')}"`);
-                    csvContent += filaLimpia.join(";") + "\n";
+                    target.style.transform = `translate(${x}px, ${y}px)`;
+                    target.setAttribute('data-x', x);
+                    target.setAttribute('data-y', y);
+                    
+                    // Sincronizar Tooltip y Tabla
+                    const ttX = target.querySelector('.tt-pos-x');
+                    const ttY = target.querySelector('.tt-pos-y');
+                    if(ttX) ttX.innerText = Math.round(x);
+                    if(ttY) ttY.innerText = Math.round(y);
+
+                    const tX = document.getElementById('table-x-' + tag);
+                    const tY = document.getElementById('table-y-' + tag);
+                    if(tX) tX.innerText = Math.round(x);
+                    if(tY) tY.innerText = Math.round(y);
                 }
+            }
+        });
+
+        // Dropzone: Detectar cuando un icono se suelta en una planta
+        interact('.dropzone').dropzone({
+            overlap: 0.5,
+            ondragenter: function (event) {
+                event.target.classList.add('drop-active');
+            },
+            ondragleave: function (event) {
+                event.target.classList.remove('drop-active');
+            },
+            ondrop: function (event) {
+                event.target.classList.remove('drop-active');
+                const assetTag = event.relatedTarget.getAttribute('data-tag');
+                const plantaId = event.target.getAttribute('data-planta-id');
+                const nombrePlanta = event.target.querySelector('span').innerText;
+
+                if (confirm(`¿Deseas trasladar el equipo ${assetTag} a la ${nombrePlanta}?`)) {
+                    moverAssetAPlanta(assetTag, plantaId);
+                }
+            }
+        });
+    }
+
+    // Función para procesar el traslado rápido vía Drag & Drop
+    async function moverAssetAPlanta(tag, plantaId) {
+        // Preparamos el payload mínimo necesario para tu backend
+        const payload = {
+            assetTag: tag,
+            plantaId: plantaId,
+            // Al mover a planta nueva, reseteamos coordenadas a 0 o valores por defecto
+            posX: 0,
+            posY: 0 
+        };
+
+        try {
+            const response = await fetch('/assets/actualizar-datos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
-            // 4. Crear el archivo y disparar la descarga
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                const fecha = new Date().toISOString().slice(0, 10);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `inventario_almacen_${fecha}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            if (response.ok) {
+                // Feedback visual: eliminar del almacén
+                document.getElementById('icono-' + tag)?.remove();
+                document.getElementById('fila-' + tag)?.remove();
+                alert(`Equipo ${tag} trasladado correctamente.`);
+            } else {
+                alert("Error al procesar el traslado en el servidor.");
             }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error de conexión al trasladar equipo.");
         }
+    }
 
-        function mostrarSeccion(id) {
-            document.querySelectorAll('.map-area > div').forEach(div => div.classList.add('seccion-oculta'));
-            const target = document.getElementById(id);
-            if(target) {
-                target.classList.remove('seccion-oculta');
-                if(id === 'vista-almacen') initInteract();
+    // --- FUNCIONALIDADES EXISTENTES MANTENIDAS ---
+
+    function exportarAlmacen() {
+        const headers = ["Asset Tag", "Tipo", "Usuario", "RAM", "CPU", "Disco", "S.O.", "Otros", "Planta", "Pos_X", "Pos_Y"];
+        const filas = document.querySelectorAll('#vista-almacen tbody tr');
+        let csvContent = "\uFEFF"; 
+        csvContent += headers.join(";") + "\n";
+
+        filas.forEach(fila => {
+            const cels = fila.querySelectorAll('td');
+            if (cels.length > 0) {
+                const datosFila = [
+                    cels[0].innerText.trim(), cels[1].innerText.trim(), cels[2].innerText.trim(),
+                    cels[3].innerText.trim(), cels[4].innerText.trim(), cels[5].innerText.trim(),
+                    cels[6].innerText.trim(), cels[8].innerText.trim(), cels[7].innerText.trim(),
+                    cels[9].innerText.trim().split('/')[0].trim(),
+                    cels[9].innerText.trim().split('/')[1].trim()
+                ];
+                const filaLimpia = datosFila.map(texto => `"${texto.replace(/"/g, '""')}"`);
+                csvContent += filaLimpia.join(";") + "\n";
             }
-        }
+        });
 
-        function resaltarFila(tag, activar) {
-            const fila = document.getElementById('fila-' + tag);
-            if (fila) {
-                if (activar) fila.classList.add('fila-resaltada');
-                else fila.classList.remove('fila-resaltada');
-            }
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `inventario_almacen_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
+    }
 
-        function initInteract() {
-            interact('.drag-item').draggable({
-                inertia: true,
-                modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })],
-                listeners: {
-                    move(event) {
-                        const target = event.target;
-                        const tag = target.getAttribute('data-tag');
-                        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-                        
-                        target.style.transform = `translate(${x}px, ${y}px)`;
-                        target.setAttribute('data-x', x);
-                        target.setAttribute('data-y', y);
-                        
-                        // Sincronizar Tooltip y Tabla
-                        target.querySelector('.tt-pos-x').innerText = Math.round(x);
-                        target.querySelector('.tt-pos-y').innerText = Math.round(y);
-                        const tX = document.getElementById('table-x-' + tag);
-                        const tY = document.getElementById('table-y-' + tag);
-                        if(tX) tX.innerText = Math.round(x);
-                        if(tY) tY.innerText = Math.round(y);
-                    }
-                }
+    function mostrarSeccion(id) {
+        document.querySelectorAll('.map-area > div').forEach(div => div.classList.add('seccion-oculta'));
+        const target = document.getElementById(id);
+        if(target) {
+            target.classList.remove('seccion-oculta');
+            if(id === 'vista-almacen') initInteract();
+        }
+    }
+
+    function resaltarFila(tag, activar) {
+        const fila = document.getElementById('fila-' + tag);
+        if (fila) {
+            if (activar) fila.classList.add('fila-resaltada');
+            else fila.classList.remove('fila-resaltada');
+        }
+    }
+
+    function manejarClickIcono(el, ev) {
+        ev.stopPropagation();
+        const tag = el.getAttribute('data-tag');
+        const fila = document.getElementById('fila-' + tag);
+        if(fila) {
+            fila.classList.add('fila-resaltada');
+            fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => fila.classList.remove('fila-resaltada'), 2500);
+        }
+    }
+
+    async function enviarFormularioEdit() {
+        const formData = new FormData(document.getElementById('formEditAsset'));
+        const payload = Object.fromEntries(formData.entries());
+        
+        try {
+            const response = await fetch('/assets/actualizar-datos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-        }
 
-        function manejarClickIcono(el, ev) {
-            ev.stopPropagation();
-            const tag = el.getAttribute('data-tag');
-            const fila = document.getElementById('fila-' + tag);
-            if(fila) {
-                fila.classList.add('fila-resaltada');
-                fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => fila.classList.remove('fila-resaltada'), 2500);
+            if (response.ok) {
+                const plantaIdDestino = document.getElementById('inputPlanta').value;
+                if (plantaIdDestino == "8") {
+                    window.location.href = "/?seccion=vista-almacen";
+                } else {
+                    window.location.href = "/?plantaId=" + plantaIdDestino + "&seccion=vista-plano";
+                }
+            } else {
+                alert("Error al actualizar los datos.");
             }
+        } catch (error) {
+            alert("Hubo un error de conexión.");
         }
-
-        async function enviarFormularioEdit() {
-            const formData = new FormData(document.getElementById('formEditAsset'));
-            const payload = Object.fromEntries(formData.entries());
-            
+    }
+    
+    async function confirmarEliminarAsset(tag) {
+        if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el equipo ${tag}?`)) {
             try {
-                const response = await fetch('/assets/actualizar-datos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                // Asumiendo que tienes un endpoint para eliminar por Asset Tag
+                const response = await fetch(`/assets/eliminar/${tag}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
 
                 if (response.ok) {
-                    // Obtenemos el ID de la planta que se seleccionó en el formulario
-                    const plantaIdDestino = document.getElementById('inputPlanta').value;
-                    
-                    // Si el equipo se movió a una planta que NO es Almacén (ID 8), 
-                    // vamos a la vista de esa planta. Si sigue en Almacén, volvemos a Almacén.
-                    if (plantaIdDestino == "8") {
-                        window.location.href = "/?seccion=vista-almacen";
-                    } else {
-                        window.location.href = "/?plantaId=" + plantaIdDestino + "&seccion=vista-plano";
+                    // 1. Eliminar el icono del mapa
+                    const icono = document.getElementById('icono-' + tag);
+                    if (icono) icono.remove();
+
+                    // 2. Eliminar la fila de la tabla con una pequeña animación
+                    const fila = document.getElementById('fila-' + tag);
+                    if (fila) {
+                        fila.style.transition = "all 0.4s ease";
+                        fila.style.backgroundColor = "#ffcdd2"; // Rojo suave antes de borrar
+                        setTimeout(() => fila.remove(), 400);
                     }
+                    
+                    alert(`Equipo ${tag} eliminado con éxito.`);
                 } else {
-                    alert("Error al actualizar los datos en el servidor.");
+                    alert("Error al intentar eliminar el equipo en el servidor.");
                 }
             } catch (error) {
-                console.error("Error al enviar el formulario:", error);
-                alert("Hubo un error de conexión.");
+                console.error("Error al eliminar:", error);
+                alert("Hubo un error de conexión al intentar eliminar.");
             }
         }
+    }
 
-        function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
-            // 1. Asignación de textos e IDs básicos
-            document.getElementById('tagDisplay').innerText = tag;
-            document.getElementById('inputAssetTag').value = tag;
+    function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
+        document.getElementById('tagDisplay').innerText = tag;
+        document.getElementById('inputAssetTag').value = tag;
+        document.getElementById('inputUsuario').value = user || '';
+        document.getElementById('inputRam').value = ram || '';
+        document.getElementById('inputCpu').value = cpu || '';
+        document.getElementById('inputDisco').value = disco || '';
+        document.getElementById('inputSo').value = so || '';
+        document.getElementById('inputOtros').value = otros || '';
+        document.getElementById('inputPlanta').value = plantaId;
+        
+        const selectorTipo = document.getElementById('inputTipo');
+        if (selectorTipo) {
+            selectorTipo.value = (tipo && typeof tipo === 'string') ? tipo.toLowerCase().trim() : 'pc';
+        }
+
+        if (modalInstancia) modalInstancia.show();
+    }
+
+    async function guardarTodoAlmacen() {
+        const movimientos = Array.from(document.querySelectorAll('.drag-item')).map(i => ({
+            assetTag: i.getAttribute('data-tag'),
+            posX: Math.round(parseFloat(i.getAttribute('data-x')) || 0),
+            posY: Math.round(parseFloat(i.getAttribute('data-y')) || 0)
+        }));
+        const res = await fetch('/assets/actualizar-posiciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(movimientos)
+        });
+        if(res.ok) alert("Posiciones del almacén guardadas.");
+    }
+
+    function seleccionarPlanta(id) { 
+        window.location.href = "/?plantaId=" + id + "&seccion=vista-plano"; 
+    }
+    
+    let ordenAscendente = true;
+    let ultimaColumna = -1;
+
+    function ordenarTabla(n) {
+        const table = document.querySelector(".table-almacen-compacta");
+        const tbody = table.querySelector("tbody");
+        const filas = Array.from(tbody.querySelectorAll("tr"));
+        
+        // Cambiar dirección de orden si se pulsa la misma columna
+        if (ultimaColumna === n) {
+            ordenAscendente = !ordenAscendente;
+        } else {
+            ordenAscendente = true;
+            ultimaColumna = n;
+        }
+
+        // Lógica de comparación
+        const factor = ordenAscendente ? 1 : -1;
+        
+        filas.sort((a, b) => {
+            let valA = a.cells[n].innerText.trim().toLowerCase();
+            let valB = b.cells[n].innerText.trim().toLowerCase();
+
+            // Intentar comparar como números si aplica (ej: RAM o coordenadas)
+            let numA = parseFloat(valA);
+            let numB = parseFloat(valB);
             
-            // 2. Asignación de valores de texto (usando || '' para evitar 'undefined' en los inputs)
-            document.getElementById('inputUsuario').value = user || '';
-            document.getElementById('inputRam').value = ram || '';
-            document.getElementById('inputCpu').value = cpu || '';
-            document.getElementById('inputDisco').value = disco || '';
-            document.getElementById('inputSo').value = so || '';
-            document.getElementById('inputOtros').value = otros || '';
-            document.getElementById('inputPlanta').value = plantaId;
-            
-            // 3. Lógica para el Selector de Tipo (PC o Portátil)
-            const selectorTipo = document.getElementById('inputTipo');
-            if (selectorTipo) {
-                // Normalizamos: pasamos a minúsculas y quitamos espacios
-                // Si el valor no existe, por defecto seleccionamos 'pc'
-                let tipoNormalizado = (tipo && typeof tipo === 'string') ? tipo.toLowerCase().trim() : 'pc';
-                
-                // Asignamos el valor al select
-                selectorTipo.value = tipoNormalizado;
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return (numA - numB) * factor;
             }
 
-            // 4. Mostrar el modal
-            if (modalInstancia) {
-                modalInstancia.show();
+            // Comparación de texto estándar
+            return valA.localeCompare(valB) * factor;
+        });
+
+        // Reinsertar filas ordenadas
+        filas.forEach(fila => tbody.appendChild(fila));
+
+        // Actualizar iconos visuales (opcional pero recomendado)
+        actualizarIconosOrden(n, ordenAscendente);
+    }
+
+    function actualizarIconosOrden(columnaActiva, esAsc) {
+        const iconos = document.querySelectorAll(".sort-icon");
+        iconos.forEach((icon, index) => {
+            if (index === columnaActiva) {
+                icon.innerText = esAsc ? "▲" : "▼";
+                icon.style.opacity = "1";
             } else {
-                console.error("Error: La instancia del modal no está inicializada.");
+                icon.innerText = "↕";
+                icon.style.opacity = "0.3";
             }
-        }
-
-        async function guardarTodoAlmacen() {
-            const movimientos = Array.from(document.querySelectorAll('.drag-item')).map(i => ({
-                assetTag: i.getAttribute('data-tag'),
-                posX: Math.round(parseFloat(i.getAttribute('data-x')) || 0),
-                posY: Math.round(parseFloat(i.getAttribute('data-y')) || 0)
-            }));
-            const res = await fetch('/assets/actualizar-posiciones', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(movimientos)
-            });
-            if(res.ok) alert("Posiciones actualizadas correctamente.");
-        }
-
-        function seleccionarPlanta(id) { 
-            window.location.href = "/?plantaId=" + id + "&seccion=vista-plano"; 
-        }
-    </script>
+        });
+    }
+</script>
 </body>
 </html>
