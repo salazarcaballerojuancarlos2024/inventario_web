@@ -1,0 +1,90 @@
+@charset "UTF-8";
+
+/* Contenedor principal del Tooltip */
+.tooltip-datos {
+    visibility: hidden; 
+    width: 290px; 
+    /* Fondo oscuro ultra-opaco para máximo contraste */
+    background-color: #121212 !important; 
+    padding: 14px; 
+    position: absolute; 
+    z-index: 2000 !important; 
+    bottom: 125%; 
+    left: 50%; 
+    transform: translateX(-50%) translateY(10px); 
+    border-radius: 10px; 
+    opacity: 0; 
+    transition: opacity 0.3s ease, transform 0.3s ease; 
+    pointer-events: none; 
+    border: 2px solid #2e7d32; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    /* Forzar que todo el texto dentro sea blanco por defecto */
+    color: #ffffff !important;
+}
+
+/* Forzar color de cualquier div o texto genérico interno */
+.tooltip-datos div, 
+.tooltip-datos span {
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
+
+/* Título superior (DETALLES TÉCNICOS) */
+.tooltip-datos .text-warning {
+    color: #ffc107 !important; /* Forzamos el amarillo de advertencia */
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 8px !important;
+}
+
+/* Estilos para las etiquetas (Ej: Equipo, RAM, Usuario...) */
+.tooltip-datos .label-tt {
+    color: #a5d6a7 !important; /* Verde claro pastel para etiquetas */
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+/* Estilos para los valores de los datos */
+.tooltip-datos .value-tt,
+.tooltip-datos span:not(.label-tt):not(.text-warning) {
+    color: #ffffff !important;
+    font-weight: 400;
+}
+
+/* Línea divisoria HR personalizada */
+.tooltip-datos hr {
+    border: 0;
+    border-top: 1px solid #444 !important;
+    margin: 8px 0 !important;
+    opacity: 1 !important;
+}
+
+/* Pie del tooltip (Coordenadas X/Y) */
+.tooltip-datos .text-info {
+    color: #81d4fa !important; /* Azul claro info */
+    font-family: 'Courier New', monospace;
+}
+
+/* Flecha inferior del tooltip */
+.tooltip-datos::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: #2e7d32 transparent transparent transparent;
+}
+
+/* Disparador al pasar el ratón por el icono */
+.pc-icon:hover .tooltip-datos { 
+    visibility: visible; 
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); 
+}

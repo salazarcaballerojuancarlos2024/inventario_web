@@ -1,0 +1,30 @@
+@charset "UTF-8";
+.sidebar {
+    width: 12%; min-width: 220px; background-color: #2a9d8f; 
+    color: white; padding: 20px 0; display: flex; 
+    flex-direction: column; border-right: 1px solid rgba(255,255,255,0.1); z-index: 100;
+}
+.sidebar-header { padding: 0 15px 20px 15px; text-align: center; }
+.accordion-sidebar { --bs-accordion-bg: transparent; --bs-accordion-border-color: transparent; }
+.accordion-item { border: none; background: transparent; }
+.accordion-button { 
+    background-color: transparent !important; color: white !important; 
+    box-shadow: none !important; padding: 12px 15px; font-size: 0.95rem;
+}
+.accordion-button:not(.collapsed) { background-color: rgba(255, 255, 255, 0.1) !important; }
+.accordion-button::after { filter: brightness(0) invert(1); }
+.nav-link-custom { 
+    color: rgba(255,255,255,0.8) !important; padding: 10px 15px 10px 35px; 
+    display: flex; align-items: center; text-decoration: none; cursor: pointer; transition: 0.2s; font-size: 0.9rem;
+}
+.nav-link-custom:hover { background-color: rgba(255, 255, 255, 0.1); color: white !important; }
+.nav-direct { 
+    color: white !important; padding: 12px 15px; display: flex; 
+    align-items: center; text-decoration: none; cursor: pointer;
+}
+.nav-direct:hover { background-color: rgba(255, 255, 255, 0.1); }
+.sidebar-footer { margin-top: auto; padding-top: 0px; }
+.text-danger { color: #ffcdd2 !important; }
+.text-danger:hover { background-color: rgba(211, 47, 47, 0.2); color: white !important; }
+.menu-icon { width: 22px; height: 22px; margin-right: 12px; }
+.submenu-icon-fixed { width: 20px; height: 20px; margin-right: 12px; filter: invert(1); }

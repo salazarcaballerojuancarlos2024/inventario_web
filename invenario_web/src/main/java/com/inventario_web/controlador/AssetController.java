@@ -73,30 +73,42 @@ public class AssetController {
     }
 
     /**
-     * 2. ACTUALIZAR POSICIONES (Guardado Masivo)
-     * Sincroniza las coordenadas X/Y de varios iconos a la vez.
+     * ACTUALIZAR POSICIONES (Sincronización)
+     * Soporta tanto movimientos individuales como masivos.
      */
     @PostMapping("/actualizar-posiciones")
     public ResponseEntity<?> actualizarPosiciones(@RequestBody List<Map<String, Object>> movimientos) {
         try {
+            if (movimientos == null || movimientos.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se recibieron datos"));
+            }
+
             List<Asset> assetsParaGuardar = new ArrayList<>();
 
             for (Map<String, Object> mov : movimientos) {
                 String tag = (String) mov.get("assetTag");
+                if (tag == null) continue;
+
                 Asset asset = assetService.findByAssetTag(tag);
                 
                 if (asset != null) {
-                    asset.setPosX(((Number) mov.get("posX")).intValue());
-                    asset.setPosY(((Number) mov.get("posY")).intValue());
+                    // Usamos Number para evitar errores si el JSON envía decimales (float/double)
+                    if (mov.containsKey("posX")) {
+                        asset.setPosX(((Number) mov.get("posX")).intValue());
+                    }
+                    if (mov.containsKey("posY")) {
+                        asset.setPosY(((Number) mov.get("posY")).intValue());
+                    }
                     assetsParaGuardar.add(asset);
                 }
             }
             
             assetService.guardarTodos(assetsParaGuardar);
-            return ResponseEntity.ok(Map.of("mensaje", "Se han guardado " + assetsParaGuardar.size() + " posiciones"));
+            return ResponseEntity.ok(Map.of("mensaje", "Se han actualizado " + assetsParaGuardar.size() + " activos"));
+            
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error en sincronización masiva: " + e.getMessage()));
+                    .body(Map.of("error", "Error en sincronización: " + e.getMessage()));
         }
     }
 

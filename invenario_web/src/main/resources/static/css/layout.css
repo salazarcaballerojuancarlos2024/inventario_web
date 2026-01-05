@@ -1,0 +1,6 @@
+@charset "UTF-8";
+
+body, html { height: 100%; margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; }
+.main-wrapper { display: flex; height: 100vh; }
+.map-area { width: 88%; position: relative; flex-grow: 1; height: 100vh; }
+.seccion-oculta { display: none !important; }

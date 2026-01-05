@@ -1,0 +1,96 @@
+@charset "UTF-8";
+
+/* ==========================================
+   1. ESTADO BASE DEL ICONO
+   ========================================== */
+.pc-icon { 
+    position: absolute; 
+    width: 50px; /* Un poco más amplio para el área de clic */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    z-index: 50; 
+    cursor: grab; 
+    touch-action: none; 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, background-color 0.3s ease;
+    padding: 6px;
+    border-radius: 50%; /* Base circular para el efecto de pulso */
+}
+
+/* Imagen del equipo */
+.pc-icon img { 
+    width: 32px; 
+    height: 32px; 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
+    pointer-events: none; /* Evita que la imagen interfiera con el drag */
+}
+
+/* Etiqueta de texto (Asset Tag) */
+.pc-icon span {
+    font-size: 10px; 
+    font-weight: bold; 
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 1px 5px; 
+    border-radius: 4px; 
+    margin-top: 3px; 
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+/* ==========================================
+   2. INTERACCIÓN Y ANIMACIONES
+   ========================================== */
+
+/* Efecto al pasar el ratón (Hover) */
+.pc-icon:hover {
+    z-index: 2000; /* Por encima de todo, excepto tooltips */
+    transform: scale(1.2);
+    background-color: rgba(46, 125, 50, 0.15); /* Fondo verde tenue */
+    animation: pulse-green 1.5s infinite;
+}
+
+.pc-icon:hover img {
+    filter: drop-shadow(0 0 8px #2e7d32) brightness(1.1);
+}
+
+.pc-icon:hover span {
+    background-color: #2e7d32 !important;
+    color: #ffffff !important;
+    transform: translateY(2px);
+}
+
+/* Estado durante el arrastre (InteracJS) */
+.pc-icon.interact-dragging { 
+    opacity: 0.8; 
+    z-index: 3000; 
+    cursor: grabbing;
+    animation: none; /* Desactiva el pulso mientras se mueve */
+    transform: scale(1.1) !important;
+}
+
+/* ==========================================
+   3. KEYFRAMES (ANIMACIONES)
+   ========================================== */
+
+/* Pulso Verde para Hover */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(46, 125, 50, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+}
+
+/* Pulso de llegada (Azul) - Conservado de tu versión original */
+.pc-icon[data-x="850"][data-y="10"] {
+    outline: 2px solid #007bff; 
+    outline-offset: 4px; 
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { box-shadow: 0 0 0 0px rgba(0, 123, 255, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(0, 123, 255, 0); }
+}

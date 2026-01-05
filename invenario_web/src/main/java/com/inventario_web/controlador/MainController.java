@@ -26,20 +26,32 @@ public class MainController {
     private String urlExterna;
 
     @GetMapping("/")
-    public String index(@RequestParam(name = "plantaId", required = false) Long plantaId, Model model) {
+    public String index(
+            @RequestParam(name = "plantaId", required = false) Long plantaId, 
+            @RequestParam(name = "seccion", required = false) String seccion, 
+            Model model) {
+
         List<Planta> todasLasPlantas = plantaRepository.findAll();
         model.addAttribute("plantas", todasLasPlantas);
 
-        if (plantaId != null) {
+        // CASO 1: SECCIÓN ALMACÉN (Forzamos carga de Planta ID 1)
+        if ("vista-almacen".equals(seccion)) {
+            Planta almacen = plantaRepository.findById(1L).orElse(null);
+            model.addAttribute("plantaSeleccionada", almacen);
+            model.addAttribute("assets", (almacen != null) ? almacen.getAssets() : List.of());
+        } 
+        // CASO 2: SECCIÓN DE PLANTA ESPECÍFICA
+        else if (plantaId != null) {
             Planta seleccionada = plantaRepository.findById(plantaId).orElse(null);
             model.addAttribute("plantaSeleccionada", seleccionada);
-            model.addAttribute("assets", (seleccionada != null) ? seleccionada.getAssets() : assetService.obtenerTodosLosAssets());
-        } else {
+            model.addAttribute("assets", (seleccionada != null) ? seleccionada.getAssets() : List.of());
+        } 
+        // CASO 3: PANEL PRINCIPAL (U otro estado inicial)
+        else {
             model.addAttribute("plantaSeleccionada", null);
             model.addAttribute("assets", assetService.obtenerTodosLosAssets());
         }
-        
-        // Sincronizamos el nombre con el HTML
+
         model.addAttribute("urlExterna", urlExterna);
         model.addAttribute("version", System.currentTimeMillis()); 
         

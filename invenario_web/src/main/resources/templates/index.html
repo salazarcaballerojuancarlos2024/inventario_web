@@ -3,361 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Inventario - Panel Principal</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-    <style>
-        body, html { height: 100%; margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; }
-        .main-wrapper { display: flex; height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 12%; min-width: 220px; background-color: #1a3d1a; 
-            color: white; padding: 20px 0; display: flex; flex-direction: column; border-right: 2px solid #2e7d32;
-            z-index: 100;
-        }
-        .sidebar-header { padding: 0 15px 20px 15px; text-align: center; }
-        .accordion-sidebar { --bs-accordion-bg: transparent; --bs-accordion-border-color: transparent; }
-        .accordion-item { border: none; background: transparent; }
-        .accordion-button { 
-            background-color: transparent !important; color: white !important; 
-            box-shadow: none !important; padding: 12px 15px; font-size: 0.95rem;
-        }
-        .accordion-button:not(.collapsed) { background-color: rgba(255, 255, 255, 0.1) !important; }
-        .accordion-button::after { filter: brightness(0) invert(1); }
-        .accordion-body { padding: 0; }
-
-        .nav-link-custom { 
-            color: rgba(255,255,255,0.8) !important; padding: 10px 15px 10px 35px; 
-            display: flex; align-items: center; text-decoration: none; 
-            cursor: pointer; transition: 0.2s; font-size: 0.9rem;
-        }
-        .nav-link-custom:hover { background-color: rgba(255, 255, 255, 0.1); color: white !important; }
-        
-        .nav-direct { 
-            color: white !important; padding: 12px 15px; display: flex; 
-            align-items: center; text-decoration: none; cursor: pointer;
-        }
-        .nav-direct:hover { background-color: rgba(255, 255, 255, 0.1); }
-        .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
-
-        /* PANEL DERECHO */
-        .map-area { width: 88%; position: relative; flex-grow: 1; height: 100vh; }
-        .seccion-oculta { display: none !important; }
-        
-        /* ALMACÉN */
-        .almacen-wrapper { display: flex; flex-direction: column; height: 100vh; gap: 10px; padding: 20px; box-sizing: border-box; }
-        
-        .zona-arrastre-almacen {
-    height: 65vh; /* Antes 45vh, ahora más alto */
-    background-color: white; 
-    border: 2px dashed #6c757d; 
-    position: relative; 
-    border-radius: 10px;
-    background-image: radial-gradient(#ccc 1px, transparent 1px);
-    background-size: 25px 25px; 
-    overflow: hidden; 
-    touch-action: none;
-}
-
-        /* MARCA DE AGUA ZONA ALMACÉN */
-        /* MARCA DE AGUA ZONA ALMACÉN MEJORADA */
-.watermark-almacen {
-    position: absolute; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column; /* Apila icono arriba y texto abajo */
-    align-items: center;
-    gap: 20px; /* Espacio entre el icono y el texto */
-    opacity: 0.05; /* Controla la transparencia de todo el conjunto */
-    pointer-events: none; 
-    user-select: none;
-    z-index: 1; 
-    text-align: center; 
-    width: 100%;
-}
-
-.watermark-almacen img {
-    width: 120px; /* Tamaño del icono de fondo */
-    height: auto;
-    filter: grayscale(100%); /* Lo hace gris para que armonice con el texto */
-}
-
-.watermark-almacen span {
-    font-size: 4rem; 
-    font-weight: 900; 
-    text-transform: uppercase; 
-    letter-spacing: 10px;
-}
-
-        /* ICONOS EQUIPOS GENERALIZADOS (Reducidos un 25%) */
-.pc-icon { 
-    position: absolute; 
-    width: 45px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    z-index: 20; 
-    cursor: move; 
-    touch-action: none;
-    /* Mejora opcional: suave escalado al pasar el ratón */
-    transition: transform 0.1s ease;
-}
-
-.pc-icon img { 
-    width: 34px; 
-    height: 34px; 
-    pointer-events: none; 
-}
-
-.pc-icon span { 
-    font-size: 9px; 
-    background: #333; 
-    color: white; 
-    padding: 1px 4px; 
-    border-radius: 3px; 
-    margin-top: 1px; 
-    font-weight: bold; 
-    white-space: nowrap;
-}
-
-/* TOOLTIP AJUSTADO Y CORREGIDO */
-.tooltip-datos {
-    visibility: hidden; 
-    width: 280px; 
-    background-color: rgba(0, 0, 0, 0.95); 
-    color: #fff;
-    padding: 12px; 
-    position: absolute; 
-    z-index: 1001; 
-    bottom: 110%; /* Ajustado un poco más cerca del icono pequeño */
-    left: 50%;
-    transform: translateX(-50%); 
-    border-radius: 8px; 
-    opacity: 0; 
-    transition: opacity 0.3s ease; /* Transición solo en opacidad para evitar saltos */
-    pointer-events: none; 
-    border: 1px solid #2e7d32; 
-    font-size: 0.82rem; 
-    line-height: 1.4; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
-/* Disparador del Tooltip */
-.pc-icon:hover .tooltip-datos { 
-    visibility: visible; 
-    opacity: 1; 
-}
-        
-        /* TABLA Y CONTENEDORES */
-        .scroll-container {
-    flex: 1; 
-    background: white; 
-    border-radius: 10px; 
-    border: 1px solid #ddd; 
-    overflow: auto; /* Permite scroll vertical y horizontal */
-    max-height: 25vh; /* Limita el alto para que no empuje todo fuera de la pantalla */
-}
-
-/* 3. Tabla ultra-compacta */
-.table-almacen-compacta {
-    font-size: 0.72rem !important; /* Texto más pequeño */
-    width: 100%;
-    table-layout: auto;
-    white-space: nowrap; /* Impide que el texto salte de línea, forzando scroll horizontal */
-}
-
-.table-almacen-compacta th, 
-.table-almacen-compacta td {
-    padding: 2px 8px !important; /* Filas mucho más delgadas */
-    height: 28px; /* Altura mínima controlada */
-    border-bottom: 1px solid #eee;
-}
-
-/* Cabecera siempre visible al hacer scroll */
-.table-almacen-compacta thead th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #212529; /* Color oscuro para contraste */
-}
-
-/* Reducción de filas y texto de la tabla */
-.table-compacta {
-    font-size: 0.75rem !important; /* Texto más pequeño */
-    white-space: nowrap; /* Fuerza el scroll horizontal si hay muchas columnas */
-}
-
-.table-compacta td, .table-compacta th {
-    padding: 4px 8px !important; /* Reduce el alto de las filas (relleno) */
-    vertical-align: middle;
-}
-        .fila-resaltada { background-color: #e8f5e9 !important; box-shadow: inset 0 0 0 2px #2e7d32; }
-        .menu-icon { width: 22px; height: 22px; margin-right: 12px; }
-        .submenu-icon-fixed { width: 20px; height: 20px; margin-right: 12px; filter: invert(1); }
-        
-      
-       /* --- GESTIÓN DE PLANTAS --- */
-
-/* Contenedor de la miniatura para evitar que el escalado desplace otros elementos */
-.img-container-gestion {
-    width: 120px;
-    height: 70px;
-    position: relative;
-}
-
-.img-preview-table { 
-    width: 120px; 
-    height: 70px; 
-    object-fit: cover; 
-    border-radius: 4px; 
-    border: 1px solid #bbb; 
-    transition: all 0.3s ease-in-out; 
-    cursor: zoom-in;
-    position: relative;
-    z-index: 1;
-}
-
-/* Efecto al pasar el ratón: Ampliación "Suficientemente extendido" */
-td {
-    position: relative;
-}
-
-.img-preview-table:hover { 
-    transform: scale(4); /* Aumentado a 4 para que sea "suficientemente extendido" */
-    z-index: 1000; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    border: 2px solid #2e7d32;
-    transform-origin: center; /* Mejor centrado para que no se salga de los bordes laterales */
-}
-
-/* Estructura de la fila de gestión */
-.fila-gestion-planta { 
-    display: flex; 
-    align-items: center; 
-    width: 100%; 
-    gap: 20px;
-}
-
-/* Contenedor del formulario de actualización de imagen */
-.controles-planta { 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
-    flex-grow: 1;
-    background-color: #f8f9fa;
-    padding: 8px 15px;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
-}
-
-/* Ajuste para que el input file no sea demasiado ancho */
-.controles-planta input[type="file"] {
-    max-width: 250px;
-}
-
-/* Estilo para los textos en la tabla de gestión */
-.nombre-planta-gestion {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a3d1a;
-    min-width: 150px;
-}
-
-/* ESTILOS BOTONES CABECERA ALMACÉN */
-.btn-header-icon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: bold;
-    font-size: 0.85rem;
-}
-
-.btn-header-icon img {
-    width: 18px;
-    height: 18px;
-    filter: brightness(0) invert(1); /* Hace que los iconos sean blancos */
-}
-
-/* CONTENEDOR DE ZONAS DE DROP */
-.contenedor-zonas-drop {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    display: flex;
-    flex-wrap: wrap; /* Por si tienes muchas plantas, que bajen a la siguiente línea */
-    gap: 12px;
-    z-index: 5; 
-}
-
-.zona-drop {
-    width: 110px;
-    height: 75px;
-    background-color: #e8f5e9; /* Verde pastel claro */
-    border: 2px dashed #a5d6a7;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-/* MARCA DE AGUA DENTRO DE LA ZONA */
-.zona-drop::before {
-    content: "PLANTA";
-    position: absolute;
-    font-size: 14px;
-    font-weight: 900;
-    color: #2e7d32;
-    opacity: 0.1; /* Efecto marca de agua */
-    transform: rotate(-15deg);
-}
-
-.zona-drop span {
-    position: relative; /* Para estar sobre la marca de agua */
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #2e7d32;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-/* Efecto al pasar el icono por encima */
-.zona-drop.drop-active {
-    background-color: #c8e6c9;
-    border-style: solid;
-    border-color: #2e7d32;
-    transform: scale(1.05);
-}
-
-.sort-icon {
-    font-size: 0.6rem;
-    margin-left: 5px;
-    opacity: 0.3;
-    transition: opacity 0.2s;
-}
-
-thead th:hover .sort-icon {
-    opacity: 0.8;
-}
-    </style>
+    <link rel="stylesheet" th:href="@{/css/layout.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/sidebar.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/mapa.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/iconos.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/tooltips.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/tablas.css(v=${version})}">
 </head>
 <body>
 
     <div class="main-wrapper">
-        <div class="sidebar">
+        <div class="sidebar shadow">
             <div class="sidebar-header">
-                <h5>Inventario</h5>
+                <h5 class="m-0 fw-bold">Inventario</h5>
                 <small class="opacity-75">Dt Salud Málaga</small>
             </div>
             
             <div class="accordion accordion-sidebar" id="accordionMenu">
                 <div class="nav-direct" onclick="mostrarSeccion('vista-plano')">
-                    <span style="padding-left: 5px;">Panel de Control</span>
+                    <img th:src="@{/imagenes/panel-de-control.png}" class="menu-icon" style="filter: brightness(0) invert(1);"> 
+                    <span>Panel de Control</span>
                 </div>
 
                 <div class="accordion-item">
@@ -386,7 +56,7 @@ thead th:hover .sort-icon {
                     </h2>
                     <div id="collapseVista" class="accordion-collapse collapse" data-bs-parent="#accordionMenu">
                         <div class="accordion-body">
-                            <div th:each="p : ${plantas}" th:if="${p.id != 8 and p.nombre != 'ALMACEN'}">
+                            <div th:each="p : ${plantas}" th:if="${p.nombre != 'ALMACEN'}">
                                 <a class="nav-link-custom" th:onclick="'seleccionarPlanta(' + ${p.id} + ')'">
                                     <img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
                                     <span th:text="${p.nombre}"></span>
@@ -398,10 +68,12 @@ thead th:hover .sort-icon {
             </div>
 
             <div class="sidebar-footer">
-                <a class="nav-direct" onclick="mostrarSeccion('vista-almacen')">
-                    <img th:src="@{/imagenes/almacen.png}" class="menu-icon"> Almacén
+                <a class="nav-direct" onclick="window.location.href='/?seccion=vista-almacen'" style="cursor: pointer;">
+                    <img th:src="@{/imagenes/almacen.png}" class="menu-icon"> 
+                    <strong>Almacén</strong>
                 </a>
-                <a th:href="@{/login}" class="nav-direct text-danger">
+                <hr class="text-white my-2"> 
+                <a th:href="@{/login}" class="nav-link-custom text-danger fw-bold" style="padding-left: 15px !important;">
                     <img th:src="@{/imagenes/cerrar-sesion.png}" class="menu-icon"> Salir
                 </a>
             </div>
@@ -413,245 +85,230 @@ thead th:hover .sort-icon {
                 <div class="almacen-wrapper">
                     <div class="card shadow">
                         <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
- 						   <h5 class="mb-0">Control de Almacén</h5>
-    						<div class="d-flex gap-2">
-   							     <button class="btn btn-dark btn-sm btn-header-icon" onclick="guardarTodoAlmacen()">
-    						        <img th:src="@{/imagenes/disquete.png}">
-    						        GUARDAR POSICIONES
-    							    </button>
-        
-     							   <button class="btn btn-info text-white btn-sm btn-header-icon" onclick="exportarAlmacen()">
-     							       <img th:src="@{/imagenes/descargas.png}">
-     							       EXPORTAR
-     								   </button>
-    						</div>
-						</div>
-                       <div class="card-body p-0">
-    <div class="zona-arrastre-almacen" id="contenedor-almacen">
-        
-        <div class="contenedor-zonas-drop">
-            <div th:each="p : ${plantas}" 
-                 th:if="${p.id != 8}" 
-                 class="zona-drop dropzone" 
-                 th:data-planta-id="${p.id}">
-                <span th:text="${p.nombre}"></span>
-            </div>
-        </div>
+                            <h5 class="mb-0">Control de Almacén</h5>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-dark btn-sm btn-header-icon" onclick="guardarTodoAlmacen()">
+                                    <img th:src="@{/imagenes/disquete.png}"> GUARDAR POSICIONES
+                                </button>
+                                <button class="btn btn-info text-white btn-sm btn-header-icon" 
+       								 onclick="event.stopPropagation(); exportarAlmacen();">
+   									 <img th:src="@{/imagenes/descargas.png}"> EXPORTAR
+								</button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="zona-arrastre-almacen" id="contenedor-almacen">
+                                <div class="contenedor-zonas-drop">
+                                    <div th:each="p : ${plantas}" th:if="${p.id != 1}" class="zona-drop dropzone" th:data-planta-id="${p.id}">
+                                        <span th:text="${p.nombre}"></span>
+                                    </div>
+                                </div>
+                                <div class="watermark-almacen">
+                                    <img th:src="@{/imagenes/almacen.png}" alt="Almacén">
+                                    <span>Zona de Almacén</span>
+                                </div>
+                                <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 1}"
+                                     class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
+                                     th:data-tag="${asset.assetTag}"
+                                     th:data-x="${asset.posX != null ? asset.posX : 0}" 
+                                     th:data-y="${asset.posY != null ? asset.posY : 0}"
+                                     th:style="'transform: translate(' + (${asset.posX != null ? asset.posX : 0}) + 'px, ' + (${asset.posY != null ? asset.posY : 0}) + 'px);'"
+                                     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
+                                     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
+                                     onclick="manejarClickIcono(this, event)">
+                                    <img th:src="${asset.tipoEquipo == 'portátil' or asset.tipoEquipo == 'PORTÁTIL' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono">
+                                    <span th:text="${asset.assetTag}"></span>
+                                    <div class="tooltip-datos shadow">
+    <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
+    
+    <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
+    
+    <div>
+        <span class="label-tt">Tipo:</span> 
+        <span th:text="${asset.tipoEquipo}" th:style="'text-transform: uppercase; color: #81d4fa;'"></span>
+    </div>
+    
+    <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
+    
+    <hr style="border-color: #444; margin: 5px 0;">
+    
+    <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
+    <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
+    <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
+    <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
+    
+    <div>
+        <span class="label-tt">Planta:</span> 
+        <span th:text="${asset.planta != null ? asset.planta.nombre : 'Sin asignar'}"></span>
+    </div>
+    
+    <div style="max-width: 180px; white-space: normal; line-height: 1.2;">
+        <span class="label-tt">Otros:</span> 
+        <span class="text-white-50" style="font-size: 0.85em;" th:text="${asset.otros}"></span>
+    </div>
 
-        <div class="watermark-almacen">
-            <img th:src="@{/imagenes/almacen.png}" alt="Almacén">
-            <span>Zona de Almacén</span>
-        </div>
-        
-        <div th:each="asset : ${assets}" 
-             th:if="${asset.planta != null and asset.planta.id == 8}"
-             class="pc-icon drag-item" 
-             th:id="'icono-' + ${asset.assetTag}"
-             th:data-tag="${asset.assetTag}"
-             th:data-x="${asset.posX}" 
-             th:data-y="${asset.posY}"
-             th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
-             th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
-             th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
-             onclick="manejarClickIcono(this, event)">
-            
-            <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" 
-                 alt="Icono Equipo">
-            
-            <span th:text="${asset.assetTag}"></span>
-
-            <div class="tooltip-datos shadow">
-                <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
-                <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
-                <div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
-                <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-                <hr style="border-color: #444; margin: 5px 0;">
-                <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-                <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-                <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-                <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-                <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
-                <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta != null ? asset.planta.nombre : 'Sin asignar'}"></span></div>
-                <hr style="border-color: #444; margin: 5px 0;">
-                <div class="text-end text-info" style="font-size: 0.75rem;">
-                    X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | 
-                    Y: <span class="tt-pos-y" th:text="${asset.posY}"></span>
-                </div>
-            </div>
-        </div> </div> </div>
+    <div class="text-end text-info" style="font-size: 0.75rem; margin-top: 5px; border-top: 1px solid #444; padding-top: 3px;">
+        X: <span class="tt-pos-x" th:text="${asset.posX != null ? asset.posX : 0}"></span> | 
+        Y: <span class="tt-pos-y" th:text="${asset.posY != null ? asset.posY : 0}"></span>
+    </div>
+</div>
+                                </div>
+                            </div> 
+                        </div>
                     </div>
                     
-                   <div class="scroll-container shadow">
-    <table class="table table-hover align-middle m-0 table-almacen-compacta">
-        <thead class="table-dark">
-    <tr style="cursor: pointer;">
-        <th onclick="ordenarTabla(0)">Equipo <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(1)">Tipo <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(2)">Usuario <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(3)">RAM <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(4)">CPU <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(5)">Disco <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(6)">S.O <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(7)">Planta <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(8)">Otros <span class="sort-icon">↕</span></th>
-        <th onclick="ordenarTabla(9)" class="text-center">X / Y <span class="sort-icon">↕</span></th>
-        <th class="text-center">Acciones</th> </tr>
-	</thead>
-        <tbody>
-            <tr th:each="asset : ${assets}" 
-                th:if="${asset.planta != null and asset.planta.id == 8}" 
-                th:id="'fila-' + ${asset.assetTag}">
-                
-                <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
-                <td th:text="${asset.tipoEquipo}" class="text-uppercase text-muted" style="font-size: 0.65rem;"></td> 
-                <td th:text="${asset.nombreUsuario}"></td>
-                <td th:text="${asset.ram}"></td>
-                <td th:text="${asset.cpu}"></td>
-                <td th:text="${asset.disco}"></td>
-                <td th:text="${asset.versionSo}"></td>
-                <td th:text="${asset.planta.nombre}" class="text-muted"></td>
-                <td th:text="${asset.otros}"></td>
-                
-                <td class="text-center font-monospace" style="color: #666;">
-                    <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> / 
-                    <span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
-                </td>
-                
-                <td class="text-center">
-    <div class="d-flex justify-content-center gap-1">
-        <button class="btn btn-danger btn-sm py-0 px-2 d-flex align-items-center justify-content-center" 
-                style="font-size: 0.8rem; width: 22px; height: 22px; border-radius: 50%;"
-                th:onclick="confirmarEliminarAsset([[${asset.assetTag}]])"
-                title="Eliminar Asset">
-            -
-        </button>
-
-        <button class="btn btn-outline-primary btn-sm py-0 px-2" 
-                style="font-size: 0.65rem; height: 22px;"
+                    <div class="scroll-container shadow">
+                        <table class="table table-hover align-middle m-0 table-almacen-compacta">
+                            <thead class="table-dark">
+                                <tr style="cursor: pointer;">
+                                    <th onclick="ordenarTabla(0)">Equipo <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(1)">Tipo <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(2)">Usuario <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(3)">RAM <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(4)">CPU <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(5)">Disco <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(6)">S.O <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(7)">Planta <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(8)">Otros <span class="sort-icon">↕</span></th>
+                                    <th onclick="ordenarTabla(9)" class="text-center">X / Y <span class="sort-icon">↕</span></th>
+                                    <th class="text-center">Acciones</th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 1}" th:id="'fila-' + ${asset.assetTag}">
+                                    <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
+                                    <td th:text="${asset.tipoEquipo}" class="text-uppercase text-muted" style="font-size: 0.65rem;"></td> 
+                                    <td th:text="${asset.nombreUsuario}"></td>
+                                    <td th:text="${asset.ram}"></td>
+                                    <td th:text="${asset.cpu}"></td>
+                                    <td th:text="${asset.disco}"></td>
+                                    <td th:text="${asset.versionSo}"></td>
+                                    <td th:text="${asset.planta.nombre}" class="text-muted"></td>
+                                    <td th:text="${asset.otros}"></td>
+                                    <td class="text-center font-monospace" style="color: #666;">
+                                        <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> / 
+                                        <span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+                                    </td>
+                                    <td class="text-center">
+    <div class="d-flex justify-content-center gap-2">
+        <button class="btn btn-outline-primary btn-sm btn-accion-tabla"
                 th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]], [[${asset.tipoEquipo}]])">
             Editar
         </button>
+
+        <button class="btn btn-warning btn-sm text-white btn-accion-tabla"
+                th:onclick="confirmarEliminarAsset([[${asset.assetTag}]])">
+            Eliminar
+        </button>
     </div>
 </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <div id="vista-gestion-plantas" class="p-4 h-100 seccion-oculta" style="overflow-y: auto;">
-    <h4 class="mb-4 text-success border-bottom pb-2">Configuración de Plantas</h4>
-    
-    <div class="bg-white p-4 rounded shadow-sm mb-4 border">
-        <h6 class="text-muted mb-3">Añadir Nueva Ubicación</h6>
-        <form th:action="@{/plantas/guardar}" method="post" enctype="multipart/form-data" class="row g-3">
-            <div class="col-md-5">
-                <label class="form-label small fw-bold">Nombre de la Planta</label>
-                <input type="text" name="nombre" class="form-control" placeholder="Ej: Planta 1, Almacén B..." required>
-            </div>
-            <div class="col-md-5">
-                <label class="form-label small fw-bold">Plano (Imagen)</label>
-                <input type="file" name="file" class="form-control" accept="image/*" required>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-success w-100">Crear Planta</button>
-            </div>
-        </form>
-    </div>
-
-    <div class="bg-white rounded shadow-sm border overflow-hidden">
-    <table class="table align-middle m-0">
-        <thead class="table-light">
-            <tr>
-                <th style="width: 80px;" class="ps-3">ID</th>
-                <th style="width: 160px;">Vista Plano</th>
-                <th>Configuración y Cambio de Imagen</th>
-                <th style="width: 120px;" class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="p : ${plantas}" th:if="${p.id != 8 and p.nombre != 'ALMACEN'}">
-                <td th:text="${p.id}" class="ps-3 fw-bold text-muted"></td>
-                <td>
-                    <div class="img-container-gestion" style="margin: 10px 0;">
-                        <img th:src="@{'/planos-file/' + ${p.imagenNombre}}" 
-                             class="img-preview-table shadow-sm" 
-                             alt="Plano">
-                    </div>
-                </td>
-                <td>
-                    <div class="fila-gestion-planta d-flex flex-column flex-md-row align-items-md-center gap-3">
-                        <span class="nombre-planta-gestion text-nowrap" th:text="${p.nombre}" style="min-width: 150px;"></span>
-                        
+            <div id="vista-gestion-plantas" class="p-4 h-100 seccion-oculta">
+                <h4 class="mb-4 text-success border-bottom pb-2">Configuración de Plantas</h4>
+                <div class="bg-white p-3 rounded shadow-sm mb-4 border">
+                    <h6 class="text-muted mb-3 small fw-bold uppercase">Añadir Nueva Ubicación</h6>
+                    <form th:action="@{/plantas/guardar}" method="post" enctype="multipart/form-data" class="row g-2">
+                        <div class="col-md-5"><input type="text" name="nombre" class="form-control form-control-sm" placeholder="Nombre de la Planta" required></div>
+                        <div class="col-md-5"><input type="file" name="file" class="form-control form-control-sm" accept="image/*" required></div>
+                        <div class="col-md-2"><button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Crear Planta</button></div>
+                    </form>
+                </div>
+                <div class="bg-white rounded shadow-sm border overflow-hidden">
+    <div class="gestion-tabla-container" style="max-height: 450px; overflow-y: auto;">
+        <table class="table table-hover align-middle m-0 table-gestion-ultra">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;" class="text-center ps-3">ID</th>
+                    <th style="width: 130px;">Vista Plano</th>
+                    <th style="width: 200px;">Nombre Planta</th>
+                    <th>Actualizar Imagen del Plano</th>
+                    <th style="width: 100px;" class="text-center pe-3">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${plantas}" th:if="${p.nombre != 'ALMACEN'}">
+                    
+                    <td th:text="${p.id}" class="text-center fw-bold text-muted border-end ps-3"></td>
+                    
+                    <td>
+                        <div class="d-flex justify-content-center">
+                            <img th:src="@{'/planos-file/' + ${p.imagenNombre}}" 
+                                 class="img-mini-gestion shadow-sm border" 
+                                 alt="Plano miniatura">
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <span class="fw-bold text-dark d-block text-truncate" 
+                              th:text="${p.nombre}" 
+                              style="max-width: 180px;" 
+                              th:title="${p.nombre}">
+                        </span>
+                    </td>
+                    
+                    <td>
                         <form th:action="@{/plantas/actualizar-imagen}" 
                               method="post" 
                               enctype="multipart/form-data" 
-                              class="controles-planta d-flex align-items-center gap-2 flex-grow-1">
-                            
+                              class="m-0">
                             <input type="hidden" name="id" th:value="${p.id}">
-                            
-                            <div class="input-group input-group-sm">
-                                <label class="input-group-text bg-white" th:for="'file-' + ${p.id}">Nuevo Plano</label>
-                                <input type="file" name="file" class="form-control" 
-                                       th:id="'file-' + ${p.id}" 
-                                       accept="image/*" required>
-                                <button type="submit" class="btn btn-info text-white fw-bold">Actualizar</button>
+                            <div class="input-group input-group-sm" style="max-width: 350px;">
+                                <input type="file" name="file" 
+                                       class="form-control" 
+                                       accept="image/*" 
+                                       required>
+                                <button type="submit" class="btn btn-info text-white fw-bold px-3">
+                                    Actualizar
+                                </button>
                             </div>
                         </form>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <a th:href="@{'/plantas/eliminar/' + ${p.id}}" 
-                       class="btn btn-outline-danger btn-sm" 
-                       onclick="return confirm('¿Borrar planta y sus activos?')">Eliminar</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                    </td>
+                    
+                    <td class="text-center pe-3">
+                        <a th:href="@{'/plantas/eliminar/' + ${p.id}}" 
+                           class="btn btn-outline-danger btn-sm fw-bold border-0" 
+                           onclick="return confirm('¿Estás seguro de eliminar esta planta? Se borrarán todos sus activos asociados.')"
+                           title="Eliminar Planta">
+                           <span aria-hidden="true">&times;</span> Eliminar
+                        </a>
+                    </td>
+                </tr>
+                
+                <tr th:if="${#lists.size(plantas) <= 1}">
+                    <td colspan="5" class="text-center py-4 text-muted small italic">
+                        No hay plantas adicionales registradas.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-</div>
+            </div>
 
             <div id="vista-datos-completos" class="h-100 seccion-oculta">
                 <iframe th:src="${urlExterna}" style="width:100%; height:100%; border:none;"></iframe>
             </div>
 
             <div id="vista-plano" class="h-100 seccion-oculta">
-    <div th:if="${plantaSeleccionada != null}" 
-         th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
-        
-        <div th:each="asset : ${assets}" 
-     th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
-     class="pc-icon" 
-     th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
-     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
-     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'">
-    
-    <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" 
-         alt="Icono Equipo">
-    
-    <span th:text="${asset.assetTag}"></span>
+                <div th:if="${plantaSeleccionada != null}" 
+                     th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
+                    
+                    <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
+                         class="pc-icon" th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
+                         th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
+                         th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'">
+                        <img th:src="${asset.tipoEquipo == 'portátil' ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono">
+                        <span th:text="${asset.assetTag}"></span>
+                    </div>
+                </div>
+            </div>
 
-    <div class="tooltip-datos shadow">
-        <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
-        <div><span class="label-tt">Equipo:</span> <span th:text="${asset.assetTag}"></span></div>
-        <div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}" style="text-transform: uppercase; color: #81d4fa;"></span></div>
-        <div><span class="label-tt">Usuario:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-        <hr style="border-color: #444; margin: 5px 0;">
-        <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-        <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-        <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-        <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-        <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
-        <div><span class="label-tt">Planta:</span> <span th:text="${asset.planta.nombre}"></span></div>
-        <hr style="border-color: #444; margin: 5px 0;">
-        <div class="text-end text-info" style="font-size: 0.75rem;">
-            Ubicación en Plano (X: <span th:text="${asset.posX}"></span> | Y: <span th:text="${asset.posY}"></span>)
-        </div>
-    </div>
-</div>
-    </div>
-</div>
         </div>
     </div>
 
@@ -665,15 +322,13 @@ thead th:hover .sort-icon {
                 <div class="modal-body">
                     <form id="formEditAsset">
                         <input type="hidden" id="inputAssetTag" name="assetTag">
-                        
-                       <div class="mb-2">
-    					<label class="form-label small">Tipo de Equipo</label>
-   						 <select class="form-select" id="inputTipo" name="tipoEquipo">
-    						    <option value="pc">PC</option>
-   							     <option value="portátil">Portátil</option>
-   						 </select>
-						</div>
-                        
+                        <div class="mb-2">
+                            <label class="form-label small">Tipo de Equipo</label>
+                            <select class="form-select" id="inputTipo" name="tipoEquipo">
+                                <option value="pc">PC</option>
+                                <option value="portátil">Portátil</option>
+                            </select>
+                        </div>
                         <div class="mb-2"><label class="form-label small">Usuario</label><input type="text" class="form-control" id="inputUsuario" name="nombreUsuario"></div>
                         <div class="row g-2 mb-2">
                             <div class="col-6"><label class="form-label small">RAM</label><input type="text" class="form-control" id="inputRam" name="ram"></div>
@@ -699,316 +354,22 @@ thead th:hover .sort-icon {
         </div>
     </div>
 
+    <script th:src="@{/js/config.js(v=${version})}"></script>
+    <script th:src="@{/js/inventario-api.js(v=${version})}"></script>
+    <script th:src="@{/js/inventario-ui.js(v=${version})}"></script>
+    <script th:src="@{/js/inventario-drag.js(v=${version})}"></script>
+
     <script th:inline="javascript">
-    let modalInstancia = null;
-
-    window.onload = function() {
-        const modalElement = document.getElementById('modalEditAsset');
-        if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
-        const params = new URLSearchParams(window.location.search);
-        mostrarSeccion(params.get('seccion') || 'vista-plano');
-    };
-
-    // --- NUEVA FUNCIONALIDAD: INTERACT JS CON DROPZONES ---
-    function initInteract() {
-        // Draggable: Mover iconos dentro del almacén
-        interact('.drag-item').draggable({
-            inertia: true,
-            modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })],
-            listeners: {
-                move(event) {
-                    const target = event.target;
-                    const tag = target.getAttribute('data-tag');
-                    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-                    
-                    target.style.transform = `translate(${x}px, ${y}px)`;
-                    target.setAttribute('data-x', x);
-                    target.setAttribute('data-y', y);
-                    
-                    // Sincronizar Tooltip y Tabla
-                    const ttX = target.querySelector('.tt-pos-x');
-                    const ttY = target.querySelector('.tt-pos-y');
-                    if(ttX) ttX.innerText = Math.round(x);
-                    if(ttY) ttY.innerText = Math.round(y);
-
-                    const tX = document.getElementById('table-x-' + tag);
-                    const tY = document.getElementById('table-y-' + tag);
-                    if(tX) tX.innerText = Math.round(x);
-                    if(tY) tY.innerText = Math.round(y);
-                }
-            }
-        });
-
-        // Dropzone: Detectar cuando un icono se suelta en una planta
-        interact('.dropzone').dropzone({
-            overlap: 0.5,
-            ondragenter: function (event) {
-                event.target.classList.add('drop-active');
-            },
-            ondragleave: function (event) {
-                event.target.classList.remove('drop-active');
-            },
-            ondrop: function (event) {
-                event.target.classList.remove('drop-active');
-                const assetTag = event.relatedTarget.getAttribute('data-tag');
-                const plantaId = event.target.getAttribute('data-planta-id');
-                const nombrePlanta = event.target.querySelector('span').innerText;
-
-                if (confirm(`¿Deseas trasladar el equipo ${assetTag} a la ${nombrePlanta}?`)) {
-                    moverAssetAPlanta(assetTag, plantaId);
-                }
-            }
-        });
-    }
-
-    // Función para procesar el traslado rápido vía Drag & Drop
-    async function moverAssetAPlanta(tag, plantaId) {
-        // Preparamos el payload mínimo necesario para tu backend
-        const payload = {
-            assetTag: tag,
-            plantaId: plantaId,
-            // Al mover a planta nueva, reseteamos coordenadas a 0 o valores por defecto
-            posX: 0,
-            posY: 0 
-        };
-
-        try {
-            const response = await fetch('/assets/actualizar-datos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                // Feedback visual: eliminar del almacén
-                document.getElementById('icono-' + tag)?.remove();
-                document.getElementById('fila-' + tag)?.remove();
-                alert(`Equipo ${tag} trasladado correctamente.`);
-            } else {
-                alert("Error al procesar el traslado en el servidor.");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Error de conexión al trasladar equipo.");
-        }
-    }
-
-    // --- FUNCIONALIDADES EXISTENTES MANTENIDAS ---
-
-    function exportarAlmacen() {
-        const headers = ["Asset Tag", "Tipo", "Usuario", "RAM", "CPU", "Disco", "S.O.", "Otros", "Planta", "Pos_X", "Pos_Y"];
-        const filas = document.querySelectorAll('#vista-almacen tbody tr');
-        let csvContent = "\uFEFF"; 
-        csvContent += headers.join(";") + "\n";
-
-        filas.forEach(fila => {
-            const cels = fila.querySelectorAll('td');
-            if (cels.length > 0) {
-                const datosFila = [
-                    cels[0].innerText.trim(), cels[1].innerText.trim(), cels[2].innerText.trim(),
-                    cels[3].innerText.trim(), cels[4].innerText.trim(), cels[5].innerText.trim(),
-                    cels[6].innerText.trim(), cels[8].innerText.trim(), cels[7].innerText.trim(),
-                    cels[9].innerText.trim().split('/')[0].trim(),
-                    cels[9].innerText.trim().split('/')[1].trim()
-                ];
-                const filaLimpia = datosFila.map(texto => `"${texto.replace(/"/g, '""')}"`);
-                csvContent += filaLimpia.join(";") + "\n";
-            }
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `inventario_almacen_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-
-    function mostrarSeccion(id) {
-        document.querySelectorAll('.map-area > div').forEach(div => div.classList.add('seccion-oculta'));
-        const target = document.getElementById(id);
-        if(target) {
-            target.classList.remove('seccion-oculta');
-            if(id === 'vista-almacen') initInteract();
-        }
-    }
-
-    function resaltarFila(tag, activar) {
-        const fila = document.getElementById('fila-' + tag);
-        if (fila) {
-            if (activar) fila.classList.add('fila-resaltada');
-            else fila.classList.remove('fila-resaltada');
-        }
-    }
-
-    function manejarClickIcono(el, ev) {
-        ev.stopPropagation();
-        const tag = el.getAttribute('data-tag');
-        const fila = document.getElementById('fila-' + tag);
-        if(fila) {
-            fila.classList.add('fila-resaltada');
-            fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => fila.classList.remove('fila-resaltada'), 2500);
-        }
-    }
-
-    async function enviarFormularioEdit() {
-        const formData = new FormData(document.getElementById('formEditAsset'));
-        const payload = Object.fromEntries(formData.entries());
-        
-        try {
-            const response = await fetch('/assets/actualizar-datos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                const plantaIdDestino = document.getElementById('inputPlanta').value;
-                if (plantaIdDestino == "8") {
-                    window.location.href = "/?seccion=vista-almacen";
-                } else {
-                    window.location.href = "/?plantaId=" + plantaIdDestino + "&seccion=vista-plano";
-                }
-            } else {
-                alert("Error al actualizar los datos.");
-            }
-        } catch (error) {
-            alert("Hubo un error de conexión.");
-        }
-    }
-    
-    async function confirmarEliminarAsset(tag) {
-        if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el equipo ${tag}?`)) {
-            try {
-                // Asumiendo que tienes un endpoint para eliminar por Asset Tag
-                const response = await fetch(`/assets/eliminar/${tag}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    // 1. Eliminar el icono del mapa
-                    const icono = document.getElementById('icono-' + tag);
-                    if (icono) icono.remove();
-
-                    // 2. Eliminar la fila de la tabla con una pequeña animación
-                    const fila = document.getElementById('fila-' + tag);
-                    if (fila) {
-                        fila.style.transition = "all 0.4s ease";
-                        fila.style.backgroundColor = "#ffcdd2"; // Rojo suave antes de borrar
-                        setTimeout(() => fila.remove(), 400);
-                    }
-                    
-                    alert(`Equipo ${tag} eliminado con éxito.`);
-                } else {
-                    alert("Error al intentar eliminar el equipo en el servidor.");
-                }
-            } catch (error) {
-                console.error("Error al eliminar:", error);
-                alert("Hubo un error de conexión al intentar eliminar.");
-            }
-        }
-    }
-
-    function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
-        document.getElementById('tagDisplay').innerText = tag;
-        document.getElementById('inputAssetTag').value = tag;
-        document.getElementById('inputUsuario').value = user || '';
-        document.getElementById('inputRam').value = ram || '';
-        document.getElementById('inputCpu').value = cpu || '';
-        document.getElementById('inputDisco').value = disco || '';
-        document.getElementById('inputSo').value = so || '';
-        document.getElementById('inputOtros').value = otros || '';
-        document.getElementById('inputPlanta').value = plantaId;
-        
-        const selectorTipo = document.getElementById('inputTipo');
-        if (selectorTipo) {
-            selectorTipo.value = (tipo && typeof tipo === 'string') ? tipo.toLowerCase().trim() : 'pc';
-        }
-
-        if (modalInstancia) modalInstancia.show();
-    }
-
-    async function guardarTodoAlmacen() {
-        const movimientos = Array.from(document.querySelectorAll('.drag-item')).map(i => ({
-            assetTag: i.getAttribute('data-tag'),
-            posX: Math.round(parseFloat(i.getAttribute('data-x')) || 0),
-            posY: Math.round(parseFloat(i.getAttribute('data-y')) || 0)
-        }));
-        const res = await fetch('/assets/actualizar-posiciones', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(movimientos)
-        });
-        if(res.ok) alert("Posiciones del almacén guardadas.");
-    }
-
-    function seleccionarPlanta(id) { 
-        window.location.href = "/?plantaId=" + id + "&seccion=vista-plano"; 
-    }
-    
-    let ordenAscendente = true;
-    let ultimaColumna = -1;
-
-    function ordenarTabla(n) {
-        const table = document.querySelector(".table-almacen-compacta");
-        const tbody = table.querySelector("tbody");
-        const filas = Array.from(tbody.querySelectorAll("tr"));
-        
-        // Cambiar dirección de orden si se pulsa la misma columna
-        if (ultimaColumna === n) {
-            ordenAscendente = !ordenAscendente;
-        } else {
-            ordenAscendente = true;
-            ultimaColumna = n;
-        }
-
-        // Lógica de comparación
-        const factor = ordenAscendente ? 1 : -1;
-        
-        filas.sort((a, b) => {
-            let valA = a.cells[n].innerText.trim().toLowerCase();
-            let valB = b.cells[n].innerText.trim().toLowerCase();
-
-            // Intentar comparar como números si aplica (ej: RAM o coordenadas)
-            let numA = parseFloat(valA);
-            let numB = parseFloat(valB);
+        window.onload = function() {
+            // Inicializar Modal de Bootstrap
+            const modalElement = document.getElementById('modalEditAsset');
+            if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
             
-            if (!isNaN(numA) && !isNaN(numB)) {
-                return (numA - numB) * factor;
-            }
-
-            // Comparación de texto estándar
-            return valA.localeCompare(valB) * factor;
-        });
-
-        // Reinsertar filas ordenadas
-        filas.forEach(fila => tbody.appendChild(fila));
-
-        // Actualizar iconos visuales (opcional pero recomendado)
-        actualizarIconosOrden(n, ordenAscendente);
-    }
-
-    function actualizarIconosOrden(columnaActiva, esAsc) {
-        const iconos = document.querySelectorAll(".sort-icon");
-        iconos.forEach((icon, index) => {
-            if (index === columnaActiva) {
-                icon.innerText = esAsc ? "▲" : "▼";
-                icon.style.opacity = "1";
-            } else {
-                icon.innerText = "↕";
-                icon.style.opacity = "0.3";
-            }
-        });
-    }
-</script>
+            // Determinar sección inicial desde URL
+            const params = new URLSearchParams(window.location.search);
+            const seccionInicial = params.get('seccion') || 'vista-plano';
+            mostrarSeccion(seccionInicial);
+        };
+    </script>
 </body>
 </html>
