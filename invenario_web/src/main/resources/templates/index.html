@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - Panel Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <style>
+        body, html { height: 100%; margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; }
+        .main-wrapper { display: flex; height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 12%; min-width: 190px; background-color: #1a3d1a; 
+            color: white; padding: 20px 15px; display: flex; flex-direction: column; border-right: 2px solid #2e7d32;
+            z-index: 100;
+        }
+        .nav-link { 
+            color: white !important; padding: 12px 8px; border-radius: 8px; 
+            display: flex; align-items: center; text-decoration: none; 
+            cursor: pointer; transition: 0.2s; 
+        }
+        .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .menu-icon { width: 28px; height: 28px; margin-right: 12px; object-fit: contain; }
+        .submenu-icon { width: 20px; height: 20px; margin-right: 10px; border-radius: 3px; object-fit: cover; }
+
+        /* PANEL DERECHO */
+        .map-area { width: 88%; position: relative; flex-grow: 1; height: 100vh; }
+        .seccion-oculta { display: none !important; }
+        
+        /* ALMACÉN */
+        .almacen-wrapper { display: flex; flex-direction: column; height: 100vh; gap: 10px; padding: 20px; box-sizing: border-box; }
+        .zona-arrastre-almacen {
+            height: 50vh; background-color: white; border: 2px dashed #6c757d; position: relative; border-radius: 10px;
+            background-image: radial-gradient(#ccc 1px, transparent 1px), url('/imagenes/almacen.png');
+            background-position: center, center; background-repeat: repeat, no-repeat; background-size: 25px 25px, 150px 150px;
+            overflow: hidden; touch-action: none;
+        }
+        .texto-fondo-almacen {
+            position: absolute; bottom: 15px; width: 100%; text-align: center;
+            color: #6c757d; font-weight: bold; opacity: 0.6; pointer-events: none; text-transform: uppercase;
+        }
+
+        /* ICONOS EQUIPOS */
+        .pc-almacen-icon { 
+            position: absolute; width: 60px; display: flex; flex-direction: column; 
+            align-items: center; z-index: 20; cursor: move; touch-action: none;
+            user-select: none;
+        }
+        .pc-almacen-icon img { width: 45px; height: 45px; pointer-events: none; }
+        .pc-almacen-icon span { font-size: 10px; background: #333; color: white; padding: 1px 5px; border-radius: 3px; margin-top: 2px; font-weight: bold; }
+
+        /* TOOLTIP EXTENDIDO */
+        .pc-almacen-icon .tooltip-datos {
+            visibility: hidden; width: 260px; background-color: rgba(0, 0, 0, 0.95); color: #fff;
+            padding: 12px; position: absolute; z-index: 1001; bottom: 125%; left: 50%;
+            transform: translateX(-50%); border-radius: 8px; opacity: 0; transition: 0.3s; pointer-events: none;
+            border: 1px solid #2e7d32; font-size: 0.85rem; line-height: 1.4;
+        }
+        .pc-almacen-icon:hover .tooltip-datos { visibility: visible; opacity: 1; }
+        .tooltip-datos hr { border-color: #444; margin: 8px 0; }
+        .label-tt { color: #81c784; font-weight: bold; }
+
+        /* TABLAS Y AJUSTES */
+        .iframe-container { width: 100%; height: 100%; border: none; }
+        .scroll-container { flex: 1; background: white; border-radius: 10px; border: 1px solid #ddd; overflow: auto; }
+        
+        /* ESTILO RESALTADO VERDE PASTEL */
+        .fila-resaltada { 
+            background-color: #e8f5e9 !important; /* Verde pastel muy suave */
+            box-shadow: inset 0 0 0 2px #a5d6a7; /* Borde interno para destacar */
+            transition: background-color 0.2s ease;
+        }
+
+        .img-preview-table { width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+        .sidebar-footer { margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <div class="mb-4 text-center"><h5>Inventario</h5><small>Dt Salud Málaga</small></div>
+            <hr>
+            <nav class="nav flex-column mb-4">
+                <a class="nav-link mb-2" onclick="mostrarSeccion('vista-plano')">Panel de Control</a>
+                
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <img th:src="@{/imagenes/tuerca.png}" class="menu-icon"> Gestión
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" onclick="mostrarSeccion('vista-gestion-plantas')">
+                            <img th:src="@{/imagenes/plano.png}" class="submenu-icon"> Plantas</a></li>
+                        <li><a class="dropdown-item" onclick="mostrarSeccion('vista-datos-completos')">
+                            <img th:src="@{/imagenes/datos.png}" class="submenu-icon"> Datos</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown mt-4">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <img th:src="@{/imagenes/Vista.png}" class="menu-icon"> Vista
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li th:each="p : ${plantas}" th:if="${p.id != 8 and p.nombre != 'ALMACEN'}">
+                            <a class="dropdown-item" th:onclick="'seleccionarPlanta(' + ${p.id} + ')'">
+                                <img th:src="@{'/planos-file/' + ${p.imagenNombre}}" class="submenu-icon">
+                                <span th:text="${p.nombre}"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a class="nav-link mb-2" onclick="mostrarSeccion('vista-almacen')">
+                    <img th:src="@{/imagenes/almacen.png}" class="menu-icon"> Almacén
+                </a>
+                <a th:href="@{/login}" class="nav-link text-danger">
+                    <img th:src="@{/imagenes/cerrar-sesion.png}" class="menu-icon"> Salir
+                </a>
+            </div>
+        </div>
+
+        <div class="map-area">
+            
+            <div id="vista-almacen" class="h-100 seccion-oculta">
+                <div class="almacen-wrapper">
+                    <div class="card shadow">
+                        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Control de Almacén</h5>
+                            <button class="btn btn-dark btn-sm" onclick="guardarTodoAlmacen()">GUARDAR POSICIONES</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="zona-arrastre-almacen" id="contenedor-almacen">
+                                <div class="texto-fondo-almacen">Zona de Almacenamiento</div>
+                                <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 8}"
+                                     class="pc-almacen-icon drag-item" 
+                                     th:id="'icono-' + ${asset.assetTag}"
+                                     th:data-tag="${asset.assetTag}"
+                                     th:data-x="${asset.posX}" 
+                                     th:data-y="${asset.posY}"
+                                     th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'"
+                                     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
+                                     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
+                                     onclick="manejarClickIcono(this, event)">
+                                    
+                                    <img th:src="@{/imagenes/ordenador-sobremesa.png}">
+                                    <span th:text="${asset.assetTag}"></span>
+
+                                    <div class="tooltip-datos shadow">
+                                        <div class="text-center fw-bold text-warning mb-1">DETALLES TÉCNICOS</div>
+                                        <div><span class="label-tt">Tag:</span> <span th:text="${asset.assetTag}"></span></div>
+                                        <div><span class="label-tt">User:</span> <span th:text="${asset.nombreUsuario}"></span></div>
+                                        <hr>
+                                        <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
+                                        <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
+                                        <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
+                                        <div><span class="label-tt">SO:</span> <span th:text="${asset.versionSo}"></span></div>
+                                        <div><span class="label-tt">Otros:</span> <span th:text="${asset.otros}"></span></div>
+                                        <hr>
+                                        <div><span class="label-tt">Pos X:</span> <span class="tt-pos-x" th:text="${asset.posX}"></span></div>
+                                        <div><span class="label-tt">Pos Y:</span> <span class="tt-pos-y" th:text="${asset.posY}"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scroll-container shadow">
+                        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.9rem;">
+                            <thead class="table-dark">
+                                <tr><th>Tag</th><th>Usuario</th><th>RAM</th><th>CPU</th><th>Disco</th><th>Otros</th><th>Planta</th><th>X/Y</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 8}" th:id="'fila-' + ${asset.assetTag}">
+                                    <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
+                                    <td th:text="${asset.nombreUsuario}"></td>
+                                    <td th:text="${asset.ram}"></td>
+                                    <td th:text="${asset.cpu}"></td>
+                                    <td th:text="${asset.disco}"></td>
+                                    <td th:text="${asset.otros}"></td>
+                                    <td th:text="${asset.planta.nombre}"></td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> / 
+                                            <span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm" 
+                                            th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]])">
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vista-gestion-plantas" class="p-4 h-100 seccion-oculta" style="overflow-y: auto;">
+                <h4 class="mb-4">Configuración de Plantas</h4>
+                <div class="bg-white p-4 rounded shadow-sm mb-4 border">
+                    <h6>Crear Nueva Planta</h6>
+                    <form th:action="@{/plantas/guardar}" method="post" enctype="multipart/form-data" class="row g-3">
+                        <div class="col-md-5"><input type="text" name="nombre" class="form-control" placeholder="Nombre de Planta" required></div>
+                        <div class="col-md-5"><input type="file" name="file" class="form-control" accept="image/*" required></div>
+                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Crear</button></div>
+                    </form>
+                </div>
+                <div class="bg-white p-3 rounded shadow-sm border">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr><th>ID</th><th>Miniatura</th><th>Nombre</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${plantas}" th:if="${p.id != 8 and p.nombre != 'ALMACEN'}">
+                                <td th:text="${p.id}"></td>
+                                <td><img th:src="@{'/planos-file/' + ${p.imagenNombre}}" class="img-preview-table"></td>
+                                <td th:text="${p.nombre}"></td>
+                                <td>
+                                    <form th:action="@{/plantas/actualizar-imagen}" method="post" enctype="multipart/form-data" class="d-inline-flex gap-2">
+                                        <input type="hidden" name="id" th:value="${p.id}">
+                                        <input type="file" name="file" class="form-control form-control-sm" required>
+                                        <button type="submit" class="btn btn-sm btn-info text-white">Subir</button>
+                                    </form>
+                                    <a th:href="@{'/plantas/eliminar/' + ${p.id}}" class="btn btn-sm btn-outline-danger ms-2" onclick="return confirm('¿Borrar planta?')">Eliminar</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="vista-datos-completos" class="h-100 seccion-oculta">
+                <iframe th:src="${urlExterna}" class="iframe-container"></iframe>
+            </div>
+
+            <div id="vista-plano" class="h-100 seccion-oculta">
+                <div th:if="${plantaSeleccionada != null}" 
+                     th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
+                    <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
+                         class="pc-almacen-icon" th:style="'transform: translate(' + ${asset.posX} + 'px, ' + ${asset.posY} + 'px);'">
+                        <img th:src="@{/imagenes/ordenador-sobremesa.png}">
+                        <span th:text="${asset.assetTag}"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditAsset" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Editar Activo: <span id="tagDisplay"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditAsset">
+                        <input type="hidden" id="inputAssetTag" name="assetTag">
+                        <div class="mb-3"><label class="form-label">Usuario</label><input type="text" class="form-control" id="inputUsuario" name="nombreUsuario"></div>
+                        <div class="row mb-3">
+                            <div class="col-6"><label class="form-label">RAM</label><input type="text" class="form-control" id="inputRam" name="ram"></div>
+                            <div class="col-6"><label class="form-label">CPU</label><input type="text" class="form-control" id="inputCpu" name="cpu"></div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6"><label class="form-label">Disco</label><input type="text" class="form-control" id="inputDisco" name="disco"></div>
+                            <div class="col-6"><label class="form-label">S.O.</label><input type="text" class="form-control" id="inputSo" name="versionSo"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Planta</label>
+                            <select class="form-select" id="inputPlanta" name="plantaId">
+                                <option th:each="p : ${plantas}" th:value="${p.id}" th:text="${p.nombre}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Otros</label><textarea class="form-control" id="inputOtros" name="otros" rows="2"></textarea></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success" onclick="enviarFormularioEdit()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        let modalInstancia = null;
+
+        window.onload = function() {
+            const modalElement = document.getElementById('modalEditAsset');
+            if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
+            const params = new URLSearchParams(window.location.search);
+            const seccion = params.get('seccion') || 'vista-plano';
+            mostrarSeccion(seccion);
+        };
+
+        function mostrarSeccion(id) {
+            document.querySelectorAll('.map-area > div').forEach(div => div.classList.add('seccion-oculta'));
+            const target = document.getElementById(id);
+            if(target) {
+                target.classList.remove('seccion-oculta');
+                if(id === 'vista-almacen') initInteract();
+            }
+        }
+
+        // --- FUNCIONALIDAD DE RESALTADO ---
+        function resaltarFila(tag, activar) {
+            const fila = document.getElementById('fila-' + tag);
+            if (fila) {
+                if (activar) {
+                    fila.classList.add('fila-resaltada');
+                    // Opcional: Desplazar la tabla automáticamente hacia la fila resaltada si no es visible
+                    // fila.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    fila.classList.remove('fila-resaltada');
+                }
+            }
+        }
+
+        function initInteract() {
+            if (!document.querySelector('.drag-item')) return;
+            interact('.drag-item').draggable({
+                inertia: true,
+                modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })],
+                listeners: {
+                    start(event) {
+                        const tag = event.target.getAttribute('data-tag');
+                        resaltarFila(tag, true); // Activa el verde al empezar a arrastrar
+                    },
+                    move(event) {
+                        const target = event.target;
+                        const tag = target.getAttribute('data-tag');
+                        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                        
+                        target.style.transform = `translate(${x}px, ${y}px)`;
+                        target.setAttribute('data-x', x);
+                        target.setAttribute('data-y', y);
+                        
+                        // Actualizar coordenadas en Tooltip y Tabla
+                        const ttX = target.querySelector('.tt-pos-x');
+                        const ttY = target.querySelector('.tt-pos-y');
+                        if(ttX) ttX.innerText = Math.round(x);
+                        if(ttY) ttY.innerText = Math.round(y);
+                        
+                        const tableX = document.getElementById('table-x-' + tag);
+                        const tableY = document.getElementById('table-y-' + tag);
+                        if(tableX) tableX.innerText = Math.round(x);
+                        if(tableY) tableY.innerText = Math.round(y);
+                    },
+                    end(event) {
+                        const tag = event.target.getAttribute('data-tag');
+                        // Solo quitamos el resaltado si el ratón NO está encima del icono 
+                        // (esto evita parpadeos al soltar el drag)
+                        resaltarFila(tag, false);
+                    }
+                }
+            });
+        }
+
+        function manejarClickIcono(el, ev) {
+            ev.stopPropagation();
+            const tag = el.getAttribute('data-tag');
+            // Al hacer click, limpiamos otros resaltados y hacemos scroll a la fila
+            document.querySelectorAll('tr').forEach(tr => tr.classList.remove('fila-resaltada'));
+            const fila = document.getElementById('fila-' + tag);
+            if(fila) {
+                fila.classList.add('fila-resaltada');
+                fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        async function enviarFormularioEdit() {
+            const formData = new FormData(document.getElementById('formEditAsset'));
+            const payload = Object.fromEntries(formData.entries());
+            try {
+                const response = await fetch('/assets/actualizar-datos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) window.location.href = "/?seccion=vista-almacen";
+            } catch (e) { console.error(e); }
+        }
+
+        function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId) {
+            document.getElementById('tagDisplay').innerText = tag;
+            document.getElementById('inputAssetTag').value = tag;
+            document.getElementById('inputUsuario').value = (user && user !== 'null') ? user : '';
+            document.getElementById('inputRam').value = (ram && ram !== 'null') ? ram : '';
+            document.getElementById('inputCpu').value = (cpu && cpu !== 'null') ? cpu : '';
+            document.getElementById('inputDisco').value = (disco && disco !== 'null') ? disco : '';
+            document.getElementById('inputSo').value = (so && so !== 'null') ? so : '';
+            document.getElementById('inputOtros').value = (otros && otros !== 'null') ? otros : '';
+            document.getElementById('inputPlanta').value = plantaId;
+            if(modalInstancia) modalInstancia.show();
+        }
+
+        async function guardarTodoAlmacen() {
+            const movimientos = Array.from(document.querySelectorAll('.drag-item')).map(i => ({
+                assetTag: i.getAttribute('data-tag'),
+                posX: Math.round(parseFloat(i.getAttribute('data-x')) || 0),
+                posY: Math.round(parseFloat(i.getAttribute('data-y')) || 0)
+            }));
+            const res = await fetch('/assets/actualizar-posiciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(movimientos)
+            });
+            if(res.ok) alert("Posiciones guardadas.");
+        }
+
+        function seleccionarPlanta(id) { 
+            window.location.href = "/?plantaId=" + id + "&seccion=vista-plano"; 
+        }
+    </script>
+</body>
+</html>
