@@ -39,6 +39,9 @@ public class Asset {
     @JoinColumn(name = "planta_id", referencedColumnName = "id")
     @JsonBackReference // <--- EVITA EL BUCLE INFINITO (Lado hijo)
     private Planta planta;
+    
+    @Column(name = "tipo_equipo") // Asegúrate que el nombre coincida con la columna en SQL
+    private String tipoEquipo;
 
     public Asset() {}
 
@@ -67,4 +70,11 @@ public class Asset {
     public void setPosY(Integer posY) { this.posY = posY; }
     public Planta getPlanta() { return planta; }
     public void setPlanta(Planta planta) { this.planta = planta; }
+    public String getTipoEquipo() {
+        return tipoEquipo;
+    }
+
+    public void setTipoEquipo(String tipoEquipo) {
+        this.tipoEquipo = tipoEquipo;
+    }
 }
