@@ -75,6 +75,7 @@ function resaltarIcono(tag, activo) {
 }
 
 function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
+    // 1. Rellenar los campos básicos del formulario
     document.getElementById('tagDisplay').innerText = tag;
     document.getElementById('inputAssetTag').value = tag;
     document.getElementById('inputUsuario').value = user || '';
@@ -84,8 +85,30 @@ function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo)
     document.getElementById('inputSo').value = so || '';
     document.getElementById('inputOtros').value = otros || '';
     document.getElementById('inputPlanta').value = plantaId;
+
+    // 2. Ajustar el selector de tipo de equipo
     const selectorTipo = document.getElementById('inputTipo');
-    if (selectorTipo) selectorTipo.value = (tipo && typeof tipo === 'string') ? tipo.toLowerCase().trim() : 'pc';
+    if (selectorTipo) {
+        selectorTipo.value = (tipo && typeof tipo === 'string') ? tipo.toLowerCase().trim() : 'pc';
+    }
+
+    // --- 3. LÓGICA DE PRESERVACIÓN DE COORDENADAS ---
+    // Buscamos el icono en el plano para obtener sus coordenadas actuales
+    const iconoElemento = document.getElementById('icono-' + tag);
+    const formulario = document.getElementById('formEditAsset');
+
+    if (iconoElemento && formulario) {
+        // Extraemos las coordenadas de los atributos data-x y data-y que maneja interact.js
+        const currentX = iconoElemento.getAttribute('data-x') || 0;
+        const currentY = iconoElemento.getAttribute('data-y') || 0;
+
+        // Almacenamos estas coordenadas temporalmente en el formulario
+        // para que enviarFormularioEdit() las pueda recoger
+        formulario.setAttribute('data-temp-x', currentX);
+        formulario.setAttribute('data-temp-y', currentY);
+    }
+
+    // 4. Mostrar el modal
     if (modalInstancia) modalInstancia.show();
 }
 

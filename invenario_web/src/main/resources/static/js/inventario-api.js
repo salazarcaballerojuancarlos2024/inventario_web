@@ -25,15 +25,30 @@ async function moverAssetAPlanta(tag, plantaId) {
 
 async function enviarFormularioEdit() {
     const formElement = document.getElementById('formEditAsset');
+    if (!formElement) return;
+
     const formData = new FormData(formElement);
     const payload = Object.fromEntries(formData.entries());
-    const iconoActual = document.getElementById('icono-' + payload.assetTag);
-    
-    if (iconoActual) {
-        const x = parseFloat(iconoActual.getAttribute('data-x')) || 0;
-        const y = parseFloat(iconoActual.getAttribute('data-y')) || 0;
-        payload.posX = Math.round(x);
-        payload.posY = Math.round(y);
+
+    // --- LÓGICA DE COORDENADAS REGENERADA ---
+    // Recuperamos las coordenadas que guardamos en abrirModalUpdate
+    // Esto asegura que se mantengan aunque cambiemos el icono o la planta
+    const tempX = formElement.getAttribute('data-temp-x');
+    const tempY = formElement.getAttribute('data-temp-y');
+
+    if (tempX !== null && tempY !== null) {
+        payload.posX = Math.round(parseFloat(tempX));
+        payload.posY = Math.round(parseFloat(tempY));
+    } else {
+        // Fallback: si por algún motivo no están en el form, intentar leer del icono
+        const iconoActual = document.getElementById('icono-' + payload.assetTag);
+        if (iconoActual) {
+            payload.posX = Math.round(parseFloat(iconoActual.getAttribute('data-x')) || 0);
+            payload.posY = Math.round(parseFloat(iconoActual.getAttribute('data-y')) || 0);
+        } else {
+            payload.posX = 0;
+            payload.posY = 0;
+        }
     }
 
     try {
@@ -44,11 +59,26 @@ async function enviarFormularioEdit() {
         });
 
         if (response.ok) {
-            if (typeof modalInstancia !== 'undefined' && modalInstancia) modalInstancia.hide();
-            const pId = document.getElementById('inputPlanta').value;
-            window.location.href = (pId === "1") ? "/?seccion=vista-almacen" : "/?plantaId=" + pId + "&seccion=vista-plano";
+            if (typeof modalInstancia !== 'undefined' && modalInstancia) {
+                modalInstancia.hide();
+            }
+
+            // Redirección inteligente manteniendo la posición
+            const pId = payload.plantaId; // Usamos el dato del payload directamente
+            
+            if (pId === "1") {
+                window.location.href = "/?seccion=vista-almacen";
+            } else {
+                // Forzamos la carga de la planta específica para ver el nuevo icono
+                window.location.href = "/?plantaId=" + pId + "&seccion=vista-plano";
+            }
+        } else {
+            console.error("Error en la respuesta del servidor");
+            alert("No se pudo actualizar el equipo. Verifique los datos.");
         }
-    } catch (error) { console.error("Error crítico:", error); }
+    } catch (error) {
+        console.error("Error crítico al enviar formulario:", error);
+    }
 }
 
 async function confirmarEliminarAsset(tag) {

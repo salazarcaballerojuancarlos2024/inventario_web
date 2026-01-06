@@ -18,14 +18,14 @@ import java.util.Map;
 public class AssetController {
 
     @Autowired
-    private AssetService assetService; // Usamos el Service en lugar del Repo directamente
+    private AssetService assetService;
 
     @Autowired
     private PlantaRepository plantaRepository;
 
     /**
      * 1. ACTUALIZAR DATOS
-     * Maneja el modal de edición y los cambios de planta vía Dropzone.
+     * Maneja el modal de edición y cambios de equipo.
      */
     @PostMapping("/actualizar-datos")
     public ResponseEntity<?> actualizarAsset(@RequestBody Map<String, Object> payload) {
@@ -34,7 +34,7 @@ public class AssetController {
             Asset assetExistente = assetService.findByAssetTag(tag);
             
             if (assetExistente != null) {
-                // Actualización de campos de texto
+                // Actualización de campos de texto básicos
                 if (payload.containsKey("nombreUsuario")) assetExistente.setNombreUsuario((String) payload.get("nombreUsuario"));
                 if (payload.containsKey("ram")) assetExistente.setRam((String) payload.get("ram"));
                 if (payload.containsKey("cpu")) assetExistente.setCpu((String) payload.get("cpu"));
@@ -47,17 +47,31 @@ public class AssetController {
                     assetExistente.setTipoEquipo((String) payload.get("tipoEquipo"));
                 }
                 
-                // Cambio de Planta
+                // --- LÓGICA DE COORDENADAS Y PLANTA MEJORADA ---
                 if (payload.containsKey("plantaId")) {
                     Object plantaObj = payload.get("plantaId");
                     if (plantaObj != null && !plantaObj.toString().isEmpty()) {
-                        Long plantaId = Long.parseLong(plantaObj.toString());
-                        Planta nuevaPlanta = plantaRepository.findById(plantaId).orElse(null);
-                        if (nuevaPlanta != null) {
-                            assetExistente.setPlanta(nuevaPlanta);
-                            // Si se mueve a otra planta, reseteamos coordenadas para que no aparezca "fuera" del plano
-                            assetExistente.setPosX(0);
-                            assetExistente.setPosY(0);
+                        Long nuevaPlantaId = Long.parseLong(plantaObj.toString());
+                        
+                        // Solo si la planta es diferente a la actual, reseteamos a 0,0
+                        // O si el frontend envía coordenadas específicas (nuestro nuevo caso), las usamos
+                        if (assetExistente.getPlanta() == null || !assetExistente.getPlanta().getId().equals(nuevaPlantaId)) {
+                            Planta nuevaPlanta = plantaRepository.findById(nuevaPlantaId).orElse(null);
+                            if (nuevaPlanta != null) {
+                                assetExistente.setPlanta(nuevaPlanta);
+                                // Si cambia de planta real, va al origen (o centro)
+                                assetExistente.setPosX(0);
+                                assetExistente.setPosY(0);
+                            }
+                        } else {
+                            // SI LA PLANTA ES LA MISMA:
+                            // Buscamos si el payload trae coordenadas (enviadas por nuestro nuevo JS)
+                            if (payload.containsKey("posX")) {
+                                assetExistente.setPosX(((Number) payload.get("posX")).intValue());
+                            }
+                            if (payload.containsKey("posY")) {
+                                assetExistente.setPosY(((Number) payload.get("posY")).intValue());
+                            }
                         }
                     }
                 }
@@ -73,8 +87,7 @@ public class AssetController {
     }
 
     /**
-     * ACTUALIZAR POSICIONES (Sincronización)
-     * Soporta tanto movimientos individuales como masivos.
+     * 2. ACTUALIZAR POSICIONES (Sincronización por Drag & Drop masivo)
      */
     @PostMapping("/actualizar-posiciones")
     public ResponseEntity<?> actualizarPosiciones(@RequestBody List<Map<String, Object>> movimientos) {
@@ -90,21 +103,15 @@ public class AssetController {
                 if (tag == null) continue;
 
                 Asset asset = assetService.findByAssetTag(tag);
-                
                 if (asset != null) {
-                    // Usamos Number para evitar errores si el JSON envía decimales (float/double)
-                    if (mov.containsKey("posX")) {
-                        asset.setPosX(((Number) mov.get("posX")).intValue());
-                    }
-                    if (mov.containsKey("posY")) {
-                        asset.setPosY(((Number) mov.get("posY")).intValue());
-                    }
+                    if (mov.containsKey("posX")) asset.setPosX(((Number) mov.get("posX")).intValue());
+                    if (mov.containsKey("posY")) asset.setPosY(((Number) mov.get("posY")).intValue());
                     assetsParaGuardar.add(asset);
                 }
             }
             
             assetService.guardarTodos(assetsParaGuardar);
-            return ResponseEntity.ok(Map.of("mensaje", "Se han actualizado " + assetsParaGuardar.size() + " activos"));
+            return ResponseEntity.ok(Map.of("mensaje", "Posiciones actualizadas"));
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -113,8 +120,7 @@ public class AssetController {
     }
 
     /**
-     * 3. ELIMINAR ASSET (Botón '-' rojo)
-     * Borrado permanente desde la tabla de almacén.
+     * 3. ELIMINAR ASSET
      */
     @DeleteMapping("/eliminar/{tag}")
     public ResponseEntity<?> eliminarAsset(@PathVariable String tag) {
@@ -122,12 +128,11 @@ public class AssetController {
             Asset asset = assetService.findByAssetTag(tag);
             if (asset != null) {
                 assetService.eliminarAsset(tag);
-                return ResponseEntity.ok(Map.of("mensaje", "Asset " + tag + " eliminado correctamente"));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "El equipo no existe"));
+                return ResponseEntity.ok(Map.of("mensaje", "Asset " + tag + " eliminado"));
             }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No existe"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al eliminar el activo"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al eliminar"));
         }
     }
 }
