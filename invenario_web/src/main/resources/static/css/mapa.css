@@ -2,191 +2,91 @@
 
 /**
  * PROYECTO: Sistema de Gestión de Inventario
- * MÓDULO: Vista Mapa y Almacén
- * DESCRIPCIÓN: Control de layout 2 columnas, tooltips dinámicos y estados de arrastre.
+ * MÓDULO: Vista Mapa, Almacén y Bienvenida
+ * REVISIÓN: 2024 - Optimización Total
  */
 
 /* ==========================================================================
-   1. ESTRUCTURA GLOBAL (LAYOUT DE 2 COLUMNAS)
+   1. ESTRUCTURA GLOBAL Y PANTALLA DE BIENVENIDA
    ========================================================================== */
 
-/* Contenedor principal para Almacén y Plantas */
-#vista-almacen, [id^="vista-planta-"] {
+#vista-almacen, [id^="vista-planta-"], #vista-plano, #vista-bienvenida {
     height: 100vh;
     width: 100%;
     overflow: hidden;
-    display: flex; /* Asegura el alineamiento horizontal de las 2 columnas */
 }
 
-/* COLUMNA DERECHA: Sidebar de Control y Zonas Drop */
-.sidebar-almacen-control, .sidebar-planta-control {
-    width: 240px;
-    flex-shrink: 0;
-    background-color: #1a1d21 !important; /* Gris oscuro profesional */
-    border-left: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-    padding: 1rem;
+/* Estilo específico para la Pantalla de Bienvenida */
+#vista-bienvenida {
+    display: flex; /* Se activará mediante JS */
+    background-color: #f8f9fa;
+    transition: opacity 0.5s ease-in-out;
 }
 
-/* COLUMNA IZQUIERDA: Contenedor de Área de Trabajo (Iconos + Tabla) */
-.columna-principal {
-    display: flex;
-    flex-direction: column;
+#vista-bienvenida .text-center {
+    opacity: 0.2;
+    user-select: none;
+    animation: fadeInWelcome 1.5s ease-out;
+}
+
+@keyframes fadeInWelcome {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 0.2; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   2. ZONAS DE ARRASTRE (MAPA Y ALMACÉN)
+   ========================================================================== */
+
+.map-area {
+    position: relative;
     flex-grow: 1;
     height: 100%;
     overflow: hidden;
 }
 
-/* ==========================================================================
-   2. REPARTO VERTICAL IZQUIERDO (75% / 25%)
-   ========================================================================== */
-
-/* ZONA SUPERIOR (75%): Mapa interactivo y Drag & Drop */
 .zona-arrastre-almacen, .zona-plano-planta {
     flex: 0 0 75% !important;
-    position: relative;
+    position: relative !important; /* VITAL: Punto (0,0) para coordenadas de iconos */
     background-color: #ffffff;
     background-image: radial-gradient(#cbd5e0 1px, transparent 1px);
     background-size: 30px 30px;
-    overflow: auto !important;
+    overflow: auto !important; /* Permite scroll si el plano es grande */
     border-bottom: 2px solid #dee2e6;
-    touch-action: none; /* Requerido para interact.js en dispositivos táctiles */
-}
-
-/* ZONA INFERIOR (25%): Tabla de datos técnicos */
-.scroll-container {
-    flex: 0 0 25% !important;
-    background-color: white;
-    overflow-y: auto; /* Scroll independiente para la tabla */
+    touch-action: none; 
 }
 
 /* ==========================================================================
-   3. SIDEBAR: ZONAS DE TRASLADO (DROPZONES)
+   3. ICONOS Y ARRASTRE (DRAG & DROP) - SOLUCIÓN YO-YO
    ========================================================================== */
 
-.planta-dropzone {
-    border: 2px dashed #444;
-    border-radius: 8px;
-    padding: 12px 8px;
-    margin-bottom: 10px;
-    background: #25282c;
-    color: #cbd5e0;
-    text-align: center;
-    transition: all 0.2s ease;
-    cursor: default;
+.drag-item {
+    position: absolute !important;
+    cursor: grab;
+    z-index: 50;
+    touch-action: none;
+    user-select: none;
+    
+    /* ELIMINADOS: top:0 y left:0 para que no interfieran con el transform inicial */
+    
+    /* BLINDAJE ANTI YO-YO: 
+       La transición debe ser nula para que el icono no intente "regresar" 
+       a su posición anterior mientras el JS calcula la nueva. */
+    transition: none !important;
+    -webkit-transition: none !important;
+    will-change: transform;
 }
 
-.dropzone-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #81d4fa; /* Azul claro identificativo */
-    text-transform: uppercase;
-}
-
-/* ESTADOS DE ARRASTRE (INTERACT.JS) */
-.drop-active {
-    border-color: #4299e1 !important;
-    box-shadow: inset 0 0 10px rgba(66, 153, 225, 0.2);
-}
-
-.drop-target {
-    background-color: #1b5e20 !important; /* Verde de éxito al sobrevolar */
-    border-color: #48bb78 !important;
-    border-style: solid !important;
-    transform: scale(1.02);
-}
-
-.drop-target .dropzone-label, 
-.drop-target small {
-    color: white !important;
+.drag-item.interact-dragging {
+    cursor: grabbing !important;
+    z-index: 9999 !important;
+    opacity: 0.9;
+    /* Refuerzo de anulación de transición durante el vuelo */
+    transition: none !important; 
 }
 
 /* ==========================================================================
-   4. TABLA DE DATOS TÉCNICOS (ALMACÉN)
-   ========================================================================== */
-
-.table-almacen-compacta {
-    width: 100%;
-    table-layout: fixed; /* Mantiene anchos de columna consistentes */
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.table-almacen-compacta th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #212529 !important;
-    color: #0dcaf0 !important; /* Cyan para mejor lectura en cabecera */
-    font-size: 0.65rem;
-    padding: 10px 5px !important;
-    text-transform: uppercase;
-    border-bottom: 2px solid #32383e;
-    cursor: pointer;
-}
-
-.table-almacen-compacta td {
-    font-size: 0.7rem;
-    padding: 6px 5px !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border-bottom: 1px solid #eee;
-}
-
-/* Feedback visual al pasar el ratón por el icono del mapa */
-.fila-resaltada {
-    background-color: rgba(13, 202, 240, 0.1) !important;
-}
-
-/* ==========================================================================
-   5. TOOLTIPS (FICHAS TÉCNICAS FLOTANTES)
-   ========================================================================== */
-
-.pc-icon { z-index: 10; cursor: move; }
-
-.tooltip-datos {
-    display: none; /* Se activa con el hover de .pc-icon */
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(33, 37, 41, 0.98);
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    min-width: 190px;
-    z-index: 1000;
-    border: 1px solid #444;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    pointer-events: none;
-}
-
-.pc-icon:hover .tooltip-datos { 
-    display: block; 
-}
-
-/* Estilo para las etiquetas (Labels) dentro del tooltip */
-.label-tt {
-    color: #0dcaf0; /* Cyan corporativo */
-    font-weight: bold;
-    margin-right: 5px;
-    display: inline-block;
-    min-width: 55px; /* Alineación uniforme de los dos puntos */
-}
-
-/* Ajuste para líneas de información en el tooltip */
-.tooltip-datos div {
-    padding: 1px 0;
-    line-height: 1.3;
-}
-
-/* ==========================================================================
-   6. MARCAS DE AGUA (IDENTIDAD VISUAL)
+   4. MARCAS DE AGUA Y ELEMENTOS DE FONDO
    ========================================================================== */
 
 .watermark-almacen {
@@ -198,50 +98,96 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    opacity: 0.05;
-    pointer-events: none;
-    user-select: none;
+    opacity: 0.05 !important;
+    pointer-events: none; /* Permite que los clics pasen a los iconos */
     z-index: 0;
-    text-align: center;
-    width: 100%;
+    user-select: none;
 }
 
 .watermark-almacen img {
-    width: 300px;
+    width: 250px;
     height: auto;
+    filter: grayscale(100%);
 }
 
 .watermark-almacen span {
     font-size: 5rem;
     font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 15px;
     color: #000;
+    letter-spacing: 15px;
+    text-transform: uppercase;
 }
 
 /* ==========================================================================
-   7. COMPONENTES DE ACCIÓN (BOTONES Y SCROLL)
+   5. SIDEBAR DE CONTROL (DERECHA)
    ========================================================================== */
 
-/* Scrollbars minimalistas estilo Dark Mode */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
-
-/**
- * BOTÓN ELIMINAR (Basado en btn-warning de Bootstrap)
- * Personalizado a Naranja Corporativo para acciones de borrado.
- */
-.btn-warning {
-    background-color: #ff9800 !important;
-    border-color: #f57c00 !important;
-    color: #ffffff !important;
-    font-weight: bold;
+.sidebar-almacen-control, .sidebar-planta-control {
+    width: 240px;
+    flex-shrink: 0;
+    background-color: #1a1d21 !important;
+    border-left: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    padding: 1rem;
+    color: white;
 }
 
-.btn-warning:hover {
-    background-color: #f57c00 !important;
-    border-color: #e65100 !important;
+.planta-dropzone {
+    border: 2px dashed #444;
+    border-radius: 8px;
+    padding: 15px 10px;
+    margin-bottom: 12px;
+    background: #25282c;
+    color: #888;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.planta-dropzone.drop-target {
+    background-color: #1b5e20 !important;
+    border-color: #48bb78 !important;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   6. AJUSTES FINALES (SCROLL Y TOOLTIPS)
+   ========================================================================== */
+
+.tooltip-datos {
+    display: none;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(33, 37, 41, 0.95);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    z-index: 1000;
+    pointer-events: none;
+    border: 1px solid #444;
+    white-space: nowrap;
+}
+
+.pc-icon:hover .tooltip-datos {
+    display: block;
+}
+
+/* Scrollbars finos para no romper el diseño */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
 }

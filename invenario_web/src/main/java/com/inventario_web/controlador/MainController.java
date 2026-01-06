@@ -38,18 +38,25 @@ public class MainController {
         if ("vista-almacen".equals(seccion)) {
             Planta almacen = plantaRepository.findById(1L).orElse(null);
             model.addAttribute("plantaSeleccionada", almacen);
-            model.addAttribute("assets", (almacen != null) ? almacen.getAssets() : List.of());
+            
+            // RECOMENDACIÓN: Si quieres ver TODOS los activos en el almacén, 
+            // usa assetService.obtenerTodosLosAssets() aquí.
+            // Si solo quieres los de la Planta 1, dejamos almacen.getAssets().
+            model.addAttribute("assets", assetService.obtenerTodosLosAssets());
         } 
-        // CASO 2: SECCIÓN DE PLANTA ESPECÍFICA
+        
+        // CASO 2: SECCIÓN DE PLANTA ESPECÍFICA (Mapa interactivo de planta)
         else if (plantaId != null) {
             Planta seleccionada = plantaRepository.findById(plantaId).orElse(null);
             model.addAttribute("plantaSeleccionada", seleccionada);
             model.addAttribute("assets", (seleccionada != null) ? seleccionada.getAssets() : List.of());
         } 
-        // CASO 3: PANEL PRINCIPAL (U otro estado inicial)
+        
+        // CASO 3: ESTADO INICIAL (BIENVENIDA)
         else {
             model.addAttribute("plantaSeleccionada", null);
-            model.addAttribute("assets", assetService.obtenerTodosLosAssets());
+            // LISTA VACÍA: Esto garantiza que la Pantalla de Bienvenida esté limpia
+            model.addAttribute("assets", List.of()); 
         }
 
         model.addAttribute("urlExterna", urlExterna);

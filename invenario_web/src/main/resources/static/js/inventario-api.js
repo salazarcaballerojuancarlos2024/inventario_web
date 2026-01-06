@@ -37,6 +37,22 @@ async function moverAssetAPlanta(tag, plantaId) {
         console.error("Error en traslado:", error); 
     }
 }
+/**
+ * Envía los datos del formulario al servidor vía Fetch API
+ */
+function actualizarAssetAPI(data) {
+    const url = CONFIG.endpoints.actualizarDatos;
+    console.log("🚀 Enviando a API:", url, data);
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }); // Devolvemos la promesa directa
+}
+
 
 /**
  * GESTIÓN DE FORMULARIO: Envía los datos editados en el modal

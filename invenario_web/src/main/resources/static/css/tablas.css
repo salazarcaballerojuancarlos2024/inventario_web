@@ -1,88 +1,95 @@
 @charset "UTF-8";
 
 /* ==========================================
-   1. TABLA DE ALMACÉN (ACTIVOS) - OPTIMIZADA
+   1. CONTENEDOR MAESTRO (SCROLL & LAYOUT)
    ========================================== */
 .scroll-container { 
     flex: 1; 
     background: white; 
     border-radius: 10px; 
     border: 1px solid #ddd; 
-    
-    /* El truco para un scroll fluido: */
     overflow-y: auto; 
     overflow-x: auto; 
-    
-    /* Mantenemos tu proporción, pero 30vh suele ser más cómodo */
+    /* Altura optimizada para dejar ver el mapa arriba */
     max-height: 28vh; 
-    
-    /* Asegura que el borde redondeado corte el contenido interno */
     display: block;
     position: relative;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
 }
 
+/* ==========================================
+   2. TABLA DE ALMACÉN (ACTIVOS) - OPTIMIZADA
+   ========================================== */
 .table-almacen-compacta { 
     font-size: 0.72rem !important; 
-    width: 100%; 
-    white-space: nowrap; 
-    /* IMPORTANTE: Evita que el borde de las celdas oculte el sticky */
+    width: 100% !important; 
+    /* table-layout: fixed es lo que permite que el texto NO se solape */
+    table-layout: fixed !important; 
     border-collapse: separate; 
     border-spacing: 0; 
 }
 
+/* Encabezados Fijos (Sticky) */
 .table-almacen-compacta th { 
     position: sticky; 
     top: 0; 
-    /* El z-index 10 es correcto para quedar sobre los iconos si fuera necesario */
-    z-index: 10; 
+    z-index: 20; /* Por encima de los iconos si se solapan */
     background-color: #212529 !important; 
-    color: white; 
-    padding: 8px 8px !important; /* Un poco más de aire para legibilidad */
+    color: #f8f9fa !important; 
+    padding: 10px 8px !important;
     text-transform: uppercase;
-    font-weight: 600;
-    /* Sombra sutil inferior para que el encabezado "flote" sobre los datos */
-    box-shadow: inset 0 -1px 0 #444, 0 2px 4px rgba(0,0,0,0.1);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: inset 0 -2px 0 #444;
+    /* Truncado de texto también en cabeceras si son muy largas */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+/**
+ * EL TRUCO DEL TRUNCADO (Puntos suspensivos ...)
+ * Para que esto funcione, 'max-width' debe ser 0 en combinación con el ellipsis
+ */
 .table-almacen-compacta td { 
-    padding: 5px 8px !important; 
-    border-bottom: 1px solid #eee; 
+    padding: 7px 8px !important; 
+    border-bottom: 1px solid #f0f0f0; 
     vertical-align: middle;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 0; 
+    color: #444;
 }
 
-/* Efecto Hover para facilitar el seguimiento de la línea */
+/* Definición estricta de anchos para evitar solapamientos */
+.table-almacen-compacta th:nth-child(1) { width: 85px; }   /* Tag */
+.table-almacen-compacta th:nth-child(2) { width: 70px; }   /* Tipo */
+.table-almacen-compacta th:nth-child(3) { width: 160px; }  /* Usuario (Más ancho) */
+.table-almacen-compacta th:nth-child(4) { width: 110px; }  /* Ubicación */
+.table-almacen-compacta th:nth-child(9) { width: 180px; }  /* Otros/Observaciones */
+.table-almacen-compacta th:last-child  { width: 120px; }  /* Acciones */
+
 .table-almacen-compacta tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: #f1f3f5;
+    cursor: default;
 }
 
-/* Tu clase de resaltado vinculada al JS */
+/* Resaltado de fila al hacer drag o click en icono */
 .fila-resaltada { 
     background-color: #e8f5e9 !important; 
-    /* El sombreado interior (inset) evita que la fila "baile" al activarse */
-    box-shadow: inset 0 0 0 2px #2e7d32 !important; 
-    transition: background-color 0.2s ease;
-}
-
-/* Personalización del scroll para que sea más fino (estilo moderno) */
-.scroll-container::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-.scroll-container::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-}
-.scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    box-shadow: inset 0 0 0 1px #2e7d32 !important; 
+    font-weight: 600;
 }
 
 /* ==========================================
-   2. TABLA DE GESTIÓN (PLANTAS) - ¡NUEVO!
+   3. TABLA DE GESTIÓN (PLANTAS)
    ========================================== */
 .gestion-tabla-container {
-    max-height: 50vh; /* Permite scroll si hay muchas plantas */
+    max-height: 60vh;
     overflow-y: auto;
-    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
 }
 
 .table-gestion-ultra {
@@ -95,95 +102,50 @@
     position: sticky;
     top: 0;
     background: #f8f9fa;
-    z-index: 5;
+    z-index: 10;
     border-bottom: 2px solid #dee2e6;
-    padding: 10px;
+    padding: 12px;
+    color: #333;
 }
 
-/* Miniatura controlada para los planos */
 .img-mini-gestion {
-    width: 100px !important;  /* Forzamos el tamaño pequeño */
-    height: 60px !important;
-    object-fit: cover;       /* Evita que la imagen se estire feo */
+    width: 110px !important;
+    height: 65px !important;
+    object-fit: cover;
     border-radius: 6px;
-    border: 1px solid #ccc;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.img-mini-gestion:hover {
-    transform: scale(1.1);
-    border-color: #2a9d8f;
-}
-
-/* Ajuste para que el formulario de subir archivo no ensanche la tabla */
-.table-gestion-ultra .input-group-sm {
-    max-width: 300px;
-}
-
-/* ==========================================
-   3. COMPONENTES COMUNES (ICONOS Y BOTONES)
-   ========================================== */
-.img-preview-table { 
-    width: 80px; 
-    height: 45px; 
-    object-fit: cover; 
-    border-radius: 4px; 
-    border: 1px solid #bbb; 
-    transition: all 0.3s ease-in-out; 
-    cursor: zoom-in; 
-    position: relative; 
-    z-index: 1;
-}
-
-.img-preview-table:hover { 
-    transform: scale(4); 
-    z-index: 1000; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-    border: 2px solid #2e7d32; 
-    transform-origin: center;
-}
-
-.sort-icon { 
-    font-size: 0.6rem; 
-    margin-left: 5px; 
-    opacity: 0.3; 
-    transition: opacity 0.2s; 
-}
-
-.btn-header-icon { 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    font-weight: bold; 
-    font-size: 0.85rem; 
-}
-
-.btn-header-icon img { 
-    width: 18px; 
-    height: 18px; 
-    filter: brightness(0) invert(1); 
-}
-
-/* Estilo uniforme para los botones de acción en la tabla */
-.btn-accion-tabla {
-    font-size: 0.65rem !important;
-    padding: 2px 8px !important;
-    min-width: 65px; /* Asegura que ambos botones tengan el mismo ancho */
-    height: 24px;
-    line-height: 1;
-    text-transform: none;
-    font-weight: 600;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: 2px solid #eee;
     transition: all 0.2s ease;
 }
 
-/* Efecto al pasar el ratón por el botón naranja para que no sea plano */
-.btn-warning.btn-accion-tabla:hover {
-    background-color: #f39c12 !important; /* Un naranja un poco más intenso */
-    border-color: #e67e22 !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+.img-mini-gestion:hover {
+    border-color: #2e7d32;
+    transform: scale(1.05);
 }
+
+/* ==========================================
+   4. COMPONENTES DE CELDA (BOTONES E ICONOS)
+   ========================================= */
+.btn-accion-tabla {
+    font-size: 0.65rem !important;
+    padding: 3px 10px !important;
+    min-width: 70px;
+    font-weight: 700;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.sort-icon { 
+    font-size: 0.7rem; 
+    margin-left: 4px; 
+    color: #0dcaf0;
+    opacity: 0.7; 
+}
+
+/* Scrollbar personalizado para Windows/Chrome */
+.scroll-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-container::-webkit-scrollbar-track { background: #f1f1f1; }
+.scroll-container::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
+.scroll-container::-webkit-scrollbar-thumb:hover { background: #999; }

@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-
+    
     <link rel="stylesheet" th:href="@{/css/layout.css(v=${version})}">
     <link rel="stylesheet" th:href="@{/css/sidebar.css(v=${version})}">
     <link rel="stylesheet" th:href="@{/css/mapa.css(v=${version})}">
@@ -18,415 +18,68 @@
 <body>
 
     <div class="main-wrapper">
-        <div class="sidebar shadow">
-            <div class="sidebar-header">
-                <h5 class="m-0 fw-bold">Inventario</h5>
-                <small class="opacity-75">Dt Salud Málaga</small>
-            </div>
-            
-            <div class="accordion accordion-sidebar" id="accordionMenu">
-                <div class="nav-direct" onclick="mostrarSeccion('vista-plano')">
-                    <img th:src="@{/imagenes/panel-de-control.png}" class="menu-icon" style="filter: brightness(0) invert(1);"> 
-                    <span>Panel de Control</span>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGestion">
-                            <img th:src="@{/imagenes/tuerca.png}" class="menu-icon"> Gestión
-                        </button>
-                    </h2>
-                    <div id="collapseGestion" class="accordion-collapse collapse" data-bs-parent="#accordionMenu">
-                        <div class="accordion-body">
-                            <a class="nav-link-custom" onclick="mostrarSeccion('vista-gestion-plantas')">
-                                <img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed"> Plantas
-                            </a>
-                            <a class="nav-link-custom" onclick="mostrarSeccion('vista-datos-completos')">
-                                <img th:src="@{/imagenes/datos.png}" class="submenu-icon-fixed"> Datos
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVista">
-                            <img th:src="@{/imagenes/Vista.png}" class="menu-icon"> Vista
-                        </button>
-                    </h2>
-                    <div id="collapseVista" class="accordion-collapse collapse" data-bs-parent="#accordionMenu">
-                        <div class="accordion-body">
-                            <div th:each="p : ${plantas}" th:if="${p.nombre != 'ALMACEN'}">
-                                <a class="nav-link-custom" th:onclick="'seleccionarPlanta(' + ${p.id} + ')'">
-                                    <img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
-                                    <span th:text="${p.nombre}"></span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-footer">
-                <a class="nav-direct" onclick="window.location.href='/?seccion=vista-almacen'" style="cursor: pointer;">
-                    <img th:src="@{/imagenes/almacen.png}" class="menu-icon"> 
-                    <strong>Almacén</strong>
-                </a>
-                <hr class="text-white my-2"> 
-                <a th:href="@{/login}" class="nav-link-custom text-danger fw-bold" style="padding-left: 15px !important;">
-                    <img th:src="@{/imagenes/cerrar-sesion.png}" class="menu-icon"> Salir
-                </a>
-            </div>
-        </div>
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
         <div class="map-area">
             
-            <div id="vista-almacen" class="h-100 seccion-oculta">
-    <div class="d-flex h-100 w-100 overflow-hidden" style="background-color: #f8f9fa;">
-        
-        <div class="d-flex flex-column flex-grow-1 h-100 border-end">
-            
-            <div class="zona-arrastre-almacen position-relative" id="contenedor-almacen" 
-                 style="flex: 0 0 75%; background-color: #ffffff; overflow: auto; border-bottom: 2px solid #dee2e6;">
-                
-                <div class="watermark-almacen">
-                    <img th:src="@{/imagenes/almacen.png}" alt="Almacén">
-                    <span>ZONA DE ALMACÉN</span>
-                </div>
-                
-                <div th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 1}"
-                     class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
-                     th:data-tag="${asset.assetTag}"
-                     th:data-x="${asset.posX ?: 0}" 
-                     th:data-y="${asset.posY ?: 0}"
-                     th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"
-                     th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
-                     th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
-                     onclick="manejarClickIcono(this, event)">
-                    
-                    <img th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono">
-                    <span th:text="${asset.assetTag}"></span>
-                    
-                    <div class="tooltip-datos shadow">
-    <div class="text-center fw-bold text-warning mb-1 border-bottom border-secondary pb-1">FICHA TÉCNICA</div>
-    
-    <div class="mb-1"><span class="label-tt">Tag:</span> <span th:text="${asset.assetTag}"></span></div>
-    <div class="mb-1"><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}"></span></div>
-    <div class="mb-1"><span class="label-tt">User:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-    <div class="mb-1"><span class="label-tt">Ubicación:</span> <span th:text="${asset.planta.nombre}"></span></div>
-    
-    <hr style="border-color: #555; margin: 5px 0;">
-    
-    <div class="mb-1"><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-    <div class="mb-1"><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-    <div class="mb-1"><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-    <div class="mb-1"><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-    
-    <div class="mb-1" th:if="${asset.otros != null and !asset.otros.empty}">
-        <span class="label-tt">Otros:</span> 
-        <span th:text="${asset.otros}" style="color: #eee; font-size: 0.65rem;"></span>
-    </div>
-
-    <div class="text-end text-info mt-1 pt-1 border-top border-secondary" style="font-size: 0.65rem;">
-        X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | 
-        Y: <span class="tt-pos-y" th:text="${asset.posY}"></span>
-    </div>
-</div>
+            <div id="vista-bienvenida" class="h-100 d-flex flex-column justify-content-center align-items-center" 
+                 style="background-color: #f8f9fa; min-height: 100vh;">
+                <div class="text-center" style="opacity: 0.2; user-select: none;">
+                    <img th:src="@{/imagenes/inventario.png}" alt="Logo Inventario" style="width: 250px; margin-bottom: 20px;">
+                    <h1 class="display-1 fw-bold" style="letter-spacing: 15px; color: #333;">INVENTARIO</h1>
+                    <p class="fs-4 fw-light">SISTEMA DE GESTIÓN DE ACTIVOS</p>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden" style="flex: 0 0 25%;">
-                <div class="h-100 overflow-auto">
-                    <table class="table table-hover align-middle m-0 table-almacen-compacta" id="tablaAlmacen" style="font-size: 0.7rem; table-layout: fixed; width: 100%;">
-                        <thead class="table-dark sticky-top">
-                            <tr style="cursor: pointer;">
-                                <th onclick="ordenarTabla(0)" style="width: 7%;">Tag ↕</th>
-                                <th onclick="ordenarTabla(1)" style="width: 8%;">Tipo ↕</th>
-                                <th onclick="ordenarTabla(2)" style="width: 12%;">Usuario ↕</th>
-                                <th onclick="ordenarTabla(3)" style="width: 10%;">Ubicación ↕</th>
-                                <th onclick="ordenarTabla(4)" style="width: 6%;">RAM ↕</th>
-                                <th onclick="ordenarTabla(5)" style="width: 10%;">CPU ↕</th>
-                                <th onclick="ordenarTabla(6)" style="width: 7%;">Disco ↕</th>
-                                <th onclick="ordenarTabla(7)" style="width: 9%;">S.O. ↕</th>
-                                <th onclick="ordenarTabla(8)" style="width: 12%;">Otros ↕</th>
-                                <th class="text-center" style="width: 8%;">X / Y</th>
-                                <th class="text-center" style="width: 11%;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="asset : ${assets}" th:if="${asset.planta != null and asset.planta.id == 1}" th:id="'fila-' + ${asset.assetTag}">
-                                <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
-                                <td th:text="${asset.tipoEquipo}" class="text-uppercase small"></td>
-                                <td th:text="${asset.nombreUsuario}" class="text-truncate"></td>
-                                <td th:text="${asset.planta.nombre}"></td>
-                                <td th:text="${asset.ram}"></td>
-                                <td th:text="${asset.cpu}" class="text-truncate"></td>
-                                <td th:text="${asset.disco}"></td>
-                                <td th:text="${asset.versionSo}"></td>
-                                <td th:text="${asset.otros}" class="text-muted text-truncate" th:title="${asset.otros}"></td>
-                                <td class="text-center font-monospace" style="font-size: 0.65rem;">
-                                    <span th:id="'table-x-' + ${asset.assetTag}" th:text="${asset.posX ?: 0}"></span>/<span th:id="'table-y-' + ${asset.assetTag}" th:text="${asset.posY ?: 0}"></span>
-                                </td>
-                                <td class="text-center">
-    <div class="d-flex justify-content-center gap-1">
-        <button class="btn btn-outline-primary btn-sm py-0 px-2" 
-                style="font-size: 0.65rem;"
-                th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]], [[${asset.tipoEquipo}]])">
-            Editar
-        </button>
-        
-        <button class="btn btn-warning btn-sm py-0 px-2 text-dark fw-bold" 
-                style="font-size: 0.65rem;"
-                th:onclick="confirmarEliminarAsset([[${asset.assetTag}]])">
-            Eliminar
-        </button>
-    </div>
-</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+            <div th:replace="~{fragments/vista-almacen :: almacen}"></div>
 
-        <div class="sidebar-almacen-control bg-dark text-white p-3 d-flex flex-column shadow" style="width: 240px; flex-shrink: 0;">
-            <h6 class="text-uppercase fw-bold text-info mb-3 border-bottom border-secondary pb-2 small">Transferir a Planta</h6>
-            
-            <div class="flex-grow-1 overflow-auto pe-1 mb-3">
-                <div th:each="p : ${plantas}" th:if="${p.id != 1}" 
-                     class="planta-dropzone mb-2" 
-                     th:data-planta-id="${p.id}">
-                    <div class="dropzone-label" th:text="${p.nombre}"></div>
-                    <small style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">SOLTAR PARA MOVER</small>
-                </div>
-            </div>
-
-            <div class="d-grid gap-2 border-top border-secondary pt-3">
-                <button class="btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center gap-2" onclick="guardarTodoAlmacen()">
-                    <img th:src="@{/imagenes/disquete.png}" style="width:14px; filter: brightness(0) invert(1);"> 
-                    GUARDAR CAMBIOS
-                </button>
-                <button class="btn btn-outline-info btn-sm text-white d-flex align-items-center justify-content-center gap-2" onclick="exportarAlmacen()">
-                    <img th:src="@{/imagenes/descargas.png}" style="width:14px; filter: brightness(0) invert(1);"> 
-                    EXPORTAR LISTA
-                </button>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-            <div id="vista-gestion-plantas" class="p-4 h-100 seccion-oculta">
-                <h4 class="mb-4 text-success border-bottom pb-2">Configuración de Plantas</h4>
-                <div class="bg-white p-3 rounded shadow-sm mb-4 border">
-                    <h6 class="text-muted mb-3 small fw-bold uppercase">Añadir Nueva Ubicación</h6>
-                    <form th:action="@{/plantas/guardar}" method="post" enctype="multipart/form-data" class="row g-2">
-                        <div class="col-md-5"><input type="text" name="nombre" class="form-control form-control-sm" placeholder="Nombre de la Planta" required></div>
-                        <div class="col-md-5"><input type="file" name="file" class="form-control form-control-sm" accept="image/*" required></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Crear Planta</button></div>
-                    </form>
-                </div>
-                <div class="bg-white rounded shadow-sm border overflow-hidden">
-                    <div class="gestion-tabla-container">
-                        <table class="table table-hover align-middle m-0 table-gestion-ultra">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center">ID</th>
-                                    <th>Vista Plano</th>
-                                    <th>Nombre Planta</th>
-                                    <th>Actualizar Imagen</th>
-                                    <th class="text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="p : ${plantas}" th:if="${p.nombre != 'ALMACEN'}">
-                                    <td th:text="${p.id}" class="text-center fw-bold text-muted border-end"></td>
-                                    <td><img th:src="@{'/planos-file/' + ${p.imagenNombre}}" class="img-mini-gestion shadow-sm border"></td>
-                                    <td th:text="${p.nombre}" class="fw-bold"></td>
-                                    <td>
-                                        <form th:action="@{/plantas/actualizar-imagen}" method="post" enctype="multipart/form-data" class="m-0">
-                                            <input type="hidden" name="id" th:value="${p.id}">
-                                            <div class="input-group input-group-sm" style="max-width: 300px;">
-                                                <input type="file" name="file" class="form-control" accept="image/*" required>
-                                                <button type="submit" class="btn btn-info text-white">Actualizar</button>
-                                            </div>
-                                        </form>
-                                    </td>
-                                    <td class="text-center">
-                                        <a th:href="@{'/plantas/eliminar/' + ${p.id}}" class="btn btn-outline-danger btn-sm border-0" 
-                                           onclick="return confirm('¿Eliminar planta y sus activos?')">&times; Eliminar</a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <div th:replace="~{fragments/vista-gestion :: gestion}"></div>
 
             <div id="vista-datos-completos" class="h-100 seccion-oculta">
                 <iframe th:src="${urlExterna}" style="width:100%; height:100%; border:none;"></iframe>
             </div>
 
-           <div id="vista-plano" class="h-100 seccion-oculta">
-    <div class="d-flex h-100 w-100">
-        
-        <div class="area-mapa-principal flex-grow-1 position-relative overflow-hidden" style="min-width: 0;">
-            <div th:if="${plantaSeleccionada != null}" 
-                 th:id="'contenedor-plano-' + ${plantaSeleccionada.id}"
-                 th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
-                
-                <div th:each="asset : ${assets}" 
-                     th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
-                     class="pc-icon drag-item" 
-                     th:id="'icono-' + ${asset.assetTag}"
-                     th:data-tag="${asset.assetTag}"
-                     th:data-x="${asset.posX != null ? asset.posX : 0}" 
-                     th:data-y="${asset.posY != null ? asset.posY : 0}"
-                     th:style="'transform: translate(' + (${asset.posX != null ? asset.posX : 0}) + 'px, ' + (${asset.posY != null ? asset.posY : 0}) + 'px);'"
-                     th:onmouseenter="'resaltarIcono(\'' + ${asset.assetTag} + '\', true)'"
-                     th:onmouseleave="'resaltarIcono(\'' + ${asset.assetTag} + '\', false)'"
-                     onclick="manejarClickIcono(this, event)">
-                    
-                    <img th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" 
-                         alt="Icono Equipo">
-                    
-                    <span th:text="${asset.assetTag}"></span>
-
-                    <div class="tooltip-datos shadow">
-    <div class="text-center fw-bold text-warning mb-1 border-bottom border-secondary pb-1">FICHA TÉCNICA</div>
-    
-    <div><span class="label-tt">Tag:</span> <span th:text="${asset.assetTag}"></span></div>
-    <div><span class="label-tt">Tipo:</span> <span th:text="${asset.tipoEquipo}"></span></div>
-    <div><span class="label-tt">User:</span> <span th:text="${asset.nombreUsuario}"></span></div>
-    <div><span class="label-tt">Ubicación:</span> <span th:text="${asset.planta.nombre}"></span></div>
-    
-    <hr style="border-color: #555; margin: 4px 0;">
-    
-    <div><span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span></div>
-    <div><span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span></div>
-    <div><span class="label-tt">Disco:</span> <span th:text="${asset.disco}"></span></div>
-    <div><span class="label-tt">S.O:</span> <span th:text="${asset.versionSo}"></span></div>
-    
-    <div th:if="${asset.otros != null and !asset.otros.empty}">
-        <span class="label-tt">Otros:</span> 
-        <span th:text="${asset.otros}" style="color: #eee; font-size: 0.65rem;"></span>
-    </div>
-
-    <div class="text-end text-info mt-1 pt-1 border-top border-secondary" style="font-size: 0.65rem;">
-        X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | 
-        Y: <span class="tt-pos-y" th:text="${asset.posY}"></span>
-    </div>
-</div>
-                </div>
-            </div>
-        </div>
-
-       <div class="sidebar-planta-control bg-dark text-white p-3 d-flex flex-column shadow" style="width: 240px; flex-shrink: 0;">
-    
-    <h6 class="text-uppercase fw-bold text-info mb-3 border-bottom border-secondary pb-2 small">Transferir Equipo</h6>
-    
-    <div class="flex-grow-1 overflow-auto pe-1 mb-3">
-        
-        <div th:if="${plantaSeleccionada != null and plantaSeleccionada.id != 1}" 
-             class="planta-dropzone mb-2" data-planta-id="1">
-            <div class="dropzone-label">ALMACÉN</div>
-            <small style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">DEVOLVER A STOCK</small>
-        </div>
-
-        <div th:each="p : ${plantas}" 
-             th:if="${p.id != 1 and (plantaSeleccionada == null or p.id != plantaSeleccionada.id)}" 
-             class="planta-dropzone mb-2" 
-             th:data-planta-id="${p.id}">
-            <div class="dropzone-label" th:text="${p.nombre}"></div>
-            <small style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">TRANSFERIR AQUÍ</small>
+            <div th:replace="~{fragments/vista-plano :: plano}"></div>
         </div>
     </div>
 
-    <div class="d-grid gap-2 border-top border-secondary pt-3">
-        <button class="btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center gap-2" 
-                th:onclick="'guardarTodoAlmacen()'">
-            <img th:src="@{/imagenes/disquete.png}" style="width:14px; filter: brightness(0) invert(1);"> 
-            GUARDAR PLANO
-        </button>
-        
-        <button class="btn btn-outline-info btn-sm text-white d-flex align-items-center justify-content-center gap-2" 
-                th:onclick="'exportarAlmacen()'">
-            <img th:src="@{/imagenes/descargas.png}" style="width:14px; filter: brightness(0) invert(1);"> 
-            EXPORTAR PLANTA
-        </button>
-    </div>
-</div>
-        
-    </div>
-</div>
-
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalEditAsset" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Editar Activo: <span id="tagDisplay"></span></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formEditAsset">
-                        <input type="hidden" id="inputAssetTag" name="assetTag">
-                        <div class="mb-2">
-                            <label class="form-label small">Tipo de Equipo</label>
-                            <select class="form-select" id="inputTipo" name="tipoEquipo">
-                                <option value="pc">PC de Sobremesa</option>
-                                <option value="portátil">Portátil</option>
-                            </select>
-                        </div>
-                        <div class="mb-2"><label class="form-label small">Usuario</label><input type="text" class="form-control" id="inputUsuario" name="nombreUsuario"></div>
-                        <div class="row g-2 mb-2">
-                            <div class="col-6"><label class="form-label small">RAM</label><input type="text" class="form-control" id="inputRam" name="ram"></div>
-                            <div class="col-6"><label class="form-label small">CPU</label><input type="text" class="form-control" id="inputCpu" name="cpu"></div>
-                        </div>
-                        <div class="row g-2 mb-2">
-                            <div class="col-6"><label class="form-label small">Disco</label><input type="text" class="form-control" id="inputDisco" name="disco"></div>
-                            <div class="col-6"><label class="form-label small">S.O.</label><input type="text" class="form-control" id="inputSo" name="versionSo"></div>
-                        </div>
-                        <div class="mb-2"><label class="form-label small">Planta Actual</label>
-                            <select class="form-select" id="inputPlanta" name="plantaId">
-                                <option th:each="p : ${plantas}" th:value="${p.id}" th:text="${p.nombre}"></option>
-                            </select>
-                        </div>
-                        <div class="mb-2"><label class="form-label small">Observaciones</label><textarea class="form-control" id="inputOtros" name="otros" rows="2"></textarea></div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="enviarFormularioEdit()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <div th:replace="~{fragments/modales :: modal-edit}"></div>
+    
     <script th:src="@{/js/config.js(v=${version})}"></script>
     <script th:src="@{/js/inventario-api.js(v=${version})}"></script>
     <script th:src="@{/js/inventario-ui.js(v=${version})}"></script>
     <script th:src="@{/js/inventario-drag.js(v=${version})}"></script>
 
     <script th:inline="javascript">
-        window.onload = function() {
-            // 1. Inicializar Modal de Bootstrap
-            const modalElement = document.getElementById('modalEditAsset');
-            if (modalElement) modalInstancia = new bootstrap.Modal(modalElement);
-            
-            // 2. Determinar sección inicial desde URL o por defecto
-            const params = new URLSearchParams(window.location.search);
-            let seccionInicial = params.get('seccion');
-            
-            // Si hay un plantaId en la URL, forzamos la vista de plano
-            if (params.has('plantaId')) {
-                seccionInicial = 'vista-plano';
-            }
-            
-            mostrarSeccion(seccionInicial || 'vista-plano');
-        };
+    window.modalInstancia = window.modalInstancia || null;
+
+    window.onload = function() {
+        // 1. Inicializar Modal de Edición
+        const modalElement = document.getElementById('modalEditAsset');
+        if (modalElement) {
+            window.modalInstancia = new bootstrap.Modal(modalElement);
+        }
+        
+        // 2. Lógica de Carga Inicial Inteligente
+        const params = new URLSearchParams(window.location.search);
+        
+        /**
+         * Prioridad de carga:
+         * 1. Si la URL trae 'seccion', cargamos esa.
+         * 2. Si la URL trae 'plantaId', cargamos 'vista-plano'.
+         * 3. Por defecto (Tras Login), mostramos 'vista-bienvenida'.
+         */
+        let seccionInicial = 'vista-bienvenida'; 
+        
+        if (params.has('seccion')) {
+            seccionInicial = params.get('seccion');
+        } else if (params.has('plantaId')) {
+            seccionInicial = 'vista-plano';
+        }
+
+        console.log("🚀 Sistema listo. Sección inicial:", seccionInicial);
+        mostrarSeccion(seccionInicial);
+    };
     </script>
 </body>
 </html>

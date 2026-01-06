@@ -9,6 +9,3 @@ const CONFIG = {
         eliminar: '/assets/eliminar/'
     }
 };
-
-// Instancia global para el modal
-let modalInstancia = null;

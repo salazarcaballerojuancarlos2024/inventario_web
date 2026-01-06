@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="plano" id="vista-plano" class="h-100 seccion-oculta">
+        <div class="d-flex h-100 w-100">
+            
+            <div class="area-mapa-principal flex-grow-1 position-relative overflow-hidden" style="background-color: #e9ecef;">
+                
+                <div th:if="${plantaSeleccionada == null}" class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5">
+                    <div class="bg-white p-5 rounded-circle shadow-sm mb-4">
+                        <img th:src="@{/imagenes/panel-de-control.png}" alt="Inicio" style="width: 80px; opacity: 0.5;">
+                    </div>
+                    <h3 class="text-secondary fw-light">Panel de Inventario</h3>
+                    <p class="text-muted" style="max-width: 400px;">Seleccione una ubicación en el menú lateral para visualizar el plano y gestionar los activos distribuidos.</p>
+                </div>
+
+                <div th:if="${plantaSeleccionada != null}" 
+                     th:id="'contenedor-plano-' + ${plantaSeleccionada.id}"
+                     th:style="'background-image: url(/planos-file/' + ${plantaSeleccionada.imagenNombre} + '); width:100%; height:100%; background-size:contain; background-repeat:no-repeat; position:relative; background-position: center;'">
+                    
+                    <div th:each="asset : ${assets}" 
+                         th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
+                         class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
+                         th:data-tag="${asset.assetTag}" 
+                         th:data-x="${asset.posX ?: 0}" 
+                         th:data-y="${asset.posY ?: 0}"
+                         th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"
+                         th:onmouseenter="'resaltarIcono(\'' + ${asset.assetTag} + '\', true)'"
+                         th:onmouseleave="'resaltarIcono(\'' + ${asset.assetTag} + '\', false)'"
+                         onclick="manejarClickIcono(this, event)">
+                        
+                        <img th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}" alt="Icono Equipo">
+                        <span th:text="${asset.assetTag}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-planta-control bg-dark text-white p-3 d-flex flex-column shadow" style="width: 240px; flex-shrink: 0;">
+                <h6 class="text-uppercase fw-bold text-info mb-3 small border-bottom border-secondary pb-2">Transferir Equipo</h6>
+                
+                <div class="flex-grow-1 overflow-auto pe-1 mb-3">
+                    <div th:if="${plantaSeleccionada != null and plantaSeleccionada.id != 1}" class="planta-dropzone mb-2" data-planta-id="1">
+                        <div class="dropzone-label">ALMACÉN</div>
+                        <small style="font-size: 0.55rem; opacity: 0.5;">SOLTAR AQUÍ</small>
+                    </div>
+
+                    <div th:each="p : ${plantas}" 
+                         th:if="${p.id != 1 and (plantaSeleccionada == null or p.id != plantaSeleccionada.id)}" 
+                         class="planta-dropzone mb-2" th:data-planta-id="${p.id}">
+                        <div class="dropzone-label" th:text="${p.nombre}"></div>
+                        <small style="font-size: 0.55rem; opacity: 0.5;">MOVER A ESTA PLANTA</small>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 border-top border-secondary pt-3">
+                    <button class="btn btn-success btn-sm fw-bold shadow-sm" th:onclick="'guardarTodoAlmacen()'">
+                        GUARDAR PLANO
+                    </button>
+                    <button class="btn btn-outline-info btn-sm text-white" onclick="exportarAlmacen()">
+                        EXPORTAR PLANTA
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

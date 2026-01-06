@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="modal-edit" class="modal fade" id="modalEditAsset"
+		tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header bg-primary text-white">
+					<h5 class="modal-title">
+						Editar Activo: <span id="tagDisplay" class="fw-bold"></span>
+					</h5>
+					<button type="button" class="btn-close btn-close-white"
+						data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<form id="formEditAsset">
+						<input type="hidden" id="inputAssetTag" name="assetTag">
+
+						<div class="row g-2 mb-3">
+							<div class="col-md-6">
+								<label class="form-label small fw-bold">Tipo de Equipo</label> <select
+									class="form-select form-select-sm" id="inputTipo"
+									name="tipoEquipo">
+									<option value="PC">PC</option>
+									<option value="Portátil">Portátil</option>
+								</select>
+							</div>
+							<div class="col-md-6">
+								<label class="form-label small fw-bold">Usuario
+									Responsable</label> <input type="text"
+									class="form-control form-control-sm" id="inputUsuario"
+									name="nombreUsuario">
+							</div>
+						</div>
+
+						<div class="row g-2 mb-3">
+							<div class="col-6">
+								<label class="form-label small fw-bold">Memoria RAM</label> <input
+									type="text" class="form-control form-control-sm" id="inputRam"
+									name="ram">
+							</div>
+							<div class="col-6">
+								<label class="form-label small fw-bold">Procesador (CPU)</label>
+								<input type="text" class="form-control form-control-sm"
+									id="inputCpu" name="cpu">
+							</div>
+						</div>
+
+						<div class="row g-2 mb-3">
+							<div class="col-6">
+								<label class="form-label small fw-bold">Almacenamiento
+									(Disco)</label> <input type="text" class="form-control form-control-sm"
+									id="inputDisco" name="disco">
+							</div>
+							<div class="col-6">
+								<label class="form-label small fw-bold">Sistema
+									Operativo</label> <input type="text"
+									class="form-control form-control-sm" id="inputSo"
+									name="versionSo">
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label small fw-bold">Planta /
+								Ubicación</label> <select class="form-select form-select-sm"
+								id="inputPlanta" name="plantaId">
+								<option th:each="p : ${plantas}" th:value="${p.id}"
+									th:text="${p.nombre}"></option>
+							</select>
+						</div>
+
+						<div class="mb-2">
+							<label class="form-label small fw-bold">Observaciones /
+								Otros</label>
+							<textarea class="form-control form-control-sm" id="inputOtros"
+								name="otros" rows="3" placeholder="Notas adicionales..."></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary"
+						onclick="enviarFormularioEdit()">Guardar Cambios</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

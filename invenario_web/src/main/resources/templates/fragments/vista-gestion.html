@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="gestion" id="vista-gestion-plantas" class="p-4 h-100 seccion-oculta">
+        <h4 class="mb-4 text-success border-bottom pb-2">Configuración de Plantas</h4>
+        
+        <div class="bg-white p-3 rounded shadow-sm mb-4 border">
+            <h6 class="text-muted mb-3 small fw-bold uppercase">Añadir Nueva Ubicación</h6>
+            <form th:action="@{/plantas/guardar}" method="post" enctype="multipart/form-data" class="row g-2">
+                <div class="col-md-5">
+                    <input type="text" name="nombre" class="form-control form-control-sm" placeholder="Nombre de la Planta" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="file" name="file" class="form-control form-control-sm" accept="image/*" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Crear Planta</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white rounded shadow-sm border overflow-hidden">
+            <div class="gestion-tabla-container">
+                <table class="table table-hover align-middle m-0 table-gestion-ultra">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th>Vista Plano</th>
+                            <th>Nombre Planta</th>
+                            <th>Actualizar Imagen</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${plantas}" th:if="${p.nombre != 'ALMACEN'}">
+                            <td th:text="${p.id}" class="text-center fw-bold text-muted border-end"></td>
+                            <td>
+                                <img th:src="@{'/planos-file/' + ${p.imagenNombre}}" class="img-mini-gestion shadow-sm border">
+                            </td>
+                            <td th:text="${p.nombre}" class="fw-bold"></td>
+                            <td>
+                                <form th:action="@{/plantas/actualizar-imagen}" method="post" enctype="multipart/form-data" class="m-0">
+                                    <input type="hidden" name="id" th:value="${p.id}">
+                                    <div class="input-group input-group-sm" style="max-width: 300px;">
+                                        <input type="file" name="file" class="form-control" accept="image/*" required>
+                                        <button type="submit" class="btn btn-info text-white">Actualizar</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="text-center">
+                                <a th:href="@{'/plantas/eliminar/' + ${p.id}}" class="btn btn-outline-danger btn-sm border-0" 
+                                   onclick="return confirm('¿Eliminar planta y sus activos?')">&times; Eliminar</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
