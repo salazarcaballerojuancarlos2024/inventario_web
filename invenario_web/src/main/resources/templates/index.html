@@ -321,29 +321,41 @@
             </div>
         </div>
 
-        <div class="transfer-sidebar d-flex flex-column p-3 bg-dark border-start border-secondary" style="width: 220px; min-height: 100%;">
-            <h6 class="text-warning text-center fw-bold mb-3 small" style="letter-spacing: 1px;">MOVER A...</h6>
-            
-            <div class="dropzones-container overflow-auto pe-2" style="flex-grow: 1;">
-                <div th:each="p : ${plantas}" 
-                     th:if="${plantaSeleccionada != null and p.id != plantaSeleccionada.id}"
-                     class="planta-dropzone dropzone shadow-sm"
-                     th:data-planta-id="${p.id}">
-                    <div class="dropzone-icon">📍</div>
-                    <div class="dropzone-label" th:text="${p.nombre}">NOMBRE PLANTA</div>
-                </div>
-
-                <div th:if="${plantaSeleccionada != null and plantaSeleccionada.id != 1}"
-                     class="planta-dropzone dropzone shadow-sm bg-gradient"
-                     style="border-color: #ffc107; background: #2c2c2c;"
-                     data-planta-id="1">
-                    <div class="dropzone-icon">📦</div>
-                    <div class="dropzone-label text-warning">ALMACÉN</div>
-                </div>
-            </div>
-            
-            <p class="text-muted text-center mt-3" style="font-size: 0.65rem;">Arrastra un equipo aquí para cambiarlo de planta.</p>
+       <div class="sidebar-planta-control bg-dark text-white p-3 d-flex flex-column shadow" style="width: 240px; flex-shrink: 0;">
+    
+    <h6 class="text-uppercase fw-bold text-info mb-3 border-bottom border-secondary pb-2 small">Transferir Equipo</h6>
+    
+    <div class="flex-grow-1 overflow-auto pe-1 mb-3">
+        
+        <div th:if="${plantaSeleccionada != null and plantaSeleccionada.id != 1}" 
+             class="planta-dropzone mb-2" data-planta-id="1">
+            <div class="dropzone-label">ALMACÉN</div>
+            <small style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">DEVOLVER A STOCK</small>
         </div>
+
+        <div th:each="p : ${plantas}" 
+             th:if="${p.id != 1 and (plantaSeleccionada == null or p.id != plantaSeleccionada.id)}" 
+             class="planta-dropzone mb-2" 
+             th:data-planta-id="${p.id}">
+            <div class="dropzone-label" th:text="${p.nombre}"></div>
+            <small style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">TRANSFERIR AQUÍ</small>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 border-top border-secondary pt-3">
+        <button class="btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center gap-2" 
+                th:onclick="'guardarTodoAlmacen()'">
+            <img th:src="@{/imagenes/disquete.png}" style="width:14px; filter: brightness(0) invert(1);"> 
+            GUARDAR PLANO
+        </button>
+        
+        <button class="btn btn-outline-info btn-sm text-white d-flex align-items-center justify-content-center gap-2" 
+                th:onclick="'exportarAlmacen()'">
+            <img th:src="@{/imagenes/descargas.png}" style="width:14px; filter: brightness(0) invert(1);"> 
+            EXPORTAR PLANTA
+        </button>
+    </div>
+</div>
         
     </div>
 </div>
