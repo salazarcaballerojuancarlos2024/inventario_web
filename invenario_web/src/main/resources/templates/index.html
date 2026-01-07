@@ -51,35 +51,30 @@
     <script th:src="@{/js/inventario-drag.js(v=${version})}"></script>
 
     <script th:inline="javascript">
-    window.modalInstancia = window.modalInstancia || null;
+window.modalInstancia = null;
 
-    window.onload = function() {
-        // 1. Inicializar Modal de Edición
-        const modalElement = document.getElementById('modalEditAsset');
-        if (modalElement) {
-            window.modalInstancia = new bootstrap.Modal(modalElement);
-        }
-        
-        // 2. Lógica de Carga Inicial Inteligente
-        const params = new URLSearchParams(window.location.search);
-        
-        /**
-         * Prioridad de carga:
-         * 1. Si la URL trae 'seccion', cargamos esa.
-         * 2. Si la URL trae 'plantaId', cargamos 'vista-plano'.
-         * 3. Por defecto (Tras Login), mostramos 'vista-bienvenida'.
-         */
-        let seccionInicial = 'vista-bienvenida'; 
-        
-        if (params.has('seccion')) {
-            seccionInicial = params.get('seccion');
-        } else if (params.has('plantaId')) {
-            seccionInicial = 'vista-plano';
-        }
+// Usamos DOMContentLoaded en lugar de onload para mayor rapidez y control
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM Cargado. Iniciando componentes...");
 
-        console.log("🚀 Sistema listo. Sección inicial:", seccionInicial);
-        mostrarSeccion(seccionInicial);
-    };
-    </script>
+    // 1. Inicializar Modal de Edición de forma segura
+    const modalElement = document.getElementById('modalEditAsset');
+    if (modalElement && typeof bootstrap !== 'undefined') {
+        window.modalInstancia = new bootstrap.Modal(modalElement);
+    }
+    
+    // 2. Determinar sección inicial
+    const params = new URLSearchParams(window.location.search);
+    let seccionInicial = params.get('seccion') || (params.has('plantaId') ? 'vista-plano' : 'vista-bienvenida');
+
+    // 3. Ejecutar mostrarSeccion con un pequeño retardo 
+    // Esto asegura que el CSS de mapa.css (con el top:0 y left:0) ya esté aplicado
+    setTimeout(() => {
+        if (typeof mostrarSeccion === 'function') {
+            mostrarSeccion(seccionInicial);
+        }
+    }, 50); 
+});
+</script>
 </body>
 </html>

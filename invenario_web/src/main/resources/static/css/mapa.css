@@ -3,7 +3,7 @@
 /**
  * PROYECTO: Sistema de Gestión de Inventario
  * MÓDULO: Vista Mapa, Almacén y Bienvenida
- * REVISIÓN: 2024 - Optimización Total
+ * REVISIÓN: 2026 - Layout de Scroll Independiente
  */
 
 /* ==========================================================================
@@ -16,9 +16,8 @@
     overflow: hidden;
 }
 
-/* Estilo específico para la Pantalla de Bienvenida */
 #vista-bienvenida {
-    display: flex; /* Se activará mediante JS */
+    display: flex; 
     background-color: #f8f9fa;
     transition: opacity 0.5s ease-in-out;
 }
@@ -35,7 +34,7 @@
 }
 
 /* ==========================================================================
-   2. ZONAS DE ARRASTRE (MAPA Y ALMACÉN)
+   2. ZONAS DE ARRASTRE (FIJA) Y TABLA (SCROLL)
    ========================================================================== */
 
 .map-area {
@@ -45,44 +44,56 @@
     overflow: hidden;
 }
 
+/* ZONA DE ICONOS: Ahora es fija y sin scroll para estabilidad total */
 .zona-arrastre-almacen, .zona-plano-planta {
     flex: 0 0 75% !important;
-    position: relative !important; /* VITAL: Punto (0,0) para coordenadas de iconos */
+    position: relative !important; 
     background-color: #ffffff;
     background-image: radial-gradient(#cbd5e0 1px, transparent 1px);
     background-size: 30px 30px;
-    overflow: auto !important; /* Permite scroll si el plano es grande */
+    
+    /* CAMBIO CRÍTICO: overflow: hidden para evitar saltos de coordenadas */
+    overflow: hidden !important; 
     border-bottom: 2px solid #dee2e6;
     touch-action: none; 
 }
 
+/* ZONA DE TABLA: Este contenedor es el que debe permitir el scroll */
+.table-container-scroll {
+    flex: 0 0 25% !important;
+    overflow-y: auto !important;
+    background-color: #ffffff;
+}
+
 /* ==========================================================================
-   3. ICONOS Y ARRASTRE (DRAG & DROP) - SOLUCIÓN YO-YO
+   3. ICONOS Y ARRASTRE (DRAG & DROP) - BLINDAJE ANTI YO-YO
    ========================================================================== */
 
 .drag-item {
     position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     cursor: grab;
     z-index: 50;
     touch-action: none;
     user-select: none;
     
-    /* ELIMINADOS: top:0 y left:0 para que no interfieran con el transform inicial */
-    
-    /* BLINDAJE ANTI YO-YO: 
-       La transición debe ser nula para que el icono no intente "regresar" 
-       a su posición anterior mientras el JS calcula la nueva. */
+    /* BLOQUEAR CUALQUIER TRANSICIÓN: Si hay transición, el icono "flota" o salta */
     transition: none !important;
-    -webkit-transition: none !important;
     will-change: transform;
+}
+
+/* Blindaje: El ratón solo interactúa con el contenedor, no con el contenido */
+.drag-item * {
+    pointer-events: none !important;
+    user-select: none !important;
 }
 
 .drag-item.interact-dragging {
     cursor: grabbing !important;
     z-index: 9999 !important;
-    opacity: 0.9;
-    /* Refuerzo de anulación de transición durante el vuelo */
-    transition: none !important; 
+    opacity: 0.8;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
 }
 
 /* ==========================================================================
@@ -99,9 +110,8 @@
     align-items: center;
     justify-content: center;
     opacity: 0.05 !important;
-    pointer-events: none; /* Permite que los clics pasen a los iconos */
+    pointer-events: none;
     z-index: 0;
-    user-select: none;
 }
 
 .watermark-almacen img {
@@ -153,7 +163,7 @@
 }
 
 /* ==========================================================================
-   6. AJUSTES FINALES (SCROLL Y TOOLTIPS)
+   6. AJUSTES FINALES (TOOLTIPS Y SCROLLBARS)
    ========================================================================== */
 
 .tooltip-datos {
@@ -168,19 +178,24 @@
     border-radius: 6px;
     font-size: 0.75rem;
     z-index: 1000;
-    pointer-events: none;
+    pointer-events: none; /* Vital para que no interfiera al arrastrar */
     border: 1px solid #444;
     white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
-.pc-icon:hover .tooltip-datos {
+.drag-item:hover .tooltip-datos {
     display: block;
 }
 
-/* Scrollbars finos para no romper el diseño */
+/* Scrollbars para la tabla y el sidebar */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -189,5 +204,5 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #666;
+    background: #222;
 }

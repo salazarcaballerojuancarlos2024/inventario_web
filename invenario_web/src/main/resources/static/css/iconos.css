@@ -3,9 +3,10 @@
 /* ==========================================
    1. ESTADO BASE DEL ICONO
    ========================================== */
+/* BUSCA ESTO Y DÉJALO ASÍ: */
 .pc-icon { 
     position: absolute; 
-    width: 50px; /* Un poco más amplio para el área de clic */
+    width: 50px; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
@@ -13,9 +14,10 @@
     z-index: 50; 
     cursor: grab; 
     touch-action: none; 
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, background-color 0.3s ease;
+    /* ELIMINAMOS 'transform' de la transición */
+    transition: opacity 0.2s ease, background-color 0.3s ease; 
     padding: 6px;
-    border-radius: 50%; /* Base circular para el efecto de pulso */
+    border-radius: 50%;
 }
 
 /* Imagen del equipo */
@@ -47,7 +49,7 @@
 /* Efecto al pasar el ratón (Hover) */
 .pc-icon:hover {
     z-index: 2000; /* Por encima de todo, excepto tooltips */
-    transform: scale(1.2);
+   /* transform: scale(1.2); */
     background-color: rgba(46, 125, 50, 0.15); /* Fondo verde tenue */
     animation: pulse-green 1.5s infinite;
 }
@@ -65,10 +67,10 @@
 /* Estado durante el arrastre (InteracJS) */
 .pc-icon.interact-dragging { 
     opacity: 0.8; 
-    z-index: 3000; 
+    z-index: 9999 !important; 
     cursor: grabbing;
-    animation: none; /* Desactiva el pulso mientras se mueve */
-    transform: scale(1.1) !important;
+    animation: none !important;
+    /* Quitamos el transform de aquí, el JS se encarga */
 }
 
 /* ==========================================

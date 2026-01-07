@@ -135,4 +135,25 @@ public class AssetController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al eliminar"));
         }
     }
+    
+    /**
+     * 4. ACTUALIZAR POSICIÓN INDIVIDUAL
+     * Endpoint para guardar un solo movimiento sin esperar al botón "Guardar Todo"
+     */
+    @PostMapping("/actualizar-posicion")
+    public ResponseEntity<?> actualizarPosicion(@RequestBody Map<String, Object> payload) {
+        try {
+            String tag = (String) payload.get("assetTag");
+            Asset asset = assetService.findByAssetTag(tag);
+            if (asset != null) {
+                if (payload.containsKey("posX")) asset.setPosX(((Number) payload.get("posX")).intValue());
+                if (payload.containsKey("posY")) asset.setPosY(((Number) payload.get("posY")).intValue());
+                assetService.guardarAsset(asset);
+                return ResponseEntity.ok(Map.of("mensaje", "Posición de " + tag + " guardada"));
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No encontrado"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
 }

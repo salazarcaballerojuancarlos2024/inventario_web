@@ -6,19 +6,20 @@
 		<div class="d-flex h-100 w-100 overflow-hidden"
 			style="background-color: #f8f9fa;">
 			<div class="d-flex flex-column flex-grow-1 h-100 border-end">
-				<div class="zona-arrastre-almacen position-relative"
-					id="contenedor-almacen"
-					style="flex: 0 0 75%; background-color: #ffffff; overflow: auto; border-bottom: 2px solid #dee2e6;">
+				<div class="zona-arrastre-almacen position-relative" id="contenedor-almacen" 
+    				 style="flex: 0 0 75%; background-color: #ffffff; overflow: hidden; border-bottom: 2px solid #dee2e6;">
 					<div class="watermark-almacen">
 						<img th:src="@{/imagenes/almacen.png}" alt="Almacén"> <span>ZONA
 							DE ALMACÉN</span>
 					</div>
 					<div th:each="asset : ${assets}"
 						th:if="${asset.planta != null and asset.planta.id == 1}"
-						class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
-						th:data-tag="${asset.assetTag}" th:data-x="${asset.posX ?: 0}"
+						class="pc-icon drag-item" 
+						th:id="'icono-' + ${asset.assetTag}"
+						th:data-tag="${asset.assetTag}" 
+						th:data-x="${asset.posX ?: 0}"
 						th:data-y="${asset.posY ?: 0}"
-						th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"
+						th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"			
 						th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
 						th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
 						ondblclick="manejarClickIcono(this, event)">
@@ -74,8 +75,8 @@
 							<div
 								class="text-end text-info mt-1 pt-1 border-top border-secondary"
 								style="font-size: 0.65rem;">
-								X: <span class="tt-pos-x" th:text="${asset.posX}"></span> | Y: <span
-									class="tt-pos-y" th:text="${asset.posY}"></span>
+								X: <span class="tt-pos-x" th:id="'tt-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> | 
+               				    Y: <span class="tt-pos-y" th:id="'tt-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
 							</div>
 						</div>
 					</div>
