@@ -22,26 +22,85 @@
                     class="plano-background-container shadow-lg bg-white"
                     th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}');|">
 
-                    <div th:each="asset : ${assets}"
-                        th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
-                        class="pc-icon drag-item" th:id="${asset.assetTag}"
-                        th:data-tag="${asset.assetTag}" th:data-x="${asset.posX ?: 0}"
-                        th:data-y="${asset.posY ?: 0}"
-                        th:style="|transform: translate(${asset.posX ?: 0}px, ${asset.posY ?: 0}px);|"
-                        onmouseenter="bridgeResaltar(this, true)"
-                        onmouseleave="bridgeResaltar(this, false)"
-                        onclick="manejarClickIcono(this, event)">
+					<div th:each="asset : ${assets}"
+						th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
+						class="pc-icon drag-item" th:id="${asset.assetTag}"
+						th:data-tag="${asset.assetTag}" th:data-x="${asset.posX ?: 0}"
+						th:data-y="${asset.posY ?: 0}"
+						th:style="|transform: translate(${asset.posX ?: 0}px, ${asset.posY ?: 0}px);|"
+						/* ATRIBUTOS DATA PARA EL MODAL (Solución al error de Thymeleaf)
+						*/
+    th:data-user="${asset.nombreUsuario ?: ''}"
+						th:data-ram="${asset.ram ?: ''}" th:data-cpu="${asset.cpu ?: ''}"
+						th:data-disco="${asset.disco ?: ''}"
+						th:data-so="${asset.versionSo ?: ''}"
+						th:data-otros="${asset.otros ?: ''}"
+						th:data-planta-id="${asset.planta.id}"
+						th:data-tipo="${asset.tipoEquipo ?: 'PC'}"
+						onmouseenter="bridgeResaltar(this, true)"
+						onmouseleave="bridgeResaltar(this, false)"
+						ondblclick="prepararModalDesdeIcono(this)">
 
-                        <img th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}"
-                            alt="Icono"> 
-                        <span th:text="${asset.assetTag}"></span>
+						<img
+							th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}"
+							alt="Icono"> <span th:text="${asset.assetTag}"></span>
 
-                        <div class="tooltip-datos">
-                            <strong th:text="${asset.assetTag}"></strong><br> 
-                            X: <span th:text="${asset.posX}"></span> Y: <span th:text="${asset.posY}"></span>
-                        </div>
-                    </div>
-                </div>
+						<div class="tooltip-datos shadow">
+							<div
+								class="text-center fw-bold text-warning mb-1 border-bottom border-secondary pb-1">
+								FICHA TÉCNICA</div>
+
+							<div class="mb-1">
+								<span class="label-tt">Tag:</span> <span
+									th:text="${asset.assetTag}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">Tipo:</span> <span
+									th:text="${asset.tipoEquipo}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">User:</span> <span
+									th:text="${asset.nombreUsuario}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">Ubicación:</span> <span
+									th:text="${asset.planta.nombre}"></span>
+							</div>
+
+							<hr style="border-color: #555; margin: 5px 0;">
+
+							<div class="mb-1">
+								<span class="label-tt">RAM:</span> <span th:text="${asset.ram}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">CPU:</span> <span th:text="${asset.cpu}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">Disco:</span> <span
+									th:text="${asset.disco}"></span>
+							</div>
+							<div class="mb-1">
+								<span class="label-tt">S.O:</span> <span
+									th:text="${asset.versionSo}"></span>
+							</div>
+
+							<div class="mb-1"
+								th:if="${asset.otros != null and !asset.otros.empty}">
+								<span class="label-tt">Otros:</span> <span
+									th:text="${asset.otros}"
+									style="color: #eee; font-size: 0.65rem;"></span>
+							</div>
+
+							<div
+								class="text-end text-info mt-1 pt-1 border-top border-secondary"
+								style="font-size: 0.65rem;">
+								X: <span class="tt-pos-x" th:id="'tt-x-' + ${asset.assetTag}"
+									th:text="${asset.posX}"></span> | Y: <span class="tt-pos-y"
+									th:id="'tt-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
             </div>
 
             <div class="sidebar-control-wrapper d-flex flex-column bg-dark border-start border-secondary p-3 shadow-lg" 

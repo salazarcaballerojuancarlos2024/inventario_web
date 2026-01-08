@@ -242,3 +242,23 @@ function actualizarIconosOrden(columna, dir) {
         span.style.color = (idx === columna) ? "#28a745" : "#ccc";
     });
 }
+
+/**
+ * Función puente para leer los datos del icono y abrir el modal
+ * Soluciona las restricciones de Thymeleaf 3.1+
+ */
+function prepararModalDesdeIcono(elemento) {
+    // Extraer datos de los atributos data-
+    const tag = elemento.getAttribute('data-tag');
+    const user = elemento.getAttribute('data-user');
+    const ram = elemento.getAttribute('data-ram');
+    const cpu = elemento.getAttribute('data-cpu');
+    const disco = elemento.getAttribute('data-disco');
+    const so = elemento.getAttribute('data-so');
+    const otros = elemento.getAttribute('data-otros');
+    const plantaId = elemento.getAttribute('data-planta-id');
+    const tipo = elemento.getAttribute('data-tipo');
+
+    // Llamar a la función que ya tenías definida
+    abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo);
+}
