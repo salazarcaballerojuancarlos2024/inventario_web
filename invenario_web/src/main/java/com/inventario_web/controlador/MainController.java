@@ -22,9 +22,6 @@ public class MainController {
     @Autowired
     private PlantaRepository plantaRepository;
 
-    @Value("${config.url.externa}")
-    private String urlExterna;
-
     @GetMapping("/")
     public String index(
             @RequestParam(name = "plantaId", required = false) Long plantaId, 
@@ -59,7 +56,7 @@ public class MainController {
             model.addAttribute("assets", List.of()); 
         }
 
-        model.addAttribute("urlExterna", urlExterna);
+       
         model.addAttribute("version", System.currentTimeMillis()); 
         
         return "index";

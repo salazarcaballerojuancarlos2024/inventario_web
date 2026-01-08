@@ -10,7 +10,7 @@ function mostrarSeccion(idSeccion) {
         'vista-bienvenida', 
         'vista-almacen', 
         'vista-gestion-plantas', 
-        'vista-datos-completos', 
+        'vista-Datos', 
         'vista-plano'
     ];
 
@@ -261,4 +261,42 @@ function prepararModalDesdeIcono(elemento) {
 
     // Llamar a la función que ya tenías definida
     abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo);
+}
+
+// Variable global que definiremos al principio de tu JS
+let esNuevoAsset = false;
+
+async function enviarFormularioModal() {
+    const tag = document.getElementById('inputAssetTag').value;
+    if (!tag) return alert("El Asset Tag es obligatorio");
+
+    // Si esNuevoAsset es true -> Crear. Si es false -> Actualizar.
+    const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';
+    
+    const payload = {
+        assetTag: tag,
+        nombreUsuario: document.getElementById('inputUsuario').value,
+        ram: document.getElementById('inputRam').value,
+        cpu: document.getElementById('inputCpu').value,
+        disco: document.getElementById('inputDisco').value,
+        versionSo: document.getElementById('inputSo').value,
+        otros: document.getElementById('inputOtros').value,
+        plantaId: document.getElementById('inputPlanta').value,
+        tipoEquipo: document.getElementById('inputTipo').value,
+        posX: document.getElementById('inputPosX').value,
+        posY: document.getElementById('inputPosY').value
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+        location.reload(); 
+    } else {
+        const error = await response.json();
+        alert("Error: " + error.error);
+    }
 }

@@ -7,14 +7,18 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
-                        Editar Activo: <span id="tagDisplay" class="fw-bold"></span>
+                        Ficha de Activo: <span id="tagDisplay" class="fw-bold"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formEditAsset">
-                        <input type="hidden" id="inputAssetTag" name="assetTag">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Asset Tag (ID Único)</label> 
+                            <input type="text" class="form-control form-control-sm" id="inputAssetTag" name="assetTag" placeholder="Ej: PC-001">
+                        </div>
+
                         <input type="hidden" id="inputPosX" name="posX">
                         <input type="hidden" id="inputPosY" name="posY">
 
@@ -69,7 +73,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="enviarFormularioEdit()">Guardar Cambios</button>
+                    <button type="button" class="btn btn-primary" onclick="enviarFormularioModal()">Guardar Cambios</button>
                 </div>
             </div>
         </div>

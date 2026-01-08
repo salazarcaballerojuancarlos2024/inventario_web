@@ -56,4 +56,10 @@ public class AssetServiceImpl implements AssetService {
             assetRepository.saveAll(assets);
         }
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existePorTag(String assetTag) {
+        return assetRepository.existsByAssetTag(assetTag);
+    }
 }

@@ -16,6 +16,7 @@
     <link rel="stylesheet" th:href="@{/css/tablas.css(v=${version})}">
     <link rel="stylesheet" th:href="@{/css/planta-v2.css(v=${version})}">
     <link rel="stylesheet" th:href="@{/css/Plantas.css(v=${version})}">
+    <link rel="stylesheet" th:href="@{/css/datos.css(v=${version})}">
 </head>
 <body>
 
@@ -37,9 +38,7 @@
 
             <div th:replace="~{fragments/vista-gestion :: gestion}"></div>
 
-            <div id="vista-datos-completos" class="h-100 seccion-oculta">
-                <iframe th:src="${urlExterna}" style="width:100%; height:100%; border:none;"></iframe>
-            </div>
+            <div th:replace="~{fragments/vista-Datos :: datos}"></div>
 
             <div th:replace="~{fragments/vista-plano :: plano}"></div>
         </div>
@@ -51,7 +50,9 @@
     <script th:src="@{/js/inventario-api.js(v=${version})}"></script>
     <script th:src="@{/js/inventario-ui.js(v=${version})}"></script>
     <script th:src="@{/js/inventario-drag.js(v=${version})}"></script>
-    <script th:src="@{/js/planta-drag.js(v=${version})}"></script>
+    <script th:src="@{/js/datos.js(v=${version})}"></script>
+    
+    
 
     <script th:inline="javascript">
 window.modalInstancia = null;
