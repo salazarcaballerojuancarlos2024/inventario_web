@@ -34,55 +34,46 @@ public class AssetController {
             Asset assetExistente = assetService.findByAssetTag(tag);
             
             if (assetExistente != null) {
-                // Actualización de campos de texto básicos
+                // ... (Tus actualizaciones de texto: usuario, ram, etc., se mantienen igual)
                 if (payload.containsKey("nombreUsuario")) assetExistente.setNombreUsuario((String) payload.get("nombreUsuario"));
                 if (payload.containsKey("ram")) assetExistente.setRam((String) payload.get("ram"));
                 if (payload.containsKey("cpu")) assetExistente.setCpu((String) payload.get("cpu"));
                 if (payload.containsKey("disco")) assetExistente.setDisco((String) payload.get("disco"));
                 if (payload.containsKey("versionSo")) assetExistente.setVersionSo((String) payload.get("versionSo"));
                 if (payload.containsKey("otros")) assetExistente.setOtros((String) payload.get("otros"));
+                if (payload.containsKey("tipoEquipo")) assetExistente.setTipoEquipo((String) payload.get("tipoEquipo"));
                 
-                // Actualizar Tipo de Equipo (PC/Portátil)
-                if (payload.containsKey("tipoEquipo")) {
-                    assetExistente.setTipoEquipo((String) payload.get("tipoEquipo"));
-                }
-                
-                // --- LÓGICA DE COORDENADAS Y PLANTA MEJORADA ---
-                if (payload.containsKey("plantaId")) {
-                    Object plantaObj = payload.get("plantaId");
-                    if (plantaObj != null && !plantaObj.toString().isEmpty()) {
-                        Long nuevaPlantaId = Long.parseLong(plantaObj.toString());
-                        
-                        // Solo si la planta es diferente a la actual, reseteamos a 0,0
-                        // O si el frontend envía coordenadas específicas (nuestro nuevo caso), las usamos
-                        if (assetExistente.getPlanta() == null || !assetExistente.getPlanta().getId().equals(nuevaPlantaId)) {
-                            Planta nuevaPlanta = plantaRepository.findById(nuevaPlantaId).orElse(null);
-                            if (nuevaPlanta != null) {
-                                assetExistente.setPlanta(nuevaPlanta);
-                                // Si cambia de planta real, va al origen (o centro)
-                                assetExistente.setPosX(0);
-                                assetExistente.setPosY(0);
-                            }
-                        } else {
-                            // SI LA PLANTA ES LA MISMA:
-                            // Buscamos si el payload trae coordenadas (enviadas por nuestro nuevo JS)
-                            if (payload.containsKey("posX")) {
-                                assetExistente.setPosX(((Number) payload.get("posX")).intValue());
-                            }
-                            if (payload.containsKey("posY")) {
-                                assetExistente.setPosY(((Number) payload.get("posY")).intValue());
-                            }
+                // --- GESTIÓN DE UBICACIÓN Y COORDENADAS ---
+                if (payload.containsKey("plantaId") && payload.get("plantaId") != null) {
+                    Long nuevaPlantaId = Long.parseLong(payload.get("plantaId").toString());
+                    Long plantaActualId = (assetExistente.getPlanta() != null) ? assetExistente.getPlanta().getId() : -1L;
+
+                    if (!nuevaPlantaId.equals(plantaActualId)) {
+                        // CAMBIO REAL DE PLANTA: Reseteo total
+                        Planta nuevaPlanta = plantaRepository.findById(nuevaPlantaId).orElse(null);
+                        if (nuevaPlanta != null) {
+                            assetExistente.setPlanta(nuevaPlanta);
+                            assetExistente.setPosX(0);
+                            assetExistente.setPosY(0);
+                        }
+                    } else {
+                        // MISMA PLANTA: Preservamos la posición enviada desde el modal
+                        if (payload.containsKey("posX") && payload.get("posX") != null) {
+                            assetExistente.setPosX(Integer.parseInt(payload.get("posX").toString()));
+                        }
+                        if (payload.containsKey("posY") && payload.get("posY") != null) {
+                            assetExistente.setPosY(Integer.parseInt(payload.get("posY").toString()));
                         }
                     }
                 }
                 
                 assetService.guardarAsset(assetExistente);
-                return ResponseEntity.ok(Map.of("mensaje", "Equipo " + tag + " actualizado con éxito"));
+                return ResponseEntity.ok(Map.of("mensaje", "Equipo actualizado con éxito"));
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Asset no encontrado"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar: " + e.getMessage()));
+                    .body(Map.of("error", "Error crítico: " + e.getMessage()));
         }
     }
 

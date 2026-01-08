@@ -3,43 +3,58 @@
  * Versión 2026: Sincronización Blindada y Control de Coordenadas
  */
 
-/**
- * GESTIÓN DE VISTAS (Navegación SPA interna)
- */
 function mostrarSeccion(idSeccion) {
     console.log("📂 Cambiando a sección:", idSeccion);
-    const secciones = ['vista-bienvenida', 'vista-almacen', 'vista-gestion-plantas', 'vista-datos-completos', 'vista-plano'];
+    
+    const secciones = [
+        'vista-bienvenida', 
+        'vista-almacen', 
+        'vista-gestion-plantas', 
+        'vista-datos-completos', 
+        'vista-plano'
+    ];
 
     secciones.forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-            if (id === idSeccion) {
-                el.classList.remove('seccion-oculta');
-                el.style.display = (id === 'vista-bienvenida') ? "flex" : "block";
+        if (!el) return;
+
+        if (id === idSeccion) {
+            el.classList.remove('seccion-oculta');
+            el.classList.add('seccion-visible'); 
+            
+            if (id === 'vista-bienvenida') {
+                el.style.display = "flex";
+            } else if (id === 'vista-plano' || id === 'vista-almacen') {
+                el.style.display = "flex"; 
             } else {
-                el.classList.add('seccion-oculta');
-                el.style.display = "none";
+                el.style.display = "block";
             }
+        } else {
+            el.classList.add('seccion-oculta');
+            el.classList.remove('seccion-visible');
+            el.style.display = "none";
         }
     });
 
-    // RE-INICIALIZACIÓN CRÍTICA
     if (idSeccion === 'vista-almacen' || idSeccion === 'vista-plano') {
-        // Garantizamos que los iconos respeten el sistema de coordenadas (0,0) antes de arrastrar
         document.querySelectorAll('.drag-item').forEach(icono => {
             icono.style.position = 'absolute';
             icono.style.top = '0';
             icono.style.left = '0';
+            
+            const x = icono.getAttribute('data-x') || 0;
+            const y = icono.getAttribute('data-y') || 0;
+            icono.style.transform = `translate(${x}px, ${y}px)`;
         });
 
-        // Timeout para asegurar que el DOM se asentó antes de bindiar Interact.js
         setTimeout(() => {
-            if (typeof inicializarArrastre === 'function') inicializarArrastre();
-        }, 150);
+            if (typeof inicializarArrastreSegunVista === 'function') {
+                inicializarArrastreSegunVista();
+            }
+        }, 250);
     }
 }
 
-// Lógica de inicio
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const seccion = urlParams.get('seccion');
@@ -48,6 +63,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 /**
  * GESTIÓN DEL MODAL DE EDICIÓN
+ * Se captura la posición del icono para que no se pierda al guardar
  */
 function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
     console.log("🛠️ Editando:", tag);
@@ -64,6 +80,7 @@ function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo)
         'inputPlanta': plantaId
     };
 
+    // Rellenar campos visibles
     for (let id in campos) {
         const el = document.getElementById(id);
         if (el) {
@@ -72,18 +89,26 @@ function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo)
         }
     }
 
+    // Lógica para el tipo de equipo
     const selectorTipo = document.getElementById('inputTipo');
     if (selectorTipo) {
         const t = tipo ? tipo.toLowerCase() : '';
         selectorTipo.value = t.includes('port') ? 'Portátil' : 'PC';
     }
 
-    // PRESERVACIÓN DE COORDENADAS: La fuente de verdad es el atributo del icono
-    const icono = document.getElementById('icono-' + tag);
-    const form = document.getElementById('formEditAsset');
-    if (icono && form) {
-        form.setAttribute('data-temp-x', icono.getAttribute('data-x') || 0);
-        form.setAttribute('data-temp-y', icono.getAttribute('data-y') || 0);
+    // PERSISTENCIA DE COORDENADAS: Buscamos el icono para obtener su X e Y actuales
+    const icono = document.getElementById(tag);
+    if (icono) {
+        const xActual = icono.getAttribute('data-x') || 0;
+        const yActual = icono.getAttribute('data-y') || 0;
+        
+        // Seteamos los inputs ocultos para que viajen en el FormData
+        const inX = document.getElementById('inputPosX');
+        const inY = document.getElementById('inputPosY');
+        if (inX) inX.value = xActual;
+        if (inY) inY.value = yActual;
+
+        console.log(`📍 Posición capturada para el modal: X:${xActual}, Y:${yActual}`);
     }
 
     if (window.modalInstancia) window.modalInstancia.show();
@@ -93,18 +118,30 @@ function enviarFormularioEdit() {
     const form = document.getElementById('formEditAsset');
     if (!form) return;
 
+    // 1. Extraemos los datos del formulario
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    // Recuperamos las coordenadas exactas que el icono tenía al abrir el modal
-    data.posX = Math.round(parseFloat(form.getAttribute('data-temp-x'))) || 0;
-    data.posY = Math.round(parseFloat(form.getAttribute('data-temp-y'))) || 0;
+    // 2. FORZADO DE TIPOS: Convertimos explícitamente a números enteros
+    // Esto es vital para que el Map<String, Object> de Java reconozca los valores
+    data.posX = parseInt(document.getElementById('inputPosX').value) || 0;
+    data.posY = parseInt(document.getElementById('inputPosY').value) || 0;
+    
+    // Aseguramos que el plantaId también viaje como número
+    if (data.plantaId) {
+        data.plantaId = parseInt(data.plantaId);
+    }
+
+    console.log("🚀 Enviando actualización blindada:", data);
 
     if (typeof actualizarAssetAPI === 'function') {
         actualizarAssetAPI(data).then(res => {
             if (res.ok) {
                 if (window.modalInstancia) window.modalInstancia.hide();
+                // Recargamos para asentar los cambios en el plano
                 location.reload(); 
+            } else {
+                alert("Error al guardar: " + (res.error || "Consulte la consola"));
             }
         });
     }
@@ -116,7 +153,6 @@ function enviarFormularioEdit() {
 function manejarClickIcono(el, ev) {
     if (ev) ev.stopPropagation();
 
-    // Si el elemento se está moviendo o acaba de soltarse, bloqueamos el click/doble click
     if (el.classList.contains('interact-dragging') || el.getAttribute('data-was-dragging') === 'true') {
         return; 
     }
@@ -127,7 +163,6 @@ function manejarClickIcono(el, ev) {
     if (fila) {
         document.querySelectorAll('.fila-resaltada').forEach(f => f.classList.remove('fila-resaltada'));
         fila.classList.add('fila-resaltada');
-        // Scroll suave hacia la fila en la tabla
         fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
         const btnEditar = fila.querySelector('button[onclick^="abrirModalUpdate"]');
@@ -137,21 +172,27 @@ function manejarClickIcono(el, ev) {
 
 function resaltarFila(tag, activar) {
     const fila = document.getElementById('fila-' + tag);
-    const icono = document.getElementById('icono-' + tag);
+    const icono = document.getElementById(tag); 
+    
     if (fila) {
         activar ? fila.classList.add('fila-resaltada') : fila.classList.remove('fila-resaltada');
     }
-    // Feedback visual en el icono al pasar por la tabla
+
     if (icono) {
-        icono.style.filter = activar ? "drop-shadow(0 0 8px #2e7d32) brightness(1.1)" : "none";
-        if(activar) icono.style.zIndex = "1000";
-        else icono.style.zIndex = "50";
+        icono.style.filter = activar ? "drop-shadow(0 0 10px #2e7d32) brightness(1.2)" : "none";
+        icono.style.zIndex = activar ? "1000" : "50";
+        
+        const tooltip = icono.querySelector('.tooltip-datos');
+        if (tooltip) tooltip.style.opacity = activar ? "1" : "0";
     }
 }
 
-/**
- * UTILIDADES DE TABLA
- */
+function bridgeResaltar(el, estado) {
+    if (!el) return;
+    const tag = el.getAttribute('data-tag');
+    resaltarFila(tag, estado);
+}
+
 function seleccionarPlanta(id) {
     window.location.href = "/?plantaId=" + id;
 }

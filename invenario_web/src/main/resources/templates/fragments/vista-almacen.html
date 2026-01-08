@@ -6,20 +6,19 @@
 		<div class="d-flex h-100 w-100 overflow-hidden"
 			style="background-color: #f8f9fa;">
 			<div class="d-flex flex-column flex-grow-1 h-100 border-end">
-				<div class="zona-arrastre-almacen position-relative" id="contenedor-almacen" 
-    				 style="flex: 0 0 75%; background-color: #ffffff; overflow: hidden; border-bottom: 2px solid #dee2e6;">
+				<div class="zona-arrastre-almacen position-relative"
+					id="contenedor-almacen"
+					style="flex: 0 0 75%; background-color: #ffffff; overflow: hidden; border-bottom: 2px solid #dee2e6;">
 					<div class="watermark-almacen">
 						<img th:src="@{/imagenes/almacen.png}" alt="Almacén"> <span>ZONA
 							DE ALMACÉN</span>
 					</div>
 					<div th:each="asset : ${assets}"
 						th:if="${asset.planta != null and asset.planta.id == 1}"
-						class="pc-icon drag-item" 
-						th:id="'icono-' + ${asset.assetTag}"
-						th:data-tag="${asset.assetTag}" 
-						th:data-x="${asset.posX ?: 0}"
+						class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
+						th:data-tag="${asset.assetTag}" th:data-x="${asset.posX ?: 0}"
 						th:data-y="${asset.posY ?: 0}"
-						th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"			
+						th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"
 						th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
 						th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
 						ondblclick="manejarClickIcono(this, event)">
@@ -75,8 +74,9 @@
 							<div
 								class="text-end text-info mt-1 pt-1 border-top border-secondary"
 								style="font-size: 0.65rem;">
-								X: <span class="tt-pos-x" th:id="'tt-x-' + ${asset.assetTag}" th:text="${asset.posX}"></span> | 
-               				    Y: <span class="tt-pos-y" th:id="'tt-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+								X: <span class="tt-pos-x" th:id="'tt-x-' + ${asset.assetTag}"
+									th:text="${asset.posX}"></span> | Y: <span class="tt-pos-y"
+									th:id="'tt-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
 							</div>
 						</div>
 					</div>
@@ -159,10 +159,19 @@
 					</div>
 				</div>
 				<div class="d-grid gap-2 border-top border-secondary pt-3">
-					<button class="btn btn-success btn-sm fw-bold"
-						onclick="guardarTodoAlmacen()">GUARDAR CAMBIOS</button>
-					<button class="btn btn-outline-info btn-sm text-white"
-						onclick="exportarAlmacen()">EXPORTAR LISTA</button>
+					<button type="button"
+						class="btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center"
+						onclick="guardarTodoAlmacen()">
+						<img th:src="@{/imagenes/disquete.png}" alt="" width="18"
+							height="18" class="me-2"> GUARDAR CAMBIOS
+					</button>
+
+					<button type="button"
+						class="btn btn-outline-info btn-sm text-white d-flex align-items-center justify-content-center"
+						onclick="exportarAlmacen()">
+						<img th:src="@{/imagenes/descargas.png}" alt="" width="18"
+							height="18" class="me-2"> EXPORTAR LISTA
+					</button>
 				</div>
 			</div>
 		</div>

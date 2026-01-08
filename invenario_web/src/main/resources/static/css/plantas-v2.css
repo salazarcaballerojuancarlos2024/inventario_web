@@ -1,0 +1,82 @@
+@charset "UTF-8";
+
+/**
+ * PLANTA-V2.CSS
+ * Layout horizontal exclusivo para la Vista de Planos (75% Mapa / 25% Sidebar)
+ */
+
+/* 1. CONTENEDOR RAÍZ: Forzamos el comportamiento horizontal */
+#vista-plano.seccion-visible {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #111; /* Fondo oscuro para resaltar el plano */
+}
+
+/* 2. ÁREA DEL MAPA: El lado izquierdo donde está la imagen */
+#vista-plano .area-mapa-principal {
+    flex: 0 0 75% !important;
+    width: 75% !important;
+    height: 100% !important;
+    position: relative !important;
+    background-color: #e5e7eb; 
+    /* IMPORTANTE: Permitimos que el icono "salga" visualmente hacia la derecha */
+    overflow: visible !important; 
+    z-index: 10;
+}
+
+/* 3. EL PLANO (CONTENEDOR DINÁMICO) */
+#vista-plano [id^="contenedor-plano-"] {
+    width: 100% !important;
+    height: 100% !important;
+    background-repeat: no-repeat !important;
+    /* 'contain' asegura que toda la imagen se vea sin cortarse */
+    background-size: contain !important;
+    background-position: center center !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* 4. SIDEBAR DE CONTROL: El lado derecho con las zonas de soltado */
+#vista-plano .sidebar-control-wrapper {
+    flex: 0 0 25% !important;
+    width: 25% !important;
+    height: 100% !important;
+    background-color: #1a1d21 !important;
+    border-left: 2px solid #333;
+    /* El z-index es menor que el del icono arrastrado (10000) */
+    z-index: 100; 
+    overflow-y: auto;
+    padding: 15px;
+}
+
+/* 5. AJUSTE DE ICONOS EN PLANTA: 
+   Aseguramos que dentro de la planta no hereden restricciones del almacén */
+#vista-plano .drag-item {
+    cursor: grab;
+    /* El z-index normal en reposo */
+    z-index: 200; 
+}
+
+#vista-plano .drag-item.interact-dragging {
+    /* Al arrastrar, sube a la capa máxima para pasar sobre la sidebar */
+    z-index: 10000 !important;
+    cursor: grabbing !important;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+/* Estilo de las zonas de soltado específicas en la sidebar de planta */
+#vista-plano .planta-dropzone {
+    border: 2px dashed #4a5568;
+    background: #2d3748;
+    color: #cbd5e0;
+    transition: all 0.2s ease;
+}
+
+#vista-plano .planta-dropzone.drop-target {
+    background: #2c7a7b !important;
+    border-color: #4fd1c5 !important;
+    transform: scale(1.03);
+}

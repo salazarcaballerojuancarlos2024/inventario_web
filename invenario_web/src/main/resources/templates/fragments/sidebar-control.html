@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar-control" 
+         class="sidebar-almacen-control bg-dark text-white d-flex flex-column shadow" 
+         style="width: 100%; flex-shrink: 0; height: 100vh;">
+        
+        <div class="p-3 border-bottom border-secondary">
+            <h6 class="text-uppercase fw-bold text-info mb-0 small">Transferir Equipo</h6>
+        </div>
+
+        <div class="flex-grow-1 overflow-y-auto p-3 custom-scrollbar" style="min-height: 0;">
+            
+            <div th:if="${plantaSeleccionada != null and plantaSeleccionada.id != 1}" 
+                 class="planta-dropzone zona-drop-planta mb-2" 
+                 data-planta-id="1">
+                <div class="dropzone-label fw-bold">ALMACÉN</div>
+                <small style="font-size: 0.55rem; opacity: 0.5;">DEVOLVER AL STOCK</small>
+            </div>
+
+            <div th:each="p : ${plantas}" 
+                 th:if="${p.id != 1 and (plantaSeleccionada == null or p.id != plantaSeleccionada.id)}" 
+                 class="planta-dropzone zona-drop-planta mb-2" 
+                 th:data-planta-id="${p.id}">
+                <div class="dropzone-label fw-bold" th:text="${p.nombre}"></div>
+                <small style="font-size: 0.55rem; opacity: 0.5;">MOVER A ESTA PLANTA</small>
+            </div>
+            
+        </div>
+
+        <div class="p-3 border-top border-secondary bg-dark">
+    <div class="d-grid gap-2">
+        <button class="btn btn-success btn-sm fw-bold py-2" 
+                th:onclick="${plantaSeleccionada == null or plantaSeleccionada.id == 1} ? 'guardarTodoAlmacen()' : 'guardarPosicionesPlanta(' + plantaSeleccionada.id + ')'">
+            <i class="fas fa-save me-1"></i> 
+            <span th:text="${plantaSeleccionada == null or plantaSeleccionada.id == 1} ? 'GUARDAR CAMBIOS' : 'GUARDAR PLANO'"></span>
+        </button>
+
+        <button class="btn btn-outline-info btn-sm text-white py-2" 
+                th:onclick="${plantaSeleccionada == null or plantaSeleccionada.id == 1} ? 'exportarAlmacen()' : 'exportarDatosPlanta(\'' + plantaSeleccionada.nombre + '\')'">
+            <i class="fas fa-file-export me-1"></i>
+            <span th:text="${plantaSeleccionada == null or plantaSeleccionada.id == 1} ? 'EXPORTAR LISTA' : 'EXPORTAR PLANTA'"></span>
+        </button>
+    </div>
+</div>
+    </div>
+</body>
+</html>

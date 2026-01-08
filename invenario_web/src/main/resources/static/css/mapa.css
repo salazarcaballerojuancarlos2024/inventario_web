@@ -3,7 +3,7 @@
 /**
  * PROYECTO: Sistema de Gestión de Inventario
  * MÓDULO: Vista Mapa, Almacén y Bienvenida
- * REVISIÓN: 2026 - Layout de Scroll Independiente
+ * REVISIÓN: 2026 - Control de Arrastre con Salida a Derecha
  */
 
 /* ==========================================================================
@@ -34,7 +34,7 @@
 }
 
 /* ==========================================================================
-   2. ZONAS DE ARRASTRE (FIJA) Y TABLA (SCROLL)
+   2. ZONAS DE ARRASTRE Y TABLA
    ========================================================================== */
 
 .map-area {
@@ -44,29 +44,33 @@
     overflow: hidden;
 }
 
-/* ZONA DE ICONOS: Ahora es fija y sin scroll para estabilidad total */
-.zona-arrastre-almacen, .zona-plano-planta {
+/* ZONA DE ICONOS (ALMACÉN) */
+.zona-arrastre-almacen {
     flex: 0 0 75% !important;
     position: relative !important; 
     background-color: #ffffff;
     background-image: radial-gradient(#cbd5e0 1px, transparent 1px);
     background-size: 30px 30px;
     
-    /* CAMBIO CRÍTICO: overflow: hidden para evitar saltos de coordenadas */
-    overflow: hidden !important; 
+    /* MODIFICACIÓN CRÍTICA: 
+       Permitimos visible para que el icono pueda volar hacia la derecha.
+       El bloqueo en los otros 3 lados lo gestiona inventario-drag.js */
+    overflow: visible !important; 
     border-bottom: 2px solid #dee2e6;
     touch-action: none; 
 }
 
-/* ZONA DE TABLA: Este contenedor es el que debe permitir el scroll */
+/* ZONA DE TABLA */
 .table-container-scroll {
     flex: 0 0 25% !important;
     overflow-y: auto !important;
     background-color: #ffffff;
+    position: relative;
+    z-index: 10;
 }
 
 /* ==========================================================================
-   3. ICONOS Y ARRASTRE (DRAG & DROP) - BLINDAJE ANTI YO-YO
+   3. ICONOS Y ARRASTRE (DRAG & DROP)
    ========================================================================== */
 
 .drag-item {
@@ -77,13 +81,11 @@
     z-index: 50;
     touch-action: none;
     user-select: none;
-    
-    /* BLOQUEAR CUALQUIER TRANSICIÓN: Si hay transición, el icono "flota" o salta */
     transition: none !important;
     will-change: transform;
 }
 
-/* Blindaje: El ratón solo interactúa con el contenedor, no con el contenido */
+/* El ratón interactúa con el contenedor del icono, no con su interior */
 .drag-item * {
     pointer-events: none !important;
     user-select: none !important;
@@ -91,9 +93,10 @@
 
 .drag-item.interact-dragging {
     cursor: grabbing !important;
-    z-index: 9999 !important;
+    /* Prioridad máxima: el icono vuela por encima de todo el layout */
+    z-index: 10000 !important; 
     opacity: 0.8;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
 }
 
 /* ==========================================================================
@@ -153,13 +156,22 @@
     color: #888;
     text-align: center;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.planta-dropzone.drop-target {
-    background-color: #1b5e20 !important;
-    border-color: #48bb78 !important;
+/* Efecto hover y cuando se arrastra un elemento encima */
+.planta-dropzone.drop-target,
+.planta-dropzone:hover {
+    background-color: #2a9d8f !important;
+    border-color: #ffffff !important;
     color: #fff;
-    transform: scale(1.05);
+    transform: scale(1.02);
+}
+
+.dropzone-label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 2px;
 }
 
 /* ==========================================================================
@@ -178,7 +190,7 @@
     border-radius: 6px;
     font-size: 0.75rem;
     z-index: 1000;
-    pointer-events: none; /* Vital para que no interfiera al arrastrar */
+    pointer-events: none;
     border: 1px solid #444;
     white-space: nowrap;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -188,7 +200,7 @@
     display: block;
 }
 
-/* Scrollbars para la tabla y el sidebar */
+/* Personalización de barras de desplazamiento */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -205,4 +217,9 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #222;
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #444 #f1f1f1;
 }
