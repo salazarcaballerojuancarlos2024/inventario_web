@@ -30,6 +30,10 @@ public class MainController {
 
         List<Planta> todasLasPlantas = plantaRepository.findAll();
         model.addAttribute("plantas", todasLasPlantas);
+        
+        // --- VISTA DATOS ---
+        // La vista-Datos.html necesita "todosLosAssets" para llenar la tabla
+        model.addAttribute("todosLosAssets", assetService.obtenerTodosLosAssets());
 
         // CASO 1: SECCIÓN ALMACÉN (Forzamos carga de Planta ID 1)
         if ("vista-almacen".equals(seccion)) {

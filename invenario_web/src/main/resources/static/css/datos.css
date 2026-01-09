@@ -1,40 +1,149 @@
 @charset "UTF-8";
-/* datos.css */
-#vista-datos .card {
+
+/* Contenedor principal */
+#vista-Datos .card {
     border-radius: 12px;
-    overflow: hidden;
+    height: calc(100vh - 120px); 
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #34495e;
 }
 
+#vista-Datos .card-body {
+    overflow: auto !important;
+    padding: 0;
+    flex-grow: 1;
+    background-color: #121212;
+    position: relative;
+}
+
+#tablaAssets {
+    table-layout: fixed; 
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Cabecera Fija más compacta */
 #tablaAssets thead th {
-    background-color: #2c3e50;
-    color: #81d4fa;
-    font-size: 0.85rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #2c3e50 !important;
+    color: #81d4fa !important;
+    font-size: 0.75rem; /* Más pequeño */
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     border-bottom: 2px solid #34495e;
-    cursor: pointer; /* Para indicar que es ordenable */
+    border-right: 1px solid #34495e;
+    padding: 8px 10px; /* Padding reducido */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
 }
 
+.resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    cursor: col-resize;
+    user-select: none;
+    z-index: 101;
+}
+
+.resizer:hover, .resizing {
+    background-color: #81d4fa;
+    width: 2px;
+}
+
+thead th[onclick]:hover {
+    background-color: #e9ecef !important;
+    color: #0d6efd;
+}
+
+.sort-icon {
+    font-size: 0.7rem;
+    margin-left: 3px;
+    color: #5c6bc0;
+    pointer-events: none;
+}
+
+/* Resalta la flecha de la columna que está ordenada actualmente */
+th.text-info .sort-icon {
+    color: #0d6efd;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Celdas de datos más compactas */
 #tablaAssets tbody td {
-    font-size: 0.88rem;
-    padding: 12px 15px;
-    border-color: #3d3d3d;
+    font-size: 0.80rem; /* Texto más pequeño para datos */
+    padding: 6px 10px; /* Padding reducido tipo Excel */
+    border-color: #2a2a2a;
+    border-right: 1px solid #2a2a2a;
+    color: #e0e0e0;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #tablaAssets tbody tr:hover {
-    background-color: rgba(129, 212, 250, 0.05);
+    background-color: rgba(129, 212, 250, 0.08) !important;
 }
 
-#tablaAssets .btn-group .btn {
-    padding: 0.4rem 0.6rem;
-    border: none;
+/* Ajuste específico para los nuevos botones con texto */
+.btn-compact {
+    padding: 2px 8px; /* Botones muy finos */
+    font-size: 0.7rem !important; /* Texto de botón pequeño */
+    text-transform: uppercase;
+    font-weight: bold;
 }
 
-/* Scrollbar personalizado para la tabla */
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
+.btn-compact i {
+    font-size: 0.75rem;
 }
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 4px;
+
+/* --- PAGINACIÓN --- */
+#vista-Datos .card-footer {
+    background-color: #1a1a1a !important;
+    border-top: 1px solid #34495e;
+    padding: 0.5rem 1rem; /* Footer más estrecho */
+}
+
+#pagination-wrapper .page-link {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    background-color: #2c3e50;
+    border: 1px solid #34495e;
+    color: #81d4fa;
+}
+
+/* Scrollbar personalizado */
+#vista-Datos .card-body::-webkit-scrollbar { width: 8px; height: 8px; }
+#vista-Datos .card-body::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+#vista-Datos .card-body::-webkit-scrollbar-thumb:hover { background: #81d4fa; }
+
+@keyframes fadeInRow {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+#tablaAssets tbody tr:not([style*="display: none"]) {
+    animation: fadeInRow 0.3s ease forwards;
+}
+
+/* Forzar que la última columna tenga espacio suficiente para los botones */
+#tablaAssets th:last-child, 
+#tablaAssets td:last-child {
+    width: 170px;
+    min-width: 170px;
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+/* Evitar que los botones se peguen entre sí */
+.btn-group .btn-compact {
+    margin: 0 2px;
+    border-radius: 4px !important; /* Separarlos un poco visualmente */
 }

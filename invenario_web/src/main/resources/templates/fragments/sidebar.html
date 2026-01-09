@@ -49,33 +49,36 @@
                         Vista
                     </button>
                 </h2>
-                <div id="collapseVista" class="accordion-collapse collapse"
-                    data-bs-parent="#accordionMenu">
-                    <div class="accordion-body">
-                        <div th:each="p : ${plantas}" th:if="${p.id != 1 and p.nombre != 'ALMACEN'}">
-                            <a class="nav-link-custom" style="cursor: pointer;"
-                                th:onclick="'seleccionarPlanta(' + ${p.id} + ')'"> 
-                                <img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
-                                <span th:text="${p.nombre}"></span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+				<div id="collapseVista" class="accordion-collapse collapse"
+					data-bs-parent="#accordionMenu">
+					<div class="accordion-body">
+						<div th:each="p : ${plantas}"
+							th:if="${p.id != 1 and p.nombre != 'ALMACEN'}">
+							<a class="nav-link-custom" style="cursor: pointer;"
+								th:onclick="|seleccionarPlanta(${p.id})|"> <img
+								th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
+								<span th:text="${p.nombre}"></span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
         </div>
 
-        <div class="sidebar-footer">
-            <a class="nav-direct" th:href="@{/(seccion='vista-almacen')}"
-                style="cursor: pointer; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
-                <img th:src="@{/imagenes/almacen.png}" class="menu-icon"> <strong>Almacén</strong>
-            </a>
-            <hr class="text-white my-2">
-            <a th:href="@{/login}" class="nav-link-custom text-danger fw-bold"
-                style="padding-left: 15px !important;"> <img
-                th:src="@{/imagenes/cerrar-sesion.png}" class="menu-icon">
-                Salir
-            </a>
-        </div>
-    </div>
+		<div class="sidebar-footer">
+			<a class="nav-direct" th:href="@{/(seccion='vista-almacen')}"
+				style="cursor: pointer; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+				<img th:src="@{/imagenes/almacen.png}" class="menu-icon"> <strong>Almacén</strong>
+			</a>
+
+			<hr class="text-white my-2">
+
+			<a th:href="@{/login}" class="nav-link-custom text-danger fw-bold"
+				style="padding-left: 15px !important;"> <img
+				th:src="@{/imagenes/cerrar-sesion.png}" class="menu-icon">
+				Salir
+			</a>
+		</div>
+	</div>
 </body>
 </html>

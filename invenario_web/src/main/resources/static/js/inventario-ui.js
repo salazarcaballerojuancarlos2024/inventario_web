@@ -1,34 +1,26 @@
 /**
- * INVENTARIO-UI.JS
- * Versión 2026: Sincronización Blindada y Control de Coordenadas
+ * INVENTARIO-UI.JS 
+ * Versión Final 2026 corregida: Gestión de duplicados, creación, borrado y ORDENACIÓN
  */
 
-function mostrarSeccion(idSeccion) {
-    console.log("📂 Cambiando a sección:", idSeccion);
-    
-    const secciones = [
-        'vista-bienvenida', 
-        'vista-almacen', 
-        'vista-gestion-plantas', 
-        'vista-Datos', 
-        'vista-plano'
-    ];
+// --- VARIABLES GLOBALES ---
+let currentPage = 1;
+let esNuevoAsset = false; 
+let sortDirection = 1;   // 1 para ASC, -1 para DESC
+let currentSortCol = -1; // Índice de la columna seleccionada
 
+/**
+ * 1. NAVEGACIÓN ENTRE SECCIONES
+ */
+function mostrarSeccion(idSeccion) {
+    const secciones = ['vista-bienvenida', 'vista-almacen', 'vista-gestion-plantas', 'vista-Datos', 'vista-plano'];
     secciones.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-
         if (id === idSeccion) {
             el.classList.remove('seccion-oculta');
             el.classList.add('seccion-visible'); 
-            
-            if (id === 'vista-bienvenida') {
-                el.style.display = "flex";
-            } else if (id === 'vista-plano' || id === 'vista-almacen') {
-                el.style.display = "flex"; 
-            } else {
-                el.style.display = "block";
-            }
+            el.style.display = (id === 'vista-plano' || id === 'vista-almacen' || id === 'vista-bienvenida') ? "flex" : "block";
         } else {
             el.classList.add('seccion-oculta');
             el.classList.remove('seccion-visible');
@@ -36,243 +28,203 @@ function mostrarSeccion(idSeccion) {
         }
     });
 
-    if (idSeccion === 'vista-almacen' || idSeccion === 'vista-plano') {
-        document.querySelectorAll('.drag-item').forEach(icono => {
-            icono.style.position = 'absolute';
-            icono.style.top = '0';
-            icono.style.left = '0';
-            
-            const x = icono.getAttribute('data-x') || 0;
-            const y = icono.getAttribute('data-y') || 0;
-            icono.style.transform = `translate(${x}px, ${y}px)`;
-        });
+    if (idSeccion === 'vista-Datos') {
+        actualizarTablaDinamica();
+        setTimeout(habilitarResizerColumnas, 100); 
+    }
 
+    if (idSeccion === 'vista-plano' || idSeccion === 'vista-almacen') {
         setTimeout(() => {
-            if (typeof inicializarArrastreSegunVista === 'function') {
-                inicializarArrastreSegunVista();
-            }
-        }, 250);
+            document.querySelectorAll('.drag-item').forEach(icono => {
+                const x = icono.getAttribute('data-x') || 0;
+                const y = icono.getAttribute('data-y') || 0;
+                icono.style.transform = `translate(${x}px, ${y}px)`;
+            });
+            if (typeof inicializarArrastreSegunVista === 'function') inicializarArrastreSegunVista();
+        }, 200);
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const seccion = urlParams.get('seccion');
-    mostrarSeccion(seccion || 'vista-bienvenida');
-});
+/**
+ * 2. LÓGICA DE TABLA (PAGINACIÓN, FILTROS Y ORDENACIÓN)
+ */
+function ejecutarFiltroYPaginacion() { currentPage = 1; actualizarTablaDinamica(); }
+function cambiarPaginacion() { currentPage = 1; actualizarTablaDinamica(); }
+
+// NUEVA FUNCIÓN: Ordenación compatible
+function ordenarTablaPaginada(n) {
+    const table = document.getElementById("tablaAssets");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr.fila-asset"));
+
+    if (currentSortCol === n) {
+        sortDirection *= -1;
+    } else {
+        sortDirection = 1;
+        currentSortCol = n;
+    }
+
+    table.querySelectorAll("th .sort-icon").forEach((span, idx) => {
+        span.innerText = "↕";
+        if (idx === n) span.innerText = sortDirection === 1 ? "↑" : "↓";
+    });
+
+    rows.sort((a, b) => {
+        // Obtenemos el texto limpio de la celda n
+        const valA = a.children[n].innerText.trim().toLowerCase();
+        const valB = b.children[n].innerText.trim().toLowerCase();
+        
+        // Verificamos si es un número (para RAM, Disco, etc.)
+        const numA = parseFloat(valA.replace(/[^\d.-]/g, ''));
+        const numB = parseFloat(valB.replace(/[^\d.-]/g, ''));
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return (numA - numB) * sortDirection;
+        }
+        return valA.localeCompare(valB) * sortDirection;
+    });
+
+    // Re-insertar filas ordenadas
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Volver a la página 1 y refrescar la vista paginada
+    currentPage = 1;
+    actualizarTablaDinamica();
+}
+
+function actualizarTablaDinamica() {
+    const table = document.getElementById("tablaAssets");
+    if (!table) return;
+    const rows = Array.from(table.querySelectorAll("tbody tr.fila-asset"));
+    const searchFilter = (document.getElementById("inputBusquedaAssets")?.value || "").toUpperCase();
+    const maxRows = parseInt(document.getElementById("maxRows")?.value || 10);
+
+    const visibleRows = rows.filter(row => {
+        const text = row.innerText.toUpperCase();
+        const matches = text.indexOf(searchFilter) > -1;
+        row.style.display = "none";
+        return matches;
+    });
+
+    const totalVisible = visibleRows.length;
+    const totalPages = Math.ceil(totalVisible / maxRows);
+    const start = (currentPage - 1) * maxRows;
+    const end = start + maxRows;
+
+    visibleRows.slice(start, end).forEach(row => row.style.display = "");
+    
+    // Actualizar contadores
+    const countPageEl = document.getElementById("countPage");
+    const countTotalEl = document.getElementById("countTotal");
+    if (countPageEl) countPageEl.innerText = visibleRows.slice(start, end).length;
+    if (countTotalEl) countTotalEl.innerText = totalVisible;
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const wrapper = document.getElementById("pagination-wrapper");
+    if (!wrapper) return;
+    wrapper.innerHTML = "";
+    if (totalPages <= 1) return;
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement("li");
+        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="javascript:void(0)">${i}</a>`;
+        li.onclick = () => { 
+            currentPage = i; 
+            actualizarTablaDinamica(); 
+            // Scroll arriba opcional al cambiar página
+            const cardBody = document.querySelector('#vista-Datos .card-body');
+            if (cardBody) cardBody.scrollTop = 0;
+        };
+        wrapper.appendChild(li);
+    }
+}
 
 /**
- * GESTIÓN DEL MODAL DE EDICIÓN
- * Se captura la posición del icono para que no se pierda al guardar
+ * 3. GESTIÓN DE MODALES Y OPERACIONES
  */
-function abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo) {
-    console.log("🛠️ Editando:", tag);
 
-    const campos = {
-        'tagDisplay': tag,
-        'inputAssetTag': tag,
-        'inputUsuario': user || '',
-        'inputRam': ram || '',
-        'inputCpu': cpu || '',
-        'inputDisco': disco || '',
-        'inputSo': so || '',
-        'inputOtros': otros || '',
-        'inputPlanta': plantaId
-    };
-
-    // Rellenar campos visibles
-    for (let id in campos) {
-        const el = document.getElementById(id);
-        if (el) {
-            if (el.tagName === 'SPAN') el.innerText = campos[id];
-            else el.value = campos[id];
-        }
-    }
-
-    // Lógica para el tipo de equipo
-    const selectorTipo = document.getElementById('inputTipo');
-    if (selectorTipo) {
-        const t = tipo ? tipo.toLowerCase() : '';
-        selectorTipo.value = t.includes('port') ? 'Portátil' : 'PC';
-    }
-
-    // PERSISTENCIA DE COORDENADAS: Buscamos el icono para obtener su X e Y actuales
-    const icono = document.getElementById(tag);
-    if (icono) {
-        const xActual = icono.getAttribute('data-x') || 0;
-        const yActual = icono.getAttribute('data-y') || 0;
-        
-        // Seteamos los inputs ocultos para que viajen en el FormData
-        const inX = document.getElementById('inputPosX');
-        const inY = document.getElementById('inputPosY');
-        if (inX) inX.value = xActual;
-        if (inY) inY.value = yActual;
-
-        console.log(`📍 Posición capturada para el modal: X:${xActual}, Y:${yActual}`);
-    }
-
+function abrirModalCrear() {
+    esNuevoAsset = true; 
+    const form = document.getElementById('formEditAsset');
+    if (form) form.reset();
+    document.getElementById('tagDisplay').innerText = "Nuevo Activo";
+    const inputTag = document.getElementById('inputAssetTag');
+    inputTag.value = '';
+    inputTag.readOnly = false;
+    
+    // Reset campos ocultos y por defecto
+    document.getElementById('inputPosX').value = 0;
+    document.getElementById('inputPosY').value = 0;
+    document.getElementById('inputPlanta').value = "1"; 
+    document.getElementById('inputTipo').value = "PC";
     if (window.modalInstancia) window.modalInstancia.show();
 }
 
-function enviarFormularioEdit() {
-    const form = document.getElementById('formEditAsset');
-    if (!form) return;
-
-    // 1. Extraemos los datos del formulario
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    // 2. FORZADO DE TIPOS: Convertimos explícitamente a números enteros
-    // Esto es vital para que el Map<String, Object> de Java reconozca los valores
-    data.posX = parseInt(document.getElementById('inputPosX').value) || 0;
-    data.posY = parseInt(document.getElementById('inputPosY').value) || 0;
-    
-    // Aseguramos que el plantaId también viaje como número
-    if (data.plantaId) {
-        data.plantaId = parseInt(data.plantaId);
-    }
-
-    console.log("🚀 Enviando actualización blindada:", data);
-
-    if (typeof actualizarAssetAPI === 'function') {
-        actualizarAssetAPI(data).then(res => {
-            if (res.ok) {
-                if (window.modalInstancia) window.modalInstancia.hide();
-                // Recargamos para asentar los cambios en el plano
-                location.reload(); 
-            } else {
-                alert("Error al guardar: " + (res.error || "Consulte la consola"));
-            }
+async function confirmarEliminarAsset(tag) {
+    if (!tag || !confirm(`¿Eliminar equipo ${tag}?`)) return;
+    try {
+        const response = await fetch(`/assets/eliminar/${tag}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
         });
-    }
+        if (response.ok) { location.reload(); } 
+        else { const err = await response.json(); alert("Error: " + (err.error || "No eliminado")); }
+    } catch (error) { alert("Error de conexión."); }
 }
 
-/**
- * INTERACCIÓN VISUAL
- */
-function manejarClickIcono(el, ev) {
-    if (ev) ev.stopPropagation();
+function abrirModalUpdate(tag, usuario, ram, cpu, disco, so, otros, plantaId, tipo) {
+    esNuevoAsset = false; 
+    document.getElementById('tagDisplay').innerText = tag;
+    const inputTag = document.getElementById('inputAssetTag');
+    inputTag.value = tag;
+    inputTag.readOnly = true;
 
-    if (el.classList.contains('interact-dragging') || el.getAttribute('data-was-dragging') === 'true') {
-        return; 
-    }
+    document.getElementById('inputUsuario').value = usuario || '';
+    document.getElementById('inputRam').value = ram || '';
+    document.getElementById('inputCpu').value = cpu || '';
+    document.getElementById('inputDisco').value = disco || '';
+    document.getElementById('inputSo').value = so || '';
+    document.getElementById('inputOtros').value = otros || '';
+    if (plantaId) document.getElementById('inputPlanta').value = plantaId;
+    if (tipo) document.getElementById('inputTipo').value = tipo;
 
-    const tag = el.getAttribute('data-tag');
-    const fila = document.getElementById('fila-' + tag);
-    
-    if (fila) {
-        document.querySelectorAll('.fila-resaltada').forEach(f => f.classList.remove('fila-resaltada'));
-        fila.classList.add('fila-resaltada');
-        fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        const btnEditar = fila.querySelector('button[onclick^="abrirModalUpdate"]');
-        if (btnEditar) btnEditar.click();
-    }
+    const icono = document.getElementById(tag) || document.getElementById('icono-' + tag);
+    document.getElementById('inputPosX').value = icono ? (icono.getAttribute('data-x') || 0) : 0;
+    document.getElementById('inputPosY').value = icono ? (icono.getAttribute('data-y') || 0) : 0;
+    if (window.modalInstancia) window.modalInstancia.show();
 }
 
-function resaltarFila(tag, activar) {
-    const fila = document.getElementById('fila-' + tag);
-    const icono = document.getElementById(tag); 
-    
-    if (fila) {
-        activar ? fila.classList.add('fila-resaltada') : fila.classList.remove('fila-resaltada');
-    }
-
-    if (icono) {
-        icono.style.filter = activar ? "drop-shadow(0 0 10px #2e7d32) brightness(1.2)" : "none";
-        icono.style.zIndex = activar ? "1000" : "50";
-        
-        const tooltip = icono.querySelector('.tooltip-datos');
-        if (tooltip) tooltip.style.opacity = activar ? "1" : "0";
-    }
-}
-
-function bridgeResaltar(el, estado) {
-    if (!el) return;
-    const tag = el.getAttribute('data-tag');
-    resaltarFila(tag, estado);
-}
-
-function seleccionarPlanta(id) {
-    window.location.href = "/?plantaId=" + id;
-}
-
-function ordenarTabla(n) {
-    const table = document.querySelector(".table-almacen-compacta");
-    if (!table) return;
-    
-    let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    switching = true;
-    dir = "asc";
-    
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            
-            if (dir == "asc") {
-                if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
-                    shouldSwitch = true; break;
-                }
-            } else {
-                if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
-                    shouldSwitch = true; break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchcount++;
-        } else if (switchcount == 0 && dir == "asc") {
-            dir = "desc"; switching = true;
-        }
-    }
-    actualizarIconosOrden(n, dir);
-}
-
-function actualizarIconosOrden(columna, dir) {
-    const ths = document.querySelectorAll(".table-almacen-compacta th");
-    ths.forEach((th, idx) => {
-        let span = th.querySelector(".sort-icon") || (th.innerHTML += ' <span class="sort-icon">↕</span>', th.querySelector(".sort-icon"));
-        span.innerHTML = (idx === columna) ? (dir === "asc" ? "↑" : "↓") : "↕";
-        span.style.color = (idx === columna) ? "#28a745" : "#ccc";
-    });
-}
-
-/**
- * Función puente para leer los datos del icono y abrir el modal
- * Soluciona las restricciones de Thymeleaf 3.1+
- */
 function prepararModalDesdeIcono(elemento) {
-    // Extraer datos de los atributos data-
-    const tag = elemento.getAttribute('data-tag');
-    const user = elemento.getAttribute('data-user');
-    const ram = elemento.getAttribute('data-ram');
-    const cpu = elemento.getAttribute('data-cpu');
-    const disco = elemento.getAttribute('data-disco');
-    const so = elemento.getAttribute('data-so');
-    const otros = elemento.getAttribute('data-otros');
-    const plantaId = elemento.getAttribute('data-planta-id');
-    const tipo = elemento.getAttribute('data-tipo');
+    let d = elemento.dataset;
+    let tag = d.tag || elemento.getAttribute('data-tag');
+    
+    // Si faltan datos en el botón, intentamos buscarlos de nuevo
+    if (!d.user || d.user === "") {
+        const btnTabla = document.querySelector(`button[data-tag="${tag}"][data-user]`);
+        if (btnTabla) d = btnTabla.dataset;
+    }
 
-    // Llamar a la función que ya tenías definida
-    abrirModalUpdate(tag, user, ram, cpu, disco, so, otros, plantaId, tipo);
+    // Usamos d.plantaId (que viene de data-planta-id)
+    abrirModalUpdate(
+        tag, 
+        d.user || d.nombreUsuario, 
+        d.ram, 
+        d.cpu, 
+        d.disco, 
+        d.so || d.versionSo, 
+        d.otros, 
+        d.plantaId || d.planta || '1', 
+        d.tipo || d.tipoEquipo
+    );
 }
-
-// Variable global que definiremos al principio de tu JS
-let esNuevoAsset = false;
 
 async function enviarFormularioModal() {
-    const tag = document.getElementById('inputAssetTag').value;
-    if (!tag) return alert("El Asset Tag es obligatorio");
-
-    // Si esNuevoAsset es true -> Crear. Si es false -> Actualizar.
-    const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';
-    
+    const tag = document.getElementById('inputAssetTag').value.trim();
+    if (!tag) return alert("Tag obligatorio");
     const payload = {
         assetTag: tag,
         nombreUsuario: document.getElementById('inputUsuario').value,
@@ -281,22 +233,115 @@ async function enviarFormularioModal() {
         disco: document.getElementById('inputDisco').value,
         versionSo: document.getElementById('inputSo').value,
         otros: document.getElementById('inputOtros').value,
-        plantaId: document.getElementById('inputPlanta').value,
+        plantaId: parseInt(document.getElementById('inputPlanta').value) || 1,
         tipoEquipo: document.getElementById('inputTipo').value,
-        posX: document.getElementById('inputPosX').value,
-        posY: document.getElementById('inputPosY').value
+        posX: parseInt(document.getElementById('inputPosX').value) || 0,
+        posY: parseInt(document.getElementById('inputPosY').value) || 0
+    };
+    const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (response.ok) { location.reload(); } 
+        else { alert("Error: " + (result.error || "Fallo al guardar")); }
+    } catch (e) { alert("Error de comunicación."); }
+}
+
+/**
+ * 4. REDIMENSIONADO Y AUXILIARES
+ */
+function habilitarResizerColumnas() {
+    const table = document.getElementById('tablaAssets');
+    if (!table) return;
+    table.querySelectorAll('thead th').forEach((col) => {
+        if (col.querySelector('.resizer')) return;
+        const resizer = document.createElement('div');
+        resizer.classList.add('resizer');
+        col.appendChild(resizer);
+        resizer.addEventListener('mousedown', function (e) {
+            const startX = e.pageX; const startWidth = col.offsetWidth;
+            const onMouseMove = (me) => {
+                const w = startWidth + (me.pageX - startX);
+                if (w > 50) col.style.width = w + 'px';
+            };
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    });
+}
+
+function manejarClickIcono(el, ev) { if (ev) ev.stopPropagation(); prepararModalDesdeIcono(el); }
+function editarDesdeTabla(btn) { prepararModalDesdeIcono(btn); }
+function seleccionarPlanta(id) { window.location.href = "/?plantaId=" + id; }
+
+window.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('modalEditAsset');
+    if (modalEl) window.modalInstancia = new bootstrap.Modal(modalEl);
+    const urlParams = new URLSearchParams(window.location.search);
+    const seccionQuery = urlParams.get('seccion');
+    const plantaQuery = urlParams.get('plantaId');
+    if (plantaQuery) mostrarSeccion('vista-plano');
+    else if (seccionQuery) mostrarSeccion(seccionQuery);
+    else mostrarSeccion('vista-bienvenida');
+});
+
+// Asegúrate de que esta función se llame exactamente como en el onclick de tu modalest.html
+async function enviarFormularioEdit() {
+    const tagInput = document.getElementById('inputAssetTag');
+    const tag = tagInput.value.trim();
+    
+    if (!tag) {
+        alert("El Asset Tag es obligatorio");
+        return;
+    }
+
+    // Construimos el objeto con las llaves que espera el Map de AssetController.java
+    const payload = {
+        assetTag: tag,
+        nombreUsuario: document.getElementById('inputUsuario').value || "",
+        ram: document.getElementById('inputRam').value || "",
+        cpu: document.getElementById('inputCpu').value || "",
+        disco: document.getElementById('inputDisco').value || "",
+        versionSo: document.getElementById('inputSo').value || "",
+        otros: document.getElementById('inputOtros').value || "",
+        plantaId: document.getElementById('inputPlanta').value || "1",
+        tipoEquipo: document.getElementById('inputTipo').value || "PC",
+        // Si es nuevo, forzamos posiciones a 0. Si es edición, se mantienen las que tenga.
+        posX: esNuevoAsset ? 0 : (parseInt(document.getElementById('inputPosX').value) || 0),
+        posY: esNuevoAsset ? 0 : (parseInt(document.getElementById('inputPosY').value) || 0)
     };
 
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
+    // Determinamos la ruta según la intención
+    const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';
+    
+    console.log(esNuevoAsset ? "🚀 CREANDO NUEVO ASSET" : "📝 ACTUALIZANDO ASSET EXISTENTE");
 
-    if (response.ok) {
-        location.reload(); 
-    } else {
-        const error = await response.json();
-        alert("Error: " + error.error);
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(esNuevoAsset ? "Activo creado correctamente" : "Activo actualizado correctamente");
+            location.reload();
+        } else {
+            // Aquí capturamos el mensaje de "Tag Duplicado" que envía el servidor
+            alert("Error del servidor: " + (result.error || "Verifique los datos."));
+        }
+    } catch (error) {
+        console.error("Error crítico:", error);
+        alert("Error de conexión con el servidor.");
     }
 }

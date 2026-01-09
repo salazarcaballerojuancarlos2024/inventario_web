@@ -127,14 +127,20 @@
 									<td class="text-center">
 										<div class="d-flex justify-content-center gap-1">
 											<button class="btn btn-outline-primary btn-sm py-0 px-2"
-												style="font-size: 0.65rem;"
-												th:onclick="abrirModalUpdate([[${asset.assetTag}]], [[${asset.nombreUsuario}]], [[${asset.ram}]], [[${asset.cpu}]], [[${asset.disco}]], [[${asset.versionSo}]], [[${asset.otros}]], [[${asset.planta.id}]], [[${asset.tipoEquipo}]])">
-												Editar</button>
+												style="font-size: 0.65rem;" th:data-tag="${asset.assetTag}"
+												th:data-user="${asset.nombreUsuario}"
+												th:data-ram="${asset.ram}" th:data-cpu="${asset.cpu}"
+												th:data-disco="${asset.disco}"
+												th:data-so="${asset.versionSo}"
+												th:data-otros="${asset.otros}"
+												th:data-planta-id="${asset.planta.id}"
+												th:data-tipo="${asset.tipoEquipo}"
+												onclick="prepararModalDesdeIcono(this)">Editar</button>
 
 											<button
 												class="btn btn-warning btn-sm py-0 px-2 text-dark fw-bold"
-												style="font-size: 0.65rem;"
-												th:onclick="confirmarEliminarAsset([[${asset.assetTag}]])">
+												style="font-size: 0.65rem;" th:data-tag="${asset.assetTag}"
+												onclick="confirmarEliminarAsset(this.getAttribute('data-tag'))">
 												Eliminar</button>
 										</div>
 									</td>

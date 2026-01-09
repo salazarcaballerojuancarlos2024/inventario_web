@@ -127,7 +127,10 @@ public class AssetController {
     /**
      * 3. ELIMINAR ASSET
      */
-    @DeleteMapping("/eliminar/{tag}")
+    /**
+     * 3. ELIMINAR ASSET - Cambiado a POST para máxima compatibilidad
+     */
+    @PostMapping("/eliminar/{tag}") // Cambiado de @DeleteMapping a @PostMapping
     @ResponseBody
     public ResponseEntity<?> eliminarAsset(@PathVariable String tag) {
         try {
@@ -136,9 +139,9 @@ public class AssetController {
                 assetService.eliminarAsset(tag);
                 return ResponseEntity.ok(Map.of("mensaje", "Asset " + tag + " eliminado"));
             }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "No existe"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "El activo no existe en la base de datos"));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error al eliminar"));
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al eliminar: " + e.getMessage()));
         }
     }
 
