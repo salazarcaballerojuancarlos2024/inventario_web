@@ -147,3 +147,22 @@ th.text-info .sort-icon {
     margin: 0 2px;
     border-radius: 4px !important; /* Separarlos un poco visualmente */
 }
+
+/* Resaltado de la palabra encontrada */
+mark.resaltado-busqueda {
+    background-color: #ffeb3b; /* Amarillo vibrante */
+    color: #000;
+    padding: 0;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Efecto visual para las filas que "sobreviven" al filtro */
+.fila-asset {
+    transition: background-color 0.2s ease;
+}
+
+/* Opcional: resaltado de la celda que causó el match */
+.celda-match {
+    background-color: rgba(92, 107, 192, 0.05); /* Un tono muy suave del índigo que usas */
+}

@@ -96,28 +96,88 @@ function ordenarTablaPaginada(n) {
 function actualizarTablaDinamica() {
     const table = document.getElementById("tablaAssets");
     if (!table) return;
-    const rows = Array.from(table.querySelectorAll("tbody tr.fila-asset"));
-    const searchFilter = (document.getElementById("inputBusquedaAssets")?.value || "").toUpperCase();
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr.fila-asset"));
+    const searchInput = document.getElementById("inputBusquedaAssets");
+    const searchFilter = (searchInput?.value || "").trim().toLowerCase();
     const maxRows = parseInt(document.getElementById("maxRows")?.value || 10);
 
-    const visibleRows = rows.filter(row => {
-        const text = row.innerText.toUpperCase();
-        const matches = text.indexOf(searchFilter) > -1;
-        row.style.display = "none";
-        return matches;
+    let matches = [];
+
+    // 1. FILTRADO, RESALTADO Y ASIGNACIÓN DE PRIORIDAD
+    rows.forEach(row => {
+        let firstMatchCol = -1;
+        row.style.display = "none"; // Ocultar por defecto
+        
+        // Solo buscamos en las celdas de datos (típicamente las primeras 9 antes de 'Acciones')
+        const cells = Array.from(row.cells).slice(0, 9);
+
+        // Limpiar resaltados previos (quitar etiquetas <mark>)
+        cells.forEach(cell => {
+            if (cell.querySelector('mark.resaltado-busqueda')) {
+                cell.innerHTML = cell.innerText; 
+            }
+        });
+
+        if (searchFilter === "") {
+            // Si no hay búsqueda, todos son iguales (prioridad máxima)
+            matches.push({ row, priority: 99, text: "" });
+            return;
+        }
+
+        // Buscar coincidencia columna por columna
+        cells.forEach((cell, idx) => {
+            const originalText = cell.innerText;
+            const pos = originalText.toLowerCase().indexOf(searchFilter);
+            
+            if (pos > -1) {
+                // Si es la primera vez que encontramos el filtro en esta fila, guardamos la columna
+                if (firstMatchCol === -1) firstMatchCol = idx;
+
+                // Aplicar el resaltado visual
+                const regex = new RegExp(`(${searchFilter})`, 'gi');
+                cell.innerHTML = originalText.replace(regex, `<mark class="resaltado-busqueda">$1</mark>`);
+            }
+        });
+
+        // Si hubo coincidencia, guardamos para ordenar
+        if (firstMatchCol > -1) {
+            matches.push({ 
+                row, 
+                priority: firstMatchCol, 
+                text: cells[firstMatchCol].innerText.toLowerCase() 
+            });
+        }
     });
 
-    const totalVisible = visibleRows.length;
+    // 2. ORDENACIÓN POR RELEVANCIA
+    // Prioridad 0 (Tag) aparece antes que Prioridad 1 (Usuario), etc.
+    if (searchFilter !== "") {
+        matches.sort((a, b) => {
+            if (a.priority !== b.priority) return a.priority - b.priority;
+            return a.text.localeCompare(b.text); // Si empatan en columna, orden alfabético
+        });
+    }
+
+    // 3. RE-INSERCIÓN FÍSICA EN EL DOM (Necesario para que el orden se aplique)
+    matches.forEach(obj => tbody.appendChild(obj.row));
+
+    // 4. PAGINACIÓN SOBRE EL NUEVO ORDEN
+    const totalVisible = matches.length;
     const totalPages = Math.ceil(totalVisible / maxRows);
+    
+    // Asegurar que la página actual no quede huérfana tras un filtro
+    if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
     const start = (currentPage - 1) * maxRows;
     const end = start + maxRows;
 
-    visibleRows.slice(start, end).forEach(row => row.style.display = "");
+    matches.slice(start, end).forEach(obj => obj.row.style.display = "");
     
-    // Actualizar contadores
+    // 5. ACTUALIZAR CONTADORES
     const countPageEl = document.getElementById("countPage");
     const countTotalEl = document.getElementById("countTotal");
-    if (countPageEl) countPageEl.innerText = visibleRows.slice(start, end).length;
+    if (countPageEl) countPageEl.innerText = matches.slice(start, end).length;
     if (countTotalEl) countTotalEl.innerText = totalVisible;
 
     renderPagination(totalPages);
