@@ -2,7 +2,8 @@
 
 /**
  * PLANTA-V2.CSS
- * Layout horizontal exclusivo para la Vista de Planos (75% Mapa / 25% Sidebar)
+ * Layout y elementos de fondo exclusivos para la Vista de Plantas
+ * REVISIÓN: 2026 - Sistema de Coordenadas Relativas %
  */
 
 /* 1. CONTENEDOR RAÍZ */
@@ -15,70 +16,59 @@
     background-color: #111;
 }
 
-/* 2. ÁREA DEL MAPA */
+/* 2. ÁREA DEL MAPA (75%) */
 #vista-plano .area-mapa-principal {
     flex: 0 0 75% !important;
     width: 75% !important;
     height: 100% !important;
     position: relative !important;
     background-color: #e5e7eb; 
-    overflow: visible !important; 
+    overflow: visible !important; /* IMPORTANTE: Para que el drag no se corte al salir */
     z-index: 10;
 }
 
-/* 3. EL PLANO (CONTENEDOR DINÁMICO) */
+/* 3. EL PLANO DINÁMICO (CONTENEDOR DE LA IMAGEN) */
 #vista-plano [id^="contenedor-plano-"] {
     width: 100% !important;
     height: 100% !important;
     background-repeat: no-repeat !important;
-    background-size: contain !important;
+    background-size: contain !important; 
     background-position: center center !important;
-    position: relative !important; /* CRUCIAL para que la marca de agua sepa donde posicionarse */
-    overflow: visible !important;
-    /* Añadimos un z-index base para asegurar que el contenedor sea una capa de referencia */
+    position: relative !important; /* Los iconos se posicionan RESPECTO a este cuadro */
     z-index: 1; 
+    background-color: white; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 /* ==========================================================
-   NUEVA FUNCIONALIDAD: MARCA DE AGUA (VERSION CORREGIDA)
+   4. MARCA DE AGUA (VERSION OPTIMIZADA)
    ========================================================== */
 .marca-agua-texto {
-    /* 1. POSICIONAMIENTO FORZADO */
     position: absolute !important;
     top: 50px !important;
     left: 50px !important;
+    color: rgba(0, 0, 0, 0.15) !important;
     
-    /* 2. VISIBILIDAD: Subimos opacidad a 0.2 para que se vea sobre fondos blancos */
-    color: rgba(0, 0, 0, 0.20) !important;
+    /* Z-index bajo para quedar detrás de los iconos (.pc-icon tiene 50) */
+    z-index: 5 !important;
     
-    /* 3. CAPAS: 
-       - Debe ser mayor que 1 (fondo del plano)
-       - Debe ser menor que 200 (iconos de PC) 
-    */
-    z-index: 50 !important;
-    
-    /* 4. TIPOGRAFÍA Y ESTILO */
     font-family: 'Arial Black', 'Segoe UI Black', sans-serif !important;
-    font-size: 4.5rem !important; /* Aumentamos un poco el tamaño */
+    font-size: 4.5rem !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
     letter-spacing: -1px !important;
     line-height: 1 !important;
-    white-space: nowrap !important; /* Evita que el nombre se corte en dos líneas */
+    white-space: nowrap !important;
     
-    /* 5. SEGURIDAD DE INTERACCIÓN */
-    pointer-events: none !important; /* El ratón la ignora, permite arrastrar PCs debajo */
-    user-select: none !important;    /* No se puede resaltar el texto */
+    pointer-events: none !important; /* Permite arrastrar PCs por encima sin bloquear */
+    user-select: none !important;    
     
-    /* 6. EFECTO VISUAL ADICIONAL */
-    border-left: 12px solid rgba(0, 0, 0, 0.1) !important;
+    border-left: 12px solid rgba(0, 0, 0, 0.08) !important;
     padding-left: 30px !important;
-    
-    /* Un pequeño sombreado muy tenue para dar relieve */
     text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
 }
 
-/* Ajuste para pantallas con poca altura (Laptops) */
+/* Ajuste para Laptops */
 @media (max-height: 800px) {
     .marca-agua-texto {
         font-size: 3rem !important;
@@ -89,10 +79,8 @@
 }
 
 /* ==========================================================
-   GESTIÓN DE ICONOS Y SIDEBAR
-   ========================================================== */
-
-/* 4. SIDEBAR DE CONTROL */
+   5. SIDEBAR DE CONTROL (25%)
+   ========================================================= */
 #vista-plano .sidebar-control-wrapper {
     flex: 0 0 25% !important;
     width: 25% !important;
@@ -104,19 +92,9 @@
     padding: 15px;
 }
 
-/* 5. AJUSTE DE ICONOS EN PLANTA */
-#vista-plano .drag-item {
-    cursor: grab;
-    z-index: 200; 
-}
-
-#vista-plano .drag-item.interact-dragging {
-    z-index: 10000 !important;
-    cursor: grabbing !important;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-}
-
-/* Estilo de las zonas de soltado */
+/* ==========================================================
+   6. DROPZONES (SIDEBAR)
+   ========================================================= */
 #vista-plano .planta-dropzone {
     border: 2px dashed #4a5568;
     background: #2d3748;
@@ -125,6 +103,7 @@
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 #vista-plano .planta-dropzone.drop-target {
@@ -132,4 +111,7 @@
     border-color: #4fd1c5 !important;
     transform: scale(1.03);
     box-shadow: 0 0 15px rgba(79, 209, 197, 0.3);
+    color: white;
 }
+
+/* ELIMINADO: .drag-item de este archivo para evitar conflictos con mapa.css e iconos.css */

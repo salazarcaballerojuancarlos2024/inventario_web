@@ -70,10 +70,9 @@ public class AssetController {
 
     /**
      * 1. CREAR NUEVO ACTIVO
-     * Invocado cuando esNuevoAsset = true en el JS
      */
     @PostMapping("/crear")
-    @ResponseBody // Necesario porque la clase es @Controller
+    @ResponseBody
     public ResponseEntity<?> crearAsset(@RequestBody Map<String, Object> payload) {
         try {
             String tag = (String) payload.get("assetTag");
@@ -87,9 +86,10 @@ public class AssetController {
             nuevo.setAssetTag(tag);
             actualizarCamposComunes(nuevo, payload);
             
-            // Al ser nuevo, forzamos posición inicial si no viene dada
-            nuevo.setPosX(payload.containsKey("posX") ? Integer.parseInt(payload.get("posX").toString()) : 0);
-            nuevo.setPosY(payload.containsKey("posY") ? Integer.parseInt(payload.get("posY").toString()) : 0);
+            // CORRECCIÓN: Usamos Double.parseDouble para aceptar los porcentajes decimales
+            // y ponemos 0.0 como valor por defecto.
+            nuevo.setPosX(payload.containsKey("posX") ? Double.parseDouble(payload.get("posX").toString()) : 0.0);
+            nuevo.setPosY(payload.containsKey("posY") ? Double.parseDouble(payload.get("posY").toString()) : 0.0);
 
             // Asignar planta inicial
             if (payload.get("plantaId") != null && !payload.get("plantaId").toString().isEmpty()) {
@@ -125,12 +125,18 @@ public class AssetController {
                         Planta nuevaPlanta = plantaRepository.findById(nuevaPlantaId).orElse(null);
                         if (nuevaPlanta != null) {
                             assetExistente.setPlanta(nuevaPlanta);
-                            assetExistente.setPosX(0); // Reset por cambio de planta
-                            assetExistente.setPosY(0);
+                            // CORRECCIÓN: Usar 0.0 (Double) en lugar de 0 (int)
+                            assetExistente.setPosX(0.0); 
+                            assetExistente.setPosY(0.0);
                         }
                     } else {
-                        if (payload.get("posX") != null) assetExistente.setPosX(Integer.parseInt(payload.get("posX").toString()));
-                        if (payload.get("posY") != null) assetExistente.setPosY(Integer.parseInt(payload.get("posY").toString()));
+                        // CORRECCIÓN: Usar Double.parseDouble para mantener decimales y evitar errores de tipo
+                        if (payload.get("posX") != null) {
+                            assetExistente.setPosX(Double.parseDouble(payload.get("posX").toString()));
+                        }
+                        if (payload.get("posY") != null) {
+                            assetExistente.setPosY(Double.parseDouble(payload.get("posY").toString()));
+                        }
                     }
                 }
                 
@@ -143,9 +149,7 @@ public class AssetController {
         }
     }
 
-    /**
-     * 3. ELIMINAR ASSET
-     */
+   
     /**
      * 3. ELIMINAR ASSET - Cambiado a POST para máxima compatibilidad
      */
@@ -185,14 +189,23 @@ public class AssetController {
             for (Map<String, Object> mov : movimientos) {
                 Asset asset = assetService.findByAssetTag((String) mov.get("assetTag"));
                 if (asset != null) {
-                    asset.setPosX(((Number) mov.get("posX")).intValue());
-                    asset.setPosY(((Number) mov.get("posY")).intValue());
+                    // CORRECCIÓN: Extraer el valor como Double. 
+                    // Usamos toString() y parseDouble para manejar cualquier formato numérico del JSON.
+                    if (mov.get("posX") != null) {
+                        asset.setPosX(Double.parseDouble(mov.get("posX").toString()));
+                    }
+                    if (mov.get("posY") != null) {
+                        asset.setPosY(Double.parseDouble(mov.get("posY").toString()));
+                    }
+                    
                     assetsParaGuardar.add(asset);
                 }
             }
             assetService.guardarTodos(assetsParaGuardar);
             return ResponseEntity.ok(Map.of("mensaje", "Posiciones actualizadas"));
         } catch (Exception e) {
+            // Imprimir el error en consola ayuda mucho a debugear
+            e.printStackTrace(); 
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
@@ -203,8 +216,14 @@ public class AssetController {
         try {
             Asset asset = assetService.findByAssetTag((String) payload.get("assetTag"));
             if (asset != null) {
-                asset.setPosX(((Number) payload.get("posX")).intValue());
-                asset.setPosY(((Number) payload.get("posY")).intValue());
+                // CORRECCIÓN: Convertir a Double usando toString() para evitar errores de casteo
+                if (payload.get("posX") != null) {
+                    asset.setPosX(Double.parseDouble(payload.get("posX").toString()));
+                }
+                if (payload.get("posY") != null) {
+                    asset.setPosY(Double.parseDouble(payload.get("posY").toString()));
+                }
+                
                 assetService.guardarAsset(asset);
                 return ResponseEntity.ok(Map.of("mensaje", "Posición guardada"));
             }

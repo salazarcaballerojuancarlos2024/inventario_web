@@ -3,9 +3,8 @@
 /* ==========================================
    1. ESTADO BASE DEL ICONO
    ========================================== */
-/* BUSCA ESTO Y DÉJALO ASÍ: */
 .pc-icon { 
-    position: absolute; 
+    position: absolute !important; 
     width: 50px; 
     display: flex; 
     flex-direction: column; 
@@ -14,10 +13,19 @@
     z-index: 50; 
     cursor: grab; 
     touch-action: none; 
-    /* ELIMINAMOS 'transform' de la transición */
-    transition: opacity 0.2s ease, background-color 0.3s ease; 
+    
+    /* MODIFICACIÓN VITAL: Animamos opacidad y color, pero NUNCA 'all'.
+       Si animamos 'all', el navegador suaviza el cambio de posición y produce el salto oblicuo. */
+    transition: opacity 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease; 
+    
     padding: 6px;
     border-radius: 50%;
+
+    /* CENTRADO: Esto asegura que el centro del icono coincida con la coordenada % */
+    transform: translate(-50%, -50%); 
+    
+    /* Mejora el rendimiento del renderizado en cambios de posición */
+    will-change: transform, left, top;
 }
 
 /* Imagen del equipo */
@@ -25,32 +33,32 @@
     width: 32px; 
     height: 32px; 
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
-    pointer-events: none; /* Evita que la imagen interfiera con el drag */
+    pointer-events: none; 
 }
 
 /* Etiqueta de texto (Asset Tag) */
 .pc-icon span {
     font-size: 10px; 
     font-weight: bold; 
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     color: #333;
     padding: 1px 5px; 
     border-radius: 4px; 
     margin-top: 3px; 
     white-space: nowrap;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    pointer-events: none;
 }
 
 /* ==========================================
-   2. INTERACCIÓN Y ANIMACIONES
+   2. INTERACCIÓN Y ESTADOS DINÁMICOS
    ========================================== */
 
 /* Efecto al pasar el ratón (Hover) */
 .pc-icon:hover {
-    z-index: 2000; /* Por encima de todo, excepto tooltips */
-   /* transform: scale(1.2); */
-    background-color: rgba(46, 125, 50, 0.15); /* Fondo verde tenue */
+    z-index: 2000;
+    background-color: rgba(46, 125, 50, 0.15); 
     animation: pulse-green 1.5s infinite;
 }
 
@@ -61,20 +69,21 @@
 .pc-icon:hover span {
     background-color: #2e7d32 !important;
     color: #ffffff !important;
-    transform: translateY(2px);
 }
 
-/* Estado durante el arrastre (InteracJS) */
+/* ESTADO DURANTE EL ARRASTRE (InteractJS) */
 .pc-icon.interact-dragging { 
-    opacity: 0.8; 
+    opacity: 0.7; 
     z-index: 9999 !important; 
-    cursor: grabbing;
+    cursor: grabbing !important;
+    /* Bloqueamos TODA transición para que el movimiento sea 1:1 con el ratón */
+    transition: none !important; 
     animation: none !important;
-    /* Quitamos el transform de aquí, el JS se encarga */
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
 }
 
 /* ==========================================
-   3. KEYFRAMES (ANIMACIONES)
+   3. ANIMACIONES (KEYFRAMES)
    ========================================== */
 
 /* Pulso Verde para Hover */
@@ -84,8 +93,8 @@
     100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
 }
 
-/* Pulso de llegada (Azul) - Conservado de tu versión original */
-.pc-icon[data-x="850"][data-y="10"] {
+/* Pulso de llegada o resaltado (Azul) */
+.pc-icon.resaltado-temporal {
     outline: 2px solid #007bff; 
     outline-offset: 4px; 
     animation: pulse-blue 2s infinite;

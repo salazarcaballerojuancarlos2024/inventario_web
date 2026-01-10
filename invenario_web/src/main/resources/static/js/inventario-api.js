@@ -42,6 +42,7 @@ async function moverAssetAPlanta(tag, plantaId) {
 
 /**
  * 2. GESTIÓN DE FORMULARIO: Envía los datos editados en el modal (Crear/Editar)
+ * Versión corregida para Coordenadas Proporcionales (%)
  */
 async function enviarFormularioEdit() {
     const formElement = document.getElementById('formEditAsset');
@@ -50,21 +51,40 @@ async function enviarFormularioEdit() {
     const formData = new FormData(formElement);
     const payload = Object.fromEntries(formData.entries());
 
-    // Recuperamos coordenadas si vienen de un icono arrastrado
+    // 1. Prioridad: Si hay coordenadas temporales guardadas en el formulario
     const tempX = formElement.getAttribute('data-temp-x');
     const tempY = formElement.getAttribute('data-temp-y');
 
     if (tempX !== null && tempY !== null) {
-        payload.posX = Math.round(parseFloat(tempX));
-        payload.posY = Math.round(parseFloat(tempY));
+        // CORRECCIÓN: Usamos parseFloat para mantener los decimales del porcentaje
+        payload.posX = parseFloat(tempX);
+        payload.posY = parseFloat(tempY);
     } else {
+        // 2. Si no hay temporales, intentamos leer la posición actual del icono
         const iconoActual = document.getElementById(payload.assetTag);
         if (iconoActual) {
-            payload.posX = Math.round(parseFloat(iconoActual.getAttribute('data-x')) || 0);
-            payload.posY = Math.round(parseFloat(iconoActual.getAttribute('data-y')) || 0);
+            const container = iconoActual.parentElement;
+            const rect = container.getBoundingClientRect();
+
+            // Intentamos obtener el porcentaje ya calculado
+            let pX = iconoActual.getAttribute('data-x-pct');
+            let pY = iconoActual.getAttribute('data-y-pct');
+
+            // Si no tiene el atributo pct, lo calculamos en tiempo real
+            if (!pX || !pY) {
+                const currentX = parseFloat(iconoActual.getAttribute('data-x')) || 0;
+                const currentY = parseFloat(iconoActual.getAttribute('data-y')) || 0;
+                // Evitamos división por cero si el contenedor no está renderizado
+                pX = rect.width > 0 ? (currentX / rect.width) * 100 : 0;
+                pY = rect.height > 0 ? (currentY / rect.height) * 100 : 0;
+            }
+
+            payload.posX = parseFloat(pX);
+            payload.posY = parseFloat(pY);
         } else {
-            payload.posX = payload.posX || 0;
-            payload.posY = payload.posY || 0;
+            // 3. Si no existe el icono (nuevo asset), forzamos a 0.0 decimal
+            payload.posX = parseFloat(payload.posX) || 0.0;
+            payload.posY = parseFloat(payload.posY) || 0.0;
         }
     }
 
@@ -86,10 +106,12 @@ async function enviarFormularioEdit() {
                 window.location.href = `/?plantaId=${pId}`;
             }
         } else {
-            alert("No se pudo guardar el equipo. Verifique duplicados de Tag.");
+            const errorData = await response.json();
+            alert("Error: " + (errorData.error || "No se pudo guardar el equipo."));
         }
     } catch (error) {
-        console.error("Error crítico:", error);
+        console.error("Error crítico en envío de formulario:", error);
+        alert("Error de conexión con el servidor.");
     }
 }
 
@@ -137,7 +159,6 @@ async function confirmarEliminarAsset(tag) {
  * 4. PERSISTENCIA MASIVA: Guarda posiciones de todos los equipos en una planta
  */
 async function guardarPosicionesPlanta(plantaId) {
-    // Detectamos si estamos en almacén (id 1) o en un plano normal
     const selector = (plantaId == 1) ? '#contenedor-almacen .drag-item' : '.area-mapa-principal .drag-item';
     const items = document.querySelectorAll(selector);
     const btn = event.currentTarget;
@@ -148,12 +169,25 @@ async function guardarPosicionesPlanta(plantaId) {
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> GUARDANDO...`;
 
-    const movimientos = Array.from(items).map(i => ({
-        assetTag: i.getAttribute('data-tag'),
-        posX: Math.round(parseFloat(i.getAttribute('data-x')) || 0),
-        posY: Math.round(parseFloat(i.getAttribute('data-y')) || 0),
-        plantaId: plantaId 
-    }));
+    const movimientos = Array.from(items).map(i => {
+        // LEER DIRECTAMENTE DEL STYLE (que ya está en %)
+        // Esto evita tener que medir el contenedor con getBoundingClientRect()
+        let pX = i.style.left.replace('%', '');
+        let pY = i.style.top.replace('%', '');
+
+        // Si por alguna razón el style está vacío, usamos los atributos data
+        if (!pX || !pY) {
+            pX = i.getAttribute('data-x-pct') || 0;
+            pY = i.getAttribute('data-y-pct') || 0;
+        }
+
+        return {
+            assetTag: i.getAttribute('data-tag'),
+            posX: parseFloat(pX),
+            posY: parseFloat(pY),
+            plantaId: plantaId 
+        };
+    });
 
     try {
         const res = await fetch(CONFIG.endpoints.actualizarPosiciones, {
@@ -164,7 +198,8 @@ async function guardarPosicionesPlanta(plantaId) {
 
         if (res.ok) {
             btn.innerHTML = "✅ ¡GUARDADO!";
-            setTimeout(() => window.location.reload(), 800);
+            // RECARGA INMEDIATA: Evitamos que el usuario vea el "salto" del DOM antiguo
+            window.location.reload();
         }
     } catch (error) {
         console.error("Error:", error);

@@ -250,12 +250,26 @@ function abrirModalUpdate(tag, usuario, ram, cpu, disco, so, otros, plantaId, ti
     document.getElementById('inputDisco').value = disco || '';
     document.getElementById('inputSo').value = so || '';
     document.getElementById('inputOtros').value = otros || '';
+    
     if (plantaId) document.getElementById('inputPlanta').value = plantaId;
     if (tipo) document.getElementById('inputTipo').value = tipo;
 
+    // LOCALIZAMOS EL ICONO EN EL PLANO
     const icono = document.getElementById(tag) || document.getElementById('icono-' + tag);
-    document.getElementById('inputPosX').value = icono ? (icono.getAttribute('data-x') || 0) : 0;
-    document.getElementById('inputPosY').value = icono ? (icono.getAttribute('data-y') || 0) : 0;
+    
+    // CORRECCIÓN VITAL: Leemos los atributos porcentuales (-pct) en lugar de data-x/y
+    if (icono) {
+        // Si el icono existe en el plano, capturamos su % actual
+        document.getElementById('inputPosX').value = icono.getAttribute('data-x-pct') || 0;
+        document.getElementById('inputPosY').value = icono.getAttribute('data-y-pct') || 0;
+    } else {
+        // Si venimos de la tabla de gestión (donde el icono no está renderizado), 
+        // buscamos si el botón tiene los datos de posición o ponemos 0 por defecto
+        const btnTabla = document.querySelector(`button[data-tag="${tag}"]`);
+        document.getElementById('inputPosX').value = btnTabla ? (btnTabla.getAttribute('data-pos-x') || 0) : 0;
+        document.getElementById('inputPosY').value = btnTabla ? (btnTabla.getAttribute('data-pos-y') || 0) : 0;
+    }
+
     if (window.modalInstancia) window.modalInstancia.show();
 }
 
@@ -263,13 +277,16 @@ function prepararModalDesdeIcono(elemento) {
     let d = elemento.dataset;
     let tag = d.tag || elemento.getAttribute('data-tag');
     
-    // Si faltan datos en el botón, intentamos buscarlos de nuevo
+    // Extraemos los porcentajes del icono (el círculo/pc en el plano)
+    const xPct = elemento.getAttribute('data-x-pct') || "0";
+    const yPct = elemento.getAttribute('data-y-pct') || "0";
+
     if (!d.user || d.user === "") {
         const btnTabla = document.querySelector(`button[data-tag="${tag}"][data-user]`);
         if (btnTabla) d = btnTabla.dataset;
     }
 
-    // Usamos d.plantaId (que viene de data-planta-id)
+    // AÑADIMOS xPct e yPct a la llamada
     abrirModalUpdate(
         tag, 
         d.user || d.nombreUsuario, 
@@ -279,7 +296,9 @@ function prepararModalDesdeIcono(elemento) {
         d.so || d.versionSo, 
         d.otros, 
         d.plantaId || d.planta || '1', 
-        d.tipo || d.tipoEquipo
+        d.tipo || d.tipoEquipo,
+        xPct, // <--- Nuevo parámetro
+        yPct  // <--- Nuevo parámetro
     );
 }
 
@@ -364,21 +383,23 @@ async function enviarFormularioEdit() {
         return;
     }
 
-    // Construimos el objeto con las llaves que espera el Map de AssetController.java
-    const payload = {
-        assetTag: tag,
-        nombreUsuario: document.getElementById('inputUsuario').value || "",
-        ram: document.getElementById('inputRam').value || "",
-        cpu: document.getElementById('inputCpu').value || "",
-        disco: document.getElementById('inputDisco').value || "",
-        versionSo: document.getElementById('inputSo').value || "",
-        otros: document.getElementById('inputOtros').value || "",
-        plantaId: document.getElementById('inputPlanta').value || "1",
-        tipoEquipo: document.getElementById('inputTipo').value || "PC",
-        // Si es nuevo, forzamos posiciones a 0. Si es edición, se mantienen las que tenga.
-        posX: esNuevoAsset ? 0 : (parseInt(document.getElementById('inputPosX').value) || 0),
-        posY: esNuevoAsset ? 0 : (parseInt(document.getElementById('inputPosY').value) || 0)
-    };
+	// Construimos el objeto con las llaves que espera el Map de AssetController.java
+	    const payload = {
+	        assetTag: tag,
+	        nombreUsuario: document.getElementById('inputUsuario').value || "",
+	        ram: document.getElementById('inputRam').value || "",
+	        cpu: document.getElementById('inputCpu').value || "",
+	        disco: document.getElementById('inputDisco').value || "",
+	        versionSo: document.getElementById('inputSo').value || "",
+	        otros: document.getElementById('inputOtros').value || "",
+	        plantaId: document.getElementById('inputPlanta').value || "1",
+	        tipoEquipo: document.getElementById('inputTipo').value || "PC",
+	        
+	        // CORRECCIÓN: Usamos parseFloat para no perder los decimales del %
+	        // Además, si es creación, usamos el valor del input (que pusimos a 2 en abrirModalCrear)
+	        posX: parseFloat(document.getElementById('inputPosX').value) || 0,
+	        posY: parseFloat(document.getElementById('inputPosY').value) || 0
+	    };
 
     // Determinamos la ruta según la intención
     const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';

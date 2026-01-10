@@ -16,15 +16,18 @@
 					<div th:each="asset : ${assets}"
 						th:if="${asset.planta != null and asset.planta.id == 1}"
 						class="pc-icon drag-item" th:id="'icono-' + ${asset.assetTag}"
-						th:data-tag="${asset.assetTag}" th:data-x="${asset.posX ?: 0}"
-						th:data-y="${asset.posY ?: 0}"
-						th:style="'transform: translate(' + (${asset.posX ?: 0}) + 'px, ' + (${asset.posY ?: 0}) + 'px);'"
+						th:data-tag="${asset.assetTag}" data-x="0" data-y="0"
+						th:data-x-pct="${asset.posX ?: 0}"
+						th:data-y-pct="${asset.posY ?: 0}"
+						th:style="|left: ${asset.posX ?: 0}%; top: ${asset.posY ?: 0}%; position: absolute;|"
 						th:onmouseenter="'resaltarFila(\'' + ${asset.assetTag} + '\', true)'"
 						th:onmouseleave="'resaltarFila(\'' + ${asset.assetTag} + '\', false)'"
 						ondblclick="manejarClickIcono(this, event)">
+
 						<img
 							th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}"
 							alt="Icono"> <span th:text="${asset.assetTag}"></span>
+
 						<div class="tooltip-datos shadow">
 							<div
 								class="text-center fw-bold text-warning mb-1 border-bottom border-secondary pb-1">FICHA
@@ -75,82 +78,84 @@
 								class="text-end text-info mt-1 pt-1 border-top border-secondary"
 								style="font-size: 0.65rem;">
 								X: <span class="tt-pos-x" th:id="'tt-x-' + ${asset.assetTag}"
-									th:text="${asset.posX}"></span> | Y: <span class="tt-pos-y"
-									th:id="'tt-y-' + ${asset.assetTag}" th:text="${asset.posY}"></span>
+									th:text="${#numbers.formatDecimal(asset.posX ?: 0, 1, 2)} + '%'"></span>
+								| Y: <span class="tt-pos-y" th:id="'tt-y-' + ${asset.assetTag}"
+									th:text="${#numbers.formatDecimal(asset.posY ?: 0, 1, 2)} + '%'"></span>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="bg-white overflow-hidden" style="flex: 0 0 25%;">
-					<div class="h-100 overflow-auto">
-						<table
-							class="table table-hover align-middle m-0 table-almacen-compacta"
-							id="tablaAlmacen"
-							style="font-size: 0.7rem; table-layout: fixed; width: 100%;">
-							<thead class="table-dark sticky-top">
-								<tr>
-									<th onclick="ordenarTabla(0)">Tag <span class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(1)">Tipo <span class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(2)">Usuario <span
-										class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(3)">Ubicación <span
-										class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(4)">RAM <span class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(5)">CPU <span class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(6)">Disco <span
-										class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(7)">S.O. <span class="sort-icon">↕</span></th>
-									<th onclick="ordenarTabla(8)">Otros <span
-										class="sort-icon">↕</span></th>
-									<th class="text-center" style="width: 80px;">X / Y</th>
-									<th class="text-center" style="width: 130px;">Acciones</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr th:each="asset : ${assets}"
-									th:if="${asset.planta != null and asset.planta.id == 1}"
-									th:id="'fila-' + ${asset.assetTag}">
-									<td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
-									<td th:text="${asset.tipoEquipo}" class="text-uppercase small"></td>
-									<td th:text="${asset.nombreUsuario}" class="text-truncate"></td>
-									<td th:text="${asset.planta.nombre}"></td>
-									<td th:text="${asset.ram}"></td>
-									<td th:text="${asset.cpu}" class="text-truncate"></td>
-									<td th:text="${asset.disco}"></td>
-									<td th:text="${asset.versionSo}"></td>
-									<td th:text="${asset.otros}" class="text-muted text-truncate"
-										th:title="${asset.otros}"></td>
-									<td class="text-center font-monospace"
-										style="font-size: 0.65rem;"><span
-										th:id="'table-x-' + ${asset.assetTag}"
-										th:text="${asset.posX ?: 0}"></span>/<span
-										th:id="'table-y-' + ${asset.assetTag}"
-										th:text="${asset.posY ?: 0}"></span></td>
-									<td class="text-center">
-										<div class="d-flex justify-content-center gap-1">
-											<button class="btn btn-outline-primary btn-sm py-0 px-2"
-												style="font-size: 0.65rem;" th:data-tag="${asset.assetTag}"
-												th:data-user="${asset.nombreUsuario}"
-												th:data-ram="${asset.ram}" th:data-cpu="${asset.cpu}"
-												th:data-disco="${asset.disco}"
-												th:data-so="${asset.versionSo}"
-												th:data-otros="${asset.otros}"
-												th:data-planta-id="${asset.planta.id}"
-												th:data-tipo="${asset.tipoEquipo}"
-												onclick="prepararModalDesdeIcono(this)">Editar</button>
+    <div class="h-100 overflow-auto">
+        <table class="table table-hover align-middle m-0 table-almacen-compacta"
+               id="tablaAlmacen"
+               style="font-size: 0.7rem; table-layout: fixed; width: 100%;">
+            <thead class="table-dark sticky-top">
+                <tr>
+                    <th onclick="ordenarTabla(0)">Tag <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(1)">Tipo <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(2)">Usuario <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(3)">Ubicación <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(4)">RAM <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(5)">CPU <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(6)">Disco <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(7)">S.O. <span class="sort-icon">↕</span></th>
+                    <th onclick="ordenarTabla(8)">Otros <span class="sort-icon">↕</span></th>
+                    <th class="text-center" style="width: 100px;">X / Y (%)</th>
+                    <th class="text-center" style="width: 130px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="asset : ${assets}"
+                    th:if="${asset.planta != null and asset.planta.id == 1}"
+                    th:id="'fila-' + ${asset.assetTag}">
+                    <td th:text="${asset.assetTag}" class="fw-bold text-success"></td>
+                    <td th:text="${asset.tipoEquipo}" class="text-uppercase small"></td>
+                    <td th:text="${asset.nombreUsuario}" class="text-truncate"></td>
+                    <td th:text="${asset.planta.nombre}"></td>
+                    <td th:text="${asset.ram}"></td>
+                    <td th:text="${asset.cpu}" class="text-truncate"></td>
+                    <td th:text="${asset.disco}"></td>
+                    <td th:text="${asset.versionSo}"></td>
+                    <td th:text="${asset.otros}" class="text-muted text-truncate"
+                        th:title="${asset.otros}"></td>
+                    
+                    <td class="text-center font-monospace" style="font-size: 0.65rem;">
+                        <span th:id="'table-x-' + ${asset.assetTag}"
+                              th:text="${#numbers.formatDecimal(asset.posX ?: 0, 1, 2)}"></span>% /
+                        <span th:id="'table-y-' + ${asset.assetTag}"
+                              th:text="${#numbers.formatDecimal(asset.posY ?: 0, 1, 2)}"></span>%
+                    </td>
 
-											<button
-												class="btn btn-warning btn-sm py-0 px-2 text-dark fw-bold"
-												style="font-size: 0.65rem;" th:data-tag="${asset.assetTag}"
-												onclick="confirmarEliminarAsset(this.getAttribute('data-tag'))">
-												Eliminar</button>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                            <button class="btn btn-outline-primary btn-sm py-0 px-2"
+                                style="font-size: 0.65rem;" 
+                                th:data-tag="${asset.assetTag}"
+                                th:data-user="${asset.nombreUsuario}"
+                                th:data-ram="${asset.ram}" 
+                                th:data-cpu="${asset.cpu}"
+                                th:data-disco="${asset.disco}"
+                                th:data-so="${asset.versionSo}"
+                                th:data-otros="${asset.otros}"
+                                th:data-planta-id="${asset.planta.id}"
+                                th:data-tipo="${asset.tipoEquipo}"
+                                th:data-pos-x="${asset.posX}"
+                                th:data-pos-y="${asset.posY}"
+                                onclick="prepararModalDesdeIcono(this)">Editar</button>
+
+                            <button class="btn btn-warning btn-sm py-0 px-2 text-dark fw-bold"
+                                style="font-size: 0.65rem;" 
+                                th:data-tag="${asset.assetTag}"
+                                onclick="confirmarEliminarAsset(this.getAttribute('data-tag'))">
+                                Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 			</div>
 			<div
 				class="sidebar-almacen-control bg-dark text-white p-3 d-flex flex-column shadow"

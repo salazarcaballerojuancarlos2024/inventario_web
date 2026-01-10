@@ -33,10 +33,10 @@ public class Asset {
     private String otros;
 
     @Column(name = "pos_x")
-    private Integer posX = 0;
+    private Double posX;
 
     @Column(name = "pos_y")
-    private Integer posY = 0;
+    private Double posY;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "planta_id", referencedColumnName = "id")
@@ -46,34 +46,104 @@ public class Asset {
     @Column(name = "tipo_equipo") 
     private String tipoEquipo;
 
-    public Asset() {}
+	public Asset() {
+	}
 
-    // --- GETTERS Y SETTERS ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+	// --- GETTERS Y SETTERS ---
+	public Long getId() {
+		return id;
+	}
 
-    public String getAssetTag() { return assetTag; }
-    public void setAssetTag(String assetTag) { this.assetTag = assetTag; }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    // ... (Mantén el resto de tus getters y setters exactamente igual) ...
-    public String getNombreUsuario() { return nombreUsuario; }
-    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
-    public String getRam() { return ram; }
-    public void setRam(String ram) { this.ram = ram; }
-    public String getCpu() { return cpu; }
-    public void setCpu(String cpu) { this.cpu = cpu; }
-    public String getDisco() { return disco; }
-    public void setDisco(String disco) { this.disco = disco; }
-    public String getVersionSo() { return versionSo; }
-    public void setVersionSo(String versionSo) { this.versionSo = versionSo; }
-    public String getOtros() { return otros; }
-    public void setOtros(String otros) { this.otros = otros; }
-    public Integer getPosX() { return posX; }
-    public void setPosX(Integer posX) { this.posX = posX; }
-    public Integer getPosY() { return posY; }
-    public void setPosY(Integer posY) { this.posY = posY; }
-    public Planta getPlanta() { return planta; }
-    public void setPlanta(Planta planta) { this.planta = planta; }
-    public String getTipoEquipo() { return tipoEquipo; }
-    public void setTipoEquipo(String tipoEquipo) { this.tipoEquipo = tipoEquipo; }
+	public String getAssetTag() {
+		return assetTag;
+	}
+
+	public void setAssetTag(String assetTag) {
+		this.assetTag = assetTag;
+	}
+
+	// ... (Mantén el resto de tus getters y setters exactamente igual) ...
+	public String getNombreUsuario() {
+		return nombreUsuario;
+	}
+
+	public void setNombreUsuario(String nombreUsuario) {
+		this.nombreUsuario = nombreUsuario;
+	}
+
+	public String getRam() {
+		return ram;
+	}
+
+	public void setRam(String ram) {
+		this.ram = ram;
+	}
+
+	public String getCpu() {
+		return cpu;
+	}
+
+	public void setCpu(String cpu) {
+		this.cpu = cpu;
+	}
+
+	public String getDisco() {
+		return disco;
+	}
+
+	public void setDisco(String disco) {
+		this.disco = disco;
+	}
+
+	public String getVersionSo() {
+		return versionSo;
+	}
+
+	public void setVersionSo(String versionSo) {
+		this.versionSo = versionSo;
+	}
+
+	public String getOtros() {
+		return otros;
+	}
+
+	public void setOtros(String otros) {
+		this.otros = otros;
+	}
+
+	public Double getPosX() {
+		return posX;
+	}
+
+	public void setPosX(Double posX) {
+		this.posX = posX;
+	}
+
+	public Double getPosY() {
+		return posY;
+	}
+
+	public void setPosY(Double posY) {
+		this.posY = posY;
+	}
+
+	public Planta getPlanta() {
+		return planta;
+	}
+
+	public void setPlanta(Planta planta) {
+		this.planta = planta;
+	}
+
+	public String getTipoEquipo() {
+		return tipoEquipo;
+	}
+
+	public void setTipoEquipo(String tipoEquipo) {
+		this.tipoEquipo = tipoEquipo;
+	}
 }

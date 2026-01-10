@@ -4,9 +4,13 @@ let esNuevoAsset = false;
 /**
  * Prepara el modal para CREAR un activo nuevo
  */
+/**
+ * Prepara el modal para CREAR un activo nuevo
+ * Lo posiciona en la esquina superior izquierda (2%) para que sea visible y arrastrable
+ */
 function abrirModalCrear() {
     esNuevoAsset = true; 
-    console.log("🆕 Modo: Crear nuevo activo");
+    console.log("🆕 Modo: Crear nuevo activo (Posicionamiento Inicial)");
 
     const form = document.getElementById('formEditAsset');
     if (!form) return;
@@ -15,15 +19,18 @@ function abrirModalCrear() {
     
     // Configuraciones visuales para creación
     document.getElementById('tagDisplay').innerText = "Nuevo Activo";
-    document.getElementById('inputAssetTag').readOnly = false; // Permitir escribir el Tag
+    document.getElementById('inputAssetTag').readOnly = false;
     
-    // Valores por defecto para evitar nulos en la BD
-    document.getElementById('inputPosX').value = 0;
-    document.getElementById('inputPosY').value = 0;
-    // Seleccionar por defecto la primera planta si el select existe
+    // VALORES POR DEFECTO EN %: 
+    // Usamos 2% en lugar de 0% para que el icono no se solape con los bordes
+    // y sea más fácil de "pinchar" con el ratón.
+    document.getElementById('inputPosX').value = 2;
+    document.getElementById('inputPosY').value = 2;
+
     const selectPlanta = document.getElementById('inputPlanta');
     if (selectPlanta && selectPlanta.options.length > 0) {
-        selectPlanta.selectedIndex = 0;
+        // Por defecto lo enviamos al Almacén (ID 1) para que aparezca en la zona de iconos
+        selectPlanta.value = "1"; 
     }
 
     if (window.modalInstancia) window.modalInstancia.show();
