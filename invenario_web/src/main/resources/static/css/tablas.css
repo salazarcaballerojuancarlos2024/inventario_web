@@ -29,11 +29,15 @@
     border-spacing: 0; 
 }
 
-/* Encabezados Fijos (Sticky) */
+/* ==========================================
+   TABLA DE ALMACÉN (CON REDIMENSIÓN)
+   ========================================== */
+
 .table-almacen-compacta th { 
-    position: sticky; 
+    position: sticky !important; 
     top: 0; 
-    z-index: 20; /* Por encima de los iconos si se solapan */
+    /* Cambiamos a z-index 30 para asegurar que el resizer esté sobre todo */
+    z-index: 30; 
     background-color: #212529 !important; 
     color: #f8f9fa !important; 
     padding: 10px 8px !important;
@@ -41,10 +45,38 @@
     font-weight: 700;
     letter-spacing: 0.5px;
     box-shadow: inset 0 -2px 0 #444;
-    /* Truncado de texto también en cabeceras si son muy largas */
+    
+    /* Truncado de texto */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    /* NUEVO: Necesario para que el resizer se posicione respecto a la celda */
+    position: relative !important; 
+}
+
+/* El elemento "Tirador" que inyectaremos con JS */
+.resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 8px; /* Área de contacto para el ratón */
+    cursor: col-resize;
+    user-select: none;
+    z-index: 40;
+}
+
+/* Efecto visual al pasar el ratón por el borde o mientras se arrastra */
+.resizer:hover, 
+.resizing {
+    border-right: 3px solid #0dcaf0; /* Línea azul cian indicadora */
+}
+
+/* Asegurar que la tabla respete los anchos fijos al redimensionar */
+.table-almacen-compacta {
+    table-layout: fixed !important;
+    width: 100%;
 }
 
 /**
@@ -144,7 +176,61 @@
     opacity: 0.7; 
 }
 
-/* Scrollbar personalizado para Windows/Chrome */
+/* ==========================================
+   CORRECCIÓN PARA CABECERA EN VISTA-ALMACEN
+   ========================================== */
+
+/* 1. Base del encabezado: Sticky y Colores fijos */
+.table-almacen-compacta thead th { 
+    position: sticky !important; 
+    top: 0 !important; 
+    z-index: 30 !important; 
+    background-color: #212529 !important; /* Fondo oscuro original */
+    color: #f8f9fa !important;           /* Texto blanco */
+    padding: 10px 8px !important;
+    border-bottom: 2px solid #444 !important;
+    vertical-align: middle;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* 2. Protección total contra el Hover blanco de Bootstrap */
+.table-almacen-compacta thead tr:hover,
+.table-almacen-compacta thead tr:hover th {
+    background-color: #212529 !important; /* Mantiene el fondo oscuro */
+    color: #f8f9fa !important;            /* Mantiene el texto blanco */
+    cursor: default;
+}
+
+/* 3. Feedback visual solo para columnas ordenables */
+.table-almacen-compacta thead th[onclick] {
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+}
+
+.table-almacen-compacta thead th[onclick]:hover {
+    background-color: #32373c !important; /* Gris ligeramente más claro */
+    color: #0dcaf0 !important;           /* Texto azul cyan al pasar el ratón */
+}
+
+/* 4. Estilo para el icono de ordenación ↕ */
+.sort-icon {
+    font-size: 0.8rem;
+    margin-left: 5px;
+    color: #6c757d; /* Gris por defecto */
+    transition: color 0.2s;
+}
+
+.table-almacen-compacta thead th[onclick]:hover .sort-icon {
+    color: #0dcaf0 !important; /* Azul cyan también en el icono */
+    opacity: 1;
+}
+
+
+
+/* ==========================================
+   SCROLLBAR PERSONALIZADO (Mantenido)
+   ========================================== */
 .scroll-container::-webkit-scrollbar { width: 8px; height: 8px; }
 .scroll-container::-webkit-scrollbar-track { background: #f1f1f1; }
 .scroll-container::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }

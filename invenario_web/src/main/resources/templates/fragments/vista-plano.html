@@ -6,21 +6,26 @@
 
             <div class="area-mapa-principal d-flex align-items-center justify-content-center p-3 flex-grow-1" 
                  style="min-width: 0; position: relative;">
-                
-                <div th:if="${plantaSeleccionada == null}"
-                    class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 bg-white shadow-sm rounded border">
-                    <div class="bg-light p-4 rounded-circle mb-4">
-                        <img th:src="@{/imagenes/panel-de-control.png}" alt="Inicio"
-                            style="width: 60px; opacity: 0.5;">
-                    </div>
-                    <h3 class="text-secondary fw-light">Panel de Inventario</h3>
-                    <p class="text-muted small">Seleccione una ubicación en el menú lateral para visualizar el plano.</p>
-                </div>
 
-                <div th:if="${plantaSeleccionada != null}"
-                    th:id="|contenedor-plano-${plantaSeleccionada.id}|"
-                    class="plano-background-container shadow-lg bg-white"
-                    th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}');|">
+				<div th:if="${plantaSeleccionada == null}"
+					class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 bg-white shadow-sm rounded border">
+					<div class="bg-light p-4 rounded-circle mb-4">
+						<img th:src="@{/imagenes/panel-de-control.png}" alt="Inicio"
+							style="width: 60px; opacity: 0.5;">
+					</div>
+					<h3 class="text-secondary fw-light">Panel de Inventario</h3>
+					<p class="text-muted small">Seleccione una ubicación en el menú
+						lateral para visualizar el plano.</p>
+				</div>
+
+				<div th:if="${plantaSeleccionada != null}"
+					th:id="|contenedor-plano-${plantaSeleccionada.id}|"
+					class="plano-background-container shadow-lg"
+					th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}'); position: relative; min-height: 500px;|">
+
+					<div class="marca-agua-texto"
+						th:text="${plantaSeleccionada.nombre}"
+						style="z-index: 10 !important;"></div>
 
 					<div th:each="asset : ${assets}"
 						th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"
@@ -101,7 +106,7 @@
 						</div>
 					</div>
 				</div>
-            </div>
+			</div>
 
             <div class="sidebar-control-wrapper d-flex flex-column bg-dark border-start border-secondary p-3 shadow-lg" 
                  style="width: 20%; min-width: 280px; max-width: 320px; z-index: 100;">

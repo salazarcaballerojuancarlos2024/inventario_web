@@ -1,71 +1,122 @@
 <div th:fragment="datos" id="vista-Datos" class="seccion-oculta container-fluid mt-4" style="display: none;">
     <div class="card shadow-sm border-0 bg-dark text-white">
 
-        <div class="card-header border-secondary p-3">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-3">
-                    <h5 class="mb-0 text-info">
-                        <i class="bi bi-database-fill me-2"></i>Gestión de Activos
-                    </h5>
-                </div>
+		<div class="card-header border-secondary p-3">
+			<div class="row g-3 align-items-center">
+				<div class="col-md-3">
+					<h5 class="mb-0 text-info">
+						<i class="bi bi-database-fill me-2"></i>Gestión de Activos
+					</h5>
+				</div>
 
-                <div class="col-md-2">
-                    <div class="input-group input-group-sm">
-                        <label class="input-group-text bg-secondary border-secondary text-white">Ver</label>
-                        <select id="maxRows" class="form-select bg-dark text-white border-secondary" onchange="cambiarPaginacion()">
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                            <option value="5000">Todos</option>
-                        </select>
-                    </div>
-                </div>
-
-				<div class="col-md-4">
+				<div class="col-md-2">
 					<div class="input-group input-group-sm">
-						<span class="input-group-text bg-secondary border-secondary p-1">
-							<img th:src="@{/imagenes/buscador.png}" alt="buscar"
-							style="width: 20px; height: 20px;">
-						</span> <input type="text" id="inputBusquedaAssets"
-							class="form-control bg-dark text-white border-secondary"
-							placeholder="Buscar en todas las columnas..."
-							oninput="ejecutarFiltroYPaginacion()" autocomplete="off">
+						<label
+							class="input-group-text bg-secondary border-secondary text-white">Ver</label>
+						<select id="maxRows"
+							class="form-select bg-dark text-white border-secondary"
+							onchange="cambiarPaginacion()">
+							<option value="10">10</option>
+							<option value="20">20</option>
+							<option value="30">30</option>
+							<option value="50">50</option>
+							<option value="100">100</option>
+							<option value="5000">Todos</option>
+						</select>
 					</div>
 				</div>
 
-				<div class="col-md-3 text-end">
-					<button class="btn btn-success btn-sm shadow"
-						onclick="abrirModalCrear()">
-						<i class="bi bi-plus-circle me-1"></i> Nuevo Activo
-					</button>
+				<div class="d-flex justify-content-between align-items-center mb-3 px-3">
+					<div class="d-flex gap-2">
+						<button
+							class="btn btn-success btn-sm shadow d-flex align-items-center"
+							onclick="abrirModalCrear()">
+							<i class="bi bi-plus-circle me-1"></i> Nuevo Activo
+						</button>
+
+						<button id="btnBorrarSeleccion"
+							class="btn btn-danger btn-sm shadow d-flex align-items-center gap-2"
+							onclick="borrarSeleccionados()" disabled>
+							<img th:src="@{/imagenes/papelera.png}" alt="Borrar"
+								style="width: 16px; height: 16px; filter: brightness(0) invert(1);">
+							<span>Borrar Selección (<span id="countSeleccionados">0</span>)
+							</span>
+						</button>
+
+						<button
+							class="btn btn-outline-info btn-sm shadow d-flex align-items-center gap-2"
+							onclick="exportarVistaActualCSV()"
+							title="Exportar todos los resultados del filtro actual">
+							<img th:src="@{/imagenes/descargas.png}" alt="Exportar"
+								style="width: 16px; height: 16px;"> <span>Exportar
+								CSV</span>
+						</button>
+					</div>
+
+					<div style="width: 350px;">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text bg-secondary border-secondary p-1">
+								<img th:src="@{/imagenes/buscador.png}" alt="buscar"
+								style="width: 20px; height: 20px;">
+							</span> <input type="text" id="inputBusquedaAssets"
+								class="form-control bg-dark text-white border-secondary"
+								placeholder="Buscar en todas las columnas..."
+								oninput="ejecutarFiltroYPaginacion()" autocomplete="off">
+						</div>
+					</div>
 				</div>
 			</div>
-        </div>
+		</div>
 
-        <div class="card-body p-0" style="max-height: 65vh; overflow-y: auto;">
-            <div class="table-responsive">
-                <table id="tablaAssets" class="table table-dark table-hover mb-0 align-middle">
-                    <thead class="table-secondary sticky-top" style="top: 0; z-index: 10;">
-                        <tr>
-                            <th onclick="ordenarTablaPaginada(0)" style="width: 120px; cursor: pointer;">Tag <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(1)" style="width: 180px; cursor: pointer;">Usuario <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(2)" style="width: 100px; cursor: pointer;">Tipo <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(3)" style="width: 150px; cursor: pointer;">Ubicación <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(4)" style="width: 100px; cursor: pointer;">RAM <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(5)" style="width: 150px; cursor: pointer;">CPU <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(6)" style="width: 100px; cursor: pointer;">Disco <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(7)" style="width: 120px; cursor: pointer;">S.O. <span class="sort-icon">↕</span></th>
-                            <th onclick="ordenarTablaPaginada(8)" style="width: 200px; cursor: pointer;">Otros <span class="sort-icon">↕</span></th>
-                            <th class="text-center" style="width: 170px; min-width: 170px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+		<div class="card-body p-0" style="max-height: 65vh; overflow-y: auto;">
+			<div class="table-responsive">
+				<table id="tablaAssets"
+					class="table table-dark table-hover mb-0 align-middle">
+					<thead class="table-secondary sticky-top"
+						style="top: 0; z-index: 10;">
+						<tr>
+							<th style="width: 40px; text-align: center;"><input
+								type="checkbox" id="checkAllAssets"
+								onclick="toggleTodosLosChecks(this)" class="form-check-input">
+							</th>
+							<th onclick="ordenarTablaPaginada(0)"
+								style="width: 120px; cursor: pointer;">Tag <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(1)"
+								style="width: 180px; cursor: pointer;">Usuario <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(2)"
+								style="width: 100px; cursor: pointer;">Tipo <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(3)"
+								style="width: 150px; cursor: pointer;">Ubicación <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(4)"
+								style="width: 100px; cursor: pointer;">RAM <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(5)"
+								style="width: 150px; cursor: pointer;">CPU <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(6)"
+								style="width: 100px; cursor: pointer;">Disco <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(7)"
+								style="width: 120px; cursor: pointer;">S.O. <span
+								class="sort-icon">↕</span></th>
+							<th onclick="ordenarTablaPaginada(8)"
+								style="width: 200px; cursor: pointer;">Otros <span
+								class="sort-icon">↕</span></th>
+							<th class="text-center" style="width: 170px; min-width: 170px;">Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
 						<th:block th:if="${todosLosAssets != null}">
 							<tr th:each="asset : ${todosLosAssets}"
 								th:id="'fila-' + ${asset.assetTag}" class="fila-asset">
-
+								<td style="text-align: center;"><input type="checkbox"
+									class="form-check-input check-asset"
+									th:value="${asset.assetTag}"
+									onclick="actualizarEstadoBotonBorrar()"></td>
 								<td class="fw-bold text-info" th:text="${asset.assetTag}"></td>
 								<td th:text="${asset.nombreUsuario}"></td>
 								<td><span class="badge"
@@ -107,11 +158,11 @@
 							</tr>
 						</th:block>
 					</tbody>
-                </table>
-            </div>
-        </div>
+				</table>
+			</div>
+		</div>
 
-        <div class="card-footer border-secondary d-flex justify-content-between align-items-center bg-darker p-2">
+		<div class="card-footer border-secondary d-flex justify-content-between align-items-center bg-darker p-2">
             <div>
                 <nav><ul class="pagination pagination-sm mb-0" id="pagination-wrapper"></ul></nav>
             </div>

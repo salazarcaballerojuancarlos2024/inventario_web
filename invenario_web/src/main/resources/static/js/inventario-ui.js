@@ -102,71 +102,72 @@ function actualizarTablaDinamica() {
     const searchFilter = (searchInput?.value || "").trim().toLowerCase();
     const maxRows = parseInt(document.getElementById("maxRows")?.value || 10);
 
+    // --- NUEVO: Reset de Checkboxes al filtrar ---
+    const masterCheck = document.getElementById("checkAllAssets");
+    if (masterCheck) masterCheck.checked = false; 
+    // Opcional: desmarcar todos los individuales al empezar una nueva búsqueda
+    // rows.forEach(r => { const cb = r.querySelector('.check-asset'); if(cb) cb.checked = false; });
+    actualizarEstadoBotonBorrar(); 
+
     let matches = [];
 
     // 1. FILTRADO, RESALTADO Y ASIGNACIÓN DE PRIORIDAD
     rows.forEach(row => {
         let firstMatchCol = -1;
-        row.style.display = "none"; // Ocultar por defecto
+        row.style.display = "none"; 
         
-        // Solo buscamos en las celdas de datos (típicamente las primeras 9 antes de 'Acciones')
-        const cells = Array.from(row.cells).slice(0, 9);
+        // Empezamos en la celda 1 (index 1) para saltarnos la celda del checkbox (index 0)
+        // Y llegamos hasta la 9 para no procesar la columna de 'Acciones'
+        const cellsForSearch = Array.from(row.cells).slice(1, 10);
 
-        // Limpiar resaltados previos (quitar etiquetas <mark>)
-        cells.forEach(cell => {
+        // Limpiar resaltados previos
+        cellsForSearch.forEach(cell => {
             if (cell.querySelector('mark.resaltado-busqueda')) {
                 cell.innerHTML = cell.innerText; 
             }
         });
 
         if (searchFilter === "") {
-            // Si no hay búsqueda, todos son iguales (prioridad máxima)
             matches.push({ row, priority: 99, text: "" });
             return;
         }
 
         // Buscar coincidencia columna por columna
-        cells.forEach((cell, idx) => {
+        cellsForSearch.forEach((cell, idx) => {
             const originalText = cell.innerText;
             const pos = originalText.toLowerCase().indexOf(searchFilter);
             
             if (pos > -1) {
-                // Si es la primera vez que encontramos el filtro en esta fila, guardamos la columna
                 if (firstMatchCol === -1) firstMatchCol = idx;
-
-                // Aplicar el resaltado visual
                 const regex = new RegExp(`(${searchFilter})`, 'gi');
                 cell.innerHTML = originalText.replace(regex, `<mark class="resaltado-busqueda">$1</mark>`);
             }
         });
 
-        // Si hubo coincidencia, guardamos para ordenar
         if (firstMatchCol > -1) {
             matches.push({ 
                 row, 
                 priority: firstMatchCol, 
-                text: cells[firstMatchCol].innerText.toLowerCase() 
+                text: cellsForSearch[firstMatchCol].innerText.toLowerCase() 
             });
         }
     });
 
     // 2. ORDENACIÓN POR RELEVANCIA
-    // Prioridad 0 (Tag) aparece antes que Prioridad 1 (Usuario), etc.
     if (searchFilter !== "") {
         matches.sort((a, b) => {
             if (a.priority !== b.priority) return a.priority - b.priority;
-            return a.text.localeCompare(b.text); // Si empatan en columna, orden alfabético
+            return a.text.localeCompare(b.text);
         });
     }
 
-    // 3. RE-INSERCIÓN FÍSICA EN EL DOM (Necesario para que el orden se aplique)
+    // 3. RE-INSERCIÓN FÍSICA EN EL DOM
     matches.forEach(obj => tbody.appendChild(obj.row));
 
     // 4. PAGINACIÓN SOBRE EL NUEVO ORDEN
     const totalVisible = matches.length;
     const totalPages = Math.ceil(totalVisible / maxRows);
     
-    // Asegurar que la página actual no quede huérfana tras un filtro
     if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
 
     const start = (currentPage - 1) * maxRows;
@@ -405,3 +406,205 @@ async function enviarFormularioEdit() {
         alert("Error de conexión con el servidor.");
     }
 }
+
+/**
+ * LÓGICA DE BORRADO MASIVO
+ */
+
+// 1. Seleccionar/Deseleccionar todo (SOLO los que son visibles por el filtro)
+function toggleTodosLosChecks(master) {
+    const filasVisibles = document.querySelectorAll('.fila-asset:not([style*="display: none"])');
+    filasVisibles.forEach(fila => {
+        const cb = fila.querySelector('.check-asset');
+        if (cb) cb.checked = master.checked;
+    });
+    actualizarEstadoBotonBorrar();
+}
+
+// 2. Actualizar el contador y habilitar/deshabilitar el botón rojo
+function actualizarEstadoBotonBorrar() {
+    const seleccionados = document.querySelectorAll('.check-asset:checked').length;
+    const btn = document.getElementById('btnBorrarSeleccion');
+    const span = document.getElementById('countSeleccionados');
+    
+    if (btn) {
+        btn.disabled = (seleccionados === 0);
+        if (span) span.innerText = seleccionados;
+    }
+}
+
+// 3. Ejecutar el borrado masivo
+async function borrarSeleccionados() {
+    const seleccionados = Array.from(document.querySelectorAll('.check-asset:checked'))
+                               .map(cb => cb.value);
+
+    if (seleccionados.length === 0) return;
+
+    if (confirm(`¿Deseas eliminar permanentemente los ${seleccionados.length} activos seleccionados?`)) {
+        try {
+            const response = await fetch('/assets/eliminar-multiple', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tags: seleccionados })
+            });
+
+            if (response.ok) {
+                // En lugar de reload, podrías simplemente actualizar la tabla, 
+                // pero reload asegura que el contador de la base de datos sea exacto.
+                location.reload();
+            } else {
+                const err = await response.json();
+                alert("Error: " + (err.error || "No se pudo eliminar la selección"));
+            }
+        } catch (error) {
+            alert("Error crítico de comunicación con el servidor.");
+        }
+    }
+}
+
+/**
+ * Exporta a CSV todos los activos que coinciden con el filtro de búsqueda actual,
+ * recorriendo todas las páginas de resultados.
+ */
+function exportarVistaActualCSV() {
+    const table = document.getElementById("tablaAssets");
+    if (!table) return;
+
+    const searchFilter = (document.getElementById("inputBusquedaAssets")?.value || "").trim().toLowerCase();
+    const rows = Array.from(table.querySelectorAll("tbody tr.fila-asset"));
+
+    // 1. Definir encabezados (Saltamos checkbox y acciones)
+    const headers = ["Tag", "Usuario", "Tipo", "Ubicación", "RAM", "CPU", "Disco", "S.O.", "Otros"];
+
+    // 2. Filtrar los datos (Lógica idéntica a la de búsqueda)
+    const datosFiltrados = rows.filter(row => {
+        if (searchFilter === "") return true; // Si no hay filtro, pasan todos
+        
+        // Buscamos en las celdas de datos (índices 1 al 9)
+        const cellsForSearch = Array.from(row.cells).slice(1, 10);
+        return cellsForSearch.some(cell => cell.innerText.toLowerCase().includes(searchFilter));
+    });
+
+    if (datosFiltrados.length === 0) {
+        alert("No hay resultados que coincidan con la búsqueda para exportar.");
+        return;
+    }
+
+    // 3. Construir el contenido CSV
+    // Usamos \uFEFF para que Excel reconozca correctamente los acentos (UTF-8 con BOM)
+    let csvContent = "\uFEFF" + headers.join(";") + "\n";
+
+    datosFiltrados.forEach(row => {
+        const celdas = Array.from(row.cells).slice(1, 10);
+        const filaTexto = celdas.map(cell => {
+            // Limpiar el texto: quitar marcas de resaltado, saltos de línea y escapar comillas
+            let text = cell.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+            return `"${text.replace(/"/g, '""')}"`;
+        });
+        csvContent += filaTexto.join(";") + "\n";
+    });
+
+    // 4. Crear el archivo y descargar
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    const fecha = new Date().toLocaleDateString().replace(/\//g, '-');
+    link.setAttribute("href", url);
+    link.setAttribute("download", `reporte_activos_filtrados_${fecha}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function ordenarTabla(n) {
+    const table = document.getElementById("tablaAlmacen");
+    if (!table) return;
+
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    let dir = table.getAttribute("data-sort-dir") === "asc" ? "desc" : "asc";
+    table.setAttribute("data-sort-dir", dir);
+
+    // 1. Ordenar las filas
+    rows.sort((a, b) => {
+        const x = a.cells[n].innerText.toLowerCase().trim();
+        const y = b.cells[n].innerText.toLowerCase().trim();
+
+        // Intento de ordenación numérica (para RAM, Disco, etc.)
+        const xNum = parseFloat(x.replace(/[^0-9.]/g, ''));
+        const yNum = parseFloat(y.replace(/[^0-9.]/g, ''));
+
+        if (!isNaN(xNum) && !isNaN(yNum) && n >= 4 && n <= 6) {
+            return dir === "asc" ? xNum - yNum : yNum - xNum;
+        }
+
+        // Ordenación de texto normal
+        if (dir === "asc") {
+            return x.localeCompare(y);
+        } else {
+            return y.localeCompare(x);
+        }
+    });
+
+    // 2. Re-insertar las filas ordenadas en el tbody
+    rows.forEach(row => tbody.appendChild(row));
+
+    // 3. (Opcional) Actualizar visualmente los iconos si quieres
+    actualizarIconosOrden(table, n, dir);
+}
+
+function actualizarIconosOrden(table, colIndex, dir) {
+    const icons = table.querySelectorAll('.sort-icon');
+    icons.forEach((icon, idx) => {
+        if (idx === colIndex) {
+            icon.innerText = dir === "asc" ? " ▲" : " ▼";
+            icon.style.color = "#0dcaf0";
+        } else {
+            icon.innerText = " ↕";
+            icon.style.color = "";
+        }
+    });
+}
+
+// Ejecutar cuando la vista de almacén esté lista
+function aplicarResizersAlmacen() {
+    const table = document.getElementById('tablaAlmacen');
+    if (!table) return;
+
+    const headerCols = table.querySelectorAll('th');
+    headerCols.forEach((col, index) => {
+        // No añadimos resizer a la última columna de acciones
+        if (index === headerCols.length - 1) return;
+
+        const resizer = document.createElement('div');
+        resizer.classList.add('resizer');
+        col.appendChild(resizer);
+
+        resizer.addEventListener('mousedown', (e) => {
+            const startX = e.clientX;
+            const startWidth = col.offsetWidth;
+
+            resizer.classList.add('resizing');
+
+            const onMouseMove = (e) => {
+                const width = startWidth + (e.clientX - startX);
+                col.style.width = `${Math.max(width, 40)}px`; // Mínimo 40px
+            };
+
+            const onMouseUp = () => {
+                resizer.classList.remove('resizing');
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    });
+}
+
+// Iniciar
+document.addEventListener('DOMContentLoaded', aplicarResizersAlmacen);

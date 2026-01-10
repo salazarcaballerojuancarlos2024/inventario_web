@@ -48,6 +48,25 @@ public class AssetController {
 
         return "index"; // Renderiza index.html
     }
+    
+    @PostMapping("/eliminar-multiple")
+    @ResponseBody // Añadido para asegurar que devuelve JSON correctamente
+    public ResponseEntity<?> eliminarMultiple(@RequestBody Map<String, List<String>> payload) {
+        List<String> tags = payload.get("tags");
+        
+        if (tags == null || tags.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No se han seleccionado activos."));
+        }
+
+        try {
+            // CAMBIO CLAVE: Usamos el método que recibe la lista completa
+            assetService.eliminarListaDeTags(tags); 
+            
+            return ResponseEntity.ok(Map.of("message", "Se han eliminado " + tags.size() + " activos correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error al procesar el borrado: " + e.getMessage()));
+        }
+    }
 
     /**
      * 1. CREAR NUEVO ACTIVO

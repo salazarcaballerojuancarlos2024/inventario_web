@@ -14,6 +14,19 @@ public class AssetServiceImpl implements AssetService {
     @Autowired
     private AssetRepository assetRepository;
 
+    /**
+     * Borrado masivo de activos por su etiqueta (Asset Tag).
+     * Se utiliza en la funcionalidad tipo Gmail de vista-Datos.html.
+     */
+    @Override
+    @Transactional
+    public void eliminarListaDeTags(List<String> tags) {
+        if (tags != null && !tags.isEmpty()) {
+            // Usamos el repositorio para eliminar uno a uno dentro de la misma transacción
+            tags.forEach(tag -> assetRepository.deleteByAssetTag(tag));
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<Asset> obtenerTodosLosAssets() {
@@ -33,13 +46,11 @@ public class AssetServiceImpl implements AssetService {
     }
 
     /**
-     * Eliminar un equipo permanentemente por su etiqueta.
-     * Se utiliza el método deleteByAssetTag del repositorio para una ejecución directa.
+     * Eliminar un equipo individual.
      */
     @Override
     @Transactional
     public void eliminarAsset(String assetTag) {
-        // Verificamos existencia para evitar excepciones innecesarias
         if (assetRepository.existsByAssetTag(assetTag)) {
             assetRepository.deleteByAssetTag(assetTag);
         }
@@ -47,7 +58,7 @@ public class AssetServiceImpl implements AssetService {
 
     /**
      * Guarda una lista completa de activos.
-     * Fundamental para la sincronización masiva de coordenadas (posX, posY).
+     * Crucial para guardar las posiciones (posX, posY) de todos los iconos a la vez.
      */
     @Override
     @Transactional
@@ -56,7 +67,7 @@ public class AssetServiceImpl implements AssetService {
             assetRepository.saveAll(assets);
         }
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public boolean existePorTag(String assetTag) {
