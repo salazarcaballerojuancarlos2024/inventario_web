@@ -3,6 +3,22 @@
 <body>
     <div th:fragment="plano_publico" id="vista-plano-publico" class="area-mapa-principal">
         
+        <div class="buscador-assets-container">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0">
+                    <img th:src="@{/imagenes/lupa.png}" width="16" alt="Buscar">
+                </span>
+                <select id="buscadorAsset" class="form-select border-start-0" onchange="irAAsset(this.value)">
+                    <option value="" selected disabled>Buscar activo...</option>
+                    <option th:each="a : ${todosLosAssets}" 
+                            th:value="${a.planta.id}" 
+                            th:data-tag="${a.assetTag}">
+                        [[${a.assetTag}]] ([[${a.tipoEquipo}]])
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <div th:if="${plantaSeleccionada != null}" class="plano-container-public">
             
             <div class="canvas-plano">
@@ -15,26 +31,42 @@
 
                 <div th:each="asset : ${assets}" 
                      class="asset-icono-publico"
+                     th:id="'asset-' + ${asset.assetTag}"
+                     th:data-tag="${asset.assetTag}"
                      th:style="'left:' + ${asset.posX} + '%; top:' + ${asset.posY} + '%;'">
                     
-                    <div th:switch="${#strings.toString(asset.tipoEquipo)}">
-                        <img th:case="'PC'" th:src="@{/imagenes/ordenador-sobremesa.png}" class="img-asset-nav">
-                        <img th:case="'PORTATIL'" th:src="@{/imagenes/ordenador-portatil.png}" class="img-asset-nav">
-                        <img th:case="'IMPRESORA_MULTIFUNCION'" th:src="@{/imagenes/impresora-multifuncion.png}" class="img-asset-nav">
-                        <img th:case="'IMPRESORA'" th:src="@{/imagenes/impresora.png}" class="img-asset-nav">
-                        <img th:case="*" th:src="@{/imagenes/default.png}" class="img-asset-nav">
-                    </div>
+                    <img class="img-asset-nav"
+                        th:src="${asset.tipoEquipo != null ? 
+                        (
+                            #strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil' ? '/imagenes/ordenador-portatil.png' :
+                            #strings.toLowerCase(asset.tipoEquipo) == 'impresora' ? '/imagenes/impresora.png' :
+                            #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifunción' or #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifuncion' ? '/imagenes/impresora-multifuncion.png' :
+                            '/imagenes/ordenador-sobremesa.png'
+                        ) : '/imagenes/ordenador-sobremesa.png'}"
+                        alt="Icono">
 
-                    <div class="tooltip-publico">
-                        <div class="tooltip-header" th:text="${asset.assetTag}">TAG</div>
+                    <span th:text="${asset.assetTag}">TAG</span>
+
+                    <div class="tooltip-publico shadow">
+                        <div class="tooltip-header">FICHA TÉCNICA</div>
                         <div class="tooltip-body">
+                            <p><strong>Tag:</strong> <span th:text="${asset.assetTag}">-</span></p>
                             <p><strong>Usuario:</strong> <span th:text="${asset.nombreUsuario}">-</span></p>
                             <p><strong>Tipo:</strong> <span th:text="${asset.tipoEquipo}">-</span></p>
-                            <hr class="tooltip-divider">
+                            
+                            <div class="tooltip-divider"></div>
+                            
                             <p><strong>CPU:</strong> <span th:text="${asset.cpu}">-</span></p>
                             <p><strong>RAM:</strong> <span th:text="${asset.ram}">-</span></p>
                             <p><strong>Disco:</strong> <span th:text="${asset.disco}">-</span></p>
                             <p><strong>S.O:</strong> <span th:text="${asset.versionSo}">-</span></p>
+
+                            <div th:if="${asset.otros != null and !asset.otros.empty}">
+                                <div class="tooltip-divider"></div>
+                                <p><strong>Otros:</strong> 
+                                    <span th:text="${asset.otros}"></span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,5 +81,30 @@
             </div>
         </div>
     </div>
+
+    <script th:inline="javascript">
+        function irAAsset(plantaId) {
+            if (!plantaId) return;
+            const select = document.getElementById('buscadorAsset');
+            const assetTag = select.options[select.selectedIndex].getAttribute('data-tag');
+            
+            // Redirige pasando el ID de planta y el tag para resaltar
+            window.location.href = '/inventario-publico?plantaId=' + plantaId + '&highlight=' + assetTag;
+        }
+
+        // Efecto de resaltado al cargar si viene de una búsqueda
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tag = urlParams.get('highlight');
+            if (tag) {
+                const el = document.getElementById('asset-' + tag);
+                if (el) {
+                    el.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    el.style.filter = 'drop-shadow(0 0 10px #ffc107)';
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    </script>
 </body>
 </html>

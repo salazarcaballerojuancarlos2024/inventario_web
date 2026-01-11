@@ -1,9 +1,10 @@
 @charset "UTF-8";
 
+/* Contenedor principal con márgenes del 3% a los lados */
 .area-mapa-principal {
     width: 100%;
     height: 100%;
-    padding: 2mm; /* Margen exacto de 2mm por todos los lados */
+    padding: 4mm 3% 4mm 3%; 
     background-color: #f4f7f6;
     display: flex;
     justify-content: flex-start;
@@ -20,52 +21,164 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.imagen-fondo-plano {
-    display: block;
-    /* La imagen ocupa el 90% de la pantalla menos los 4mm totales de margen lateral */
-    max-width: calc(100vw - 10% - 6mm); 
-    max-height: calc(100vh - 6mm);
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    user-select: none;
+.marca-agua-planta {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.1); 
+    text-transform: uppercase;
+    pointer-events: none; 
+    z-index: 5;
 }
 
-/* Iconos de activos (mantenemos tamaño estándar para que no se vean gigantes) */
+.imagen-fondo-plano {
+    display: block;
+    max-width: calc(100vw - 21% - 10mm); 
+    max-height: calc(100vh - 10mm);
+    width: auto;
+    height: auto;
+    user-select: none;
+    position: relative;
+    z-index: 1;
+}
+
 .asset-icono-publico {
     position: absolute;
-    width: 28px; /* Ligeramente más pequeños para que no tapen mucho en planos grandes */
-    height: 28px;
+    width: 32px; 
+    height: 32px;
     transform: translate(-50%, -50%);
-    z-index: 10;
-    cursor: help;
+    z-index: 10; 
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.asset-icono-publico:hover {
+    z-index: 9999 !important;
+}
+
+.asset-icono-publico span {
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+    color: #333;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-top: 2px;
+    white-space: nowrap;
+    line-height: 1;
+    border: 1px solid rgba(0,0,0,0.1);
 }
 
 .img-asset-nav {
-    width: 100%;
-    height: 100%;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
     filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3));
 }
 
+/* --- TOOLTIP TÉCNICO --- */
 .tooltip-publico {
     visibility: hidden;
-    position: absolute;
-    bottom: 130%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 220px;
-    background: rgba(33, 37, 41, 0.95);
-    color: white;
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
     opacity: 0;
-    transition: 0.2s;
-    z-index: 1000;
+    position: absolute;
+    bottom: 125%; 
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: 230px;
+    background: rgba(33, 37, 41, 0.98);
+    color: white; /* Color base para el texto del tooltip */
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     pointer-events: none;
+    line-height: 1.5;
+    height: auto;
+    max-height: 380px;
+    overflow-y: auto;
 }
 
 .asset-icono-publico:hover .tooltip-publico {
     visibility: visible;
     opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-header {
+    font-weight: bold;
+    color: #ffc107;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    text-align: center;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.tooltip-body p {
+    margin: 0;
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: #ffffff; /* Aseguramos que el texto P sea blanco */
+}
+
+.tooltip-body p strong {
+    color: #ffc107;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 10px;
+}
+
+/* --- CORRECCIÓN DEFINITIVA PARA EL VALOR DE "OTROS" --- */
+.tooltip-body span {
+    color: #ffffff !important; /* Texto blanco puro para máxima visibilidad */
+    background: transparent !important; /* Sin fondo que lo tape */
+    font-style: normal;
+    text-align: right;
+    display: inline-block;
+}
+
+.tooltip-divider {
+    margin: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tooltip-publico::-webkit-scrollbar {
+    width: 4px;
+}
+.tooltip-publico::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 10px;
+}
+
+.buscador-assets-container {
+    position: fixed; /* O absolute si el padre es relative */
+    top: 15px;
+    right: 25px;
+    z-index: 2000;
+    width: 300px;
+}
+
+.buscador-assets-container .input-group {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ced4da;
+}
+
+.buscador-assets-container .form-select {
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.buscador-assets-container .form-select:focus {
+    box-shadow: none;
 }
