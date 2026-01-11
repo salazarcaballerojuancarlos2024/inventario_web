@@ -14,6 +14,12 @@ public class AssetServiceImpl implements AssetService {
     @Autowired
     private AssetRepository assetRepository;
 
+    
+    @Override
+    public List<Asset> buscarPorPlanta(Long plantaId) {
+        // Esto asume que en tu AssetRepository existe este método
+        return assetRepository.findByPlantaId(plantaId);
+    }
     /**
      * Borrado masivo de activos por su etiqueta (Asset Tag).
      * Se utiliza en la funcionalidad tipo Gmail de vista-Datos.html.

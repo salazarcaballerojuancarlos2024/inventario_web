@@ -1,0 +1,71 @@
+@charset "UTF-8";
+
+.area-mapa-principal {
+    width: 100%;
+    height: 100%;
+    padding: 2mm; /* Margen exacto de 2mm por todos los lados */
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow: auto;
+}
+
+.canvas-plano {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.imagen-fondo-plano {
+    display: block;
+    /* La imagen ocupa el 90% de la pantalla menos los 4mm totales de margen lateral */
+    max-width: calc(100vw - 10% - 6mm); 
+    max-height: calc(100vh - 6mm);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    user-select: none;
+}
+
+/* Iconos de activos (mantenemos tamaño estándar para que no se vean gigantes) */
+.asset-icono-publico {
+    position: absolute;
+    width: 28px; /* Ligeramente más pequeños para que no tapen mucho en planos grandes */
+    height: 28px;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    cursor: help;
+}
+
+.img-asset-nav {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3));
+}
+
+.tooltip-publico {
+    visibility: hidden;
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    background: rgba(33, 37, 41, 0.95);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: 0.2s;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.asset-icono-publico:hover .tooltip-publico {
+    visibility: visible;
+    opacity: 1;
+}

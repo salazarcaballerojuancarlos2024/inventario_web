@@ -1,0 +1,69 @@
+@charset "UTF-8";
+
+.sidebar-public {
+    width: 100%; 
+    height: 100vh;
+    background-color: #2a9d8f; 
+    color: white;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-public-header {
+    padding: 15px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-public-header h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    text-transform: uppercase;
+}
+
+.accordion-sidebar {
+    --bs-accordion-bg: transparent;
+    --bs-accordion-border-color: transparent;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.accordion-item { border: none; background: transparent; }
+
+.accordion-button {
+    background-color: transparent !important;
+    color: white !important;
+    box-shadow: none !important;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.accordion-button::after { filter: brightness(0) invert(1); scale: 0.8; }
+
+.nav-link-public {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 8px 10px 8px 25px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.nav-link-public:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white !important;
+}
+
+.sidebar-public-footer {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 0.7rem;
+}

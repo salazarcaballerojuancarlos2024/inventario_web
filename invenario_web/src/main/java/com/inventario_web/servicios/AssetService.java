@@ -5,10 +5,11 @@ import java.util.List;
 
 public interface AssetService {
     List<Asset> obtenerTodosLosAssets();
+    List<Asset> buscarPorPlanta(Long plantaId); // <--- NUEVO MÉTODO
     Asset guardarAsset(Asset asset);
-    Asset findByAssetTag(String assetTag); // Renombrado para coincidir con el Controller
-    void eliminarAsset(String assetTag);    // Nueva funcionalidad de borrado
-    void eliminarListaDeTags(List<String> tags); // funcionalidad para eliminación múltiple
-    void guardarTodos(List<Asset> assets); // Para el guardado masivo de posiciones
-    boolean existePorTag(String assetTag); // Para validar antes de crear
+    Asset findByAssetTag(String assetTag);
+    void eliminarAsset(String assetTag);
+    void eliminarListaDeTags(List<String> tags);
+    void guardarTodos(List<Asset> assets);
+    boolean existePorTag(String assetTag);
 }

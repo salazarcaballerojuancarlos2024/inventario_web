@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar_public" class="sidebar-public shadow">
+        <div class="sidebar-public-header">
+            <h5 class="m-0 fw-bold">Inventario</h5>
+            <small class="opacity-75">Dt Salud Málaga</small>
+        </div>
+
+        <div class="accordion accordion-sidebar" id="accordionMenuPublic">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapseVistaPublic">
+                        <img th:src="@{/imagenes/Vista.png}" class="menu-icon">
+                        Vista de Plantas
+                    </button>
+                </h2>
+                <div id="collapseVistaPublic" class="accordion-collapse collapse show"
+                    data-bs-parent="#accordionMenuPublic">
+                    <div class="accordion-body">
+                        <div th:each="p : ${plantas}"
+                            th:if="${p.id != 1 and p.nombre != 'ALMACEN'}">
+                            <a class="nav-link-public" style="cursor: pointer;"
+                                th:onclick="|seleccionarPlanta(${p.id})|"> 
+                                <img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
+                                <span th:text="${p.nombre}"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-public-footer">
+            <small class="text-muted">© 2026 - Acceso Público</small>
+        </div>
+    </div>
+</body>
+</html>

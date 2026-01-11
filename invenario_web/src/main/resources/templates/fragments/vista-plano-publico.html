@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="plano_publico" id="vista-plano-publico" class="area-mapa-principal">
+        
+        <div th:if="${plantaSeleccionada != null}" class="plano-container-public">
+            
+            <div class="canvas-plano">
+                <div class="marca-agua-planta" th:text="${plantaSeleccionada.nombre}">NOMBRE PLANTA</div>
+
+                <img th:if="${plantaSeleccionada.imagenNombre != null}"
+                     th:src="@{'/planos-file/' + ${plantaSeleccionada.imagenNombre}}"
+                     class="imagen-fondo-plano" 
+                     alt="Plano de planta">
+
+                <div th:each="asset : ${assets}" 
+                     class="asset-icono-publico"
+                     th:style="'left:' + ${asset.posX} + '%; top:' + ${asset.posY} + '%;'">
+                    
+                    <div th:switch="${#strings.toString(asset.tipoEquipo)}">
+                        <img th:case="'PC'" th:src="@{/imagenes/ordenador-sobremesa.png}" class="img-asset-nav">
+                        <img th:case="'PORTATIL'" th:src="@{/imagenes/ordenador-portatil.png}" class="img-asset-nav">
+                        <img th:case="'IMPRESORA_MULTIFUNCION'" th:src="@{/imagenes/impresora-multifuncion.png}" class="img-asset-nav">
+                        <img th:case="'IMPRESORA'" th:src="@{/imagenes/impresora.png}" class="img-asset-nav">
+                        <img th:case="*" th:src="@{/imagenes/default.png}" class="img-asset-nav">
+                    </div>
+
+                    <div class="tooltip-publico">
+                        <div class="tooltip-header" th:text="${asset.assetTag}">TAG</div>
+                        <div class="tooltip-body">
+                            <p><strong>Usuario:</strong> <span th:text="${asset.nombreUsuario}">-</span></p>
+                            <p><strong>Tipo:</strong> <span th:text="${asset.tipoEquipo}">-</span></p>
+                            <hr class="tooltip-divider">
+                            <p><strong>CPU:</strong> <span th:text="${asset.cpu}">-</span></p>
+                            <p><strong>RAM:</strong> <span th:text="${asset.ram}">-</span></p>
+                            <p><strong>Disco:</strong> <span th:text="${asset.disco}">-</span></p>
+                            <p><strong>S.O:</strong> <span th:text="${asset.versionSo}">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${plantaSeleccionada == null}" class="bienvenida-public">
+            <div class="bienvenida-contenido">
+                <img th:src="@{/imagenes/plano.png}" class="img-placeholder" alt="Seleccione Planta">
+                <h2 class="mt-3">Seleccione una planta</h2>
+                <p>Use el menú lateral para ver la ubicación de los activos.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
