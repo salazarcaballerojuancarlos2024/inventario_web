@@ -4,13 +4,9 @@ let esNuevoAsset = false;
 /**
  * Prepara el modal para CREAR un activo nuevo
  */
-/**
- * Prepara el modal para CREAR un activo nuevo
- * Lo posiciona en la esquina superior izquierda (2%) para que sea visible y arrastrable
- */
 function abrirModalCrear() {
     esNuevoAsset = true; 
-    console.log("🆕 Modo: Crear nuevo activo (Posicionamiento Inicial)");
+    console.log("🆕 Modo: Crear nuevo activo");
 
     const form = document.getElementById('formEditAsset');
     if (!form) return;
@@ -20,35 +16,28 @@ function abrirModalCrear() {
     // Configuraciones visuales para creación
     document.getElementById('tagDisplay').innerText = "Nuevo Activo";
     document.getElementById('inputAssetTag').readOnly = false;
+    document.getElementById('inputAssetTag').style.backgroundColor = "#ffffff";
     
-    // VALORES POR DEFECTO EN %: 
-    // Usamos 2% en lugar de 0% para que el icono no se solape con los bordes
-    // y sea más fácil de "pinchar" con el ratón.
+    // Posicionamiento inicial por defecto (2%)
     document.getElementById('inputPosX').value = 2;
     document.getElementById('inputPosY').value = 2;
 
     const selectPlanta = document.getElementById('inputPlanta');
     if (selectPlanta && selectPlanta.options.length > 0) {
-        // Por defecto lo enviamos al Almacén (ID 1) para que aparezca en la zona de iconos
-        selectPlanta.value = "1"; 
+        selectPlanta.value = "1"; // Almacén por defecto
     }
 
     if (window.modalInstancia) window.modalInstancia.show();
 }
 
 /**
- * Esta función se llama desde el botón naranja de la tabla
- * Reutiliza prepararModalDesdeIcono pero asegura el modo edición
- */
-/**
  * Prepara el modal para EDITAR un activo existente
- * Se llama desde el botón naranja de la tabla de gestión
+ * Se llama desde el botón naranja (icono lápiz) de la tabla
  */
-function editarDesdeTabla(elemento) {
-    esNuevoAsset = false; // 🚩 IMPORTANTE: Indicamos que NO es nuevo
+function prepararModalDesdeIcono(elemento) {
+    esNuevoAsset = false; 
     console.log("✏️ Modo: Editando activo existente");
 
-    // 1. Extraemos los datos del botón (usando los atributos data- que pusimos antes)
     const tag = elemento.getAttribute('data-tag');
     const user = elemento.getAttribute('data-user');
     const ram = elemento.getAttribute('data-ram');
@@ -59,13 +48,12 @@ function editarDesdeTabla(elemento) {
     const plantaId = elemento.getAttribute('data-planta-id');
     const tipo = elemento.getAttribute('data-tipo');
 
-    // 2. Rellenamos el formulario del modal
     document.getElementById('tagDisplay').innerText = tag;
     
     const tagInput = document.getElementById('inputAssetTag');
     tagInput.value = tag;
-    tagInput.readOnly = true; // 🔒 BLOQUEAMOS el Tag para que no se pueda cambiar
-    tagInput.style.backgroundColor = "#e9ecef"; // Color gris de "solo lectura"
+    tagInput.readOnly = true; 
+    tagInput.style.backgroundColor = "#e9ecef"; 
 
     document.getElementById('inputUsuario').value = user || '';
     document.getElementById('inputRam').value = ram || '';
@@ -73,17 +61,16 @@ function editarDesdeTabla(elemento) {
     document.getElementById('inputDisco').value = disco || '';
     document.getElementById('inputSo').value = so || '';
     document.getElementById('inputOtros').value = otros || '';
-    document.getElementById('inputPlanta').value = plantaId;
+    document.getElementById('inputPlanta').value = plantaId || '1';
     document.getElementById('inputTipo').value = tipo || 'PC';
 
-    // 3. Mostramos el modal
     if (window.modalInstancia) window.modalInstancia.show();
 }
 
 /**
- * Función para BORRAR un activo
+ * Función para confirmar y eliminar un activo
  */
-async function confirmarBorrado(tag) {
+async function confirmarEliminarAsset(tag) {
     if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el activo ${tag}?`)) {
         try {
             const response = await fetch(`/assets/eliminar/${tag}`, {
@@ -91,10 +78,10 @@ async function confirmarBorrado(tag) {
             });
 
             if (response.ok) {
-                // Si el borrado es exitoso, eliminamos la fila de la tabla sin recargar
-                const fila = document.getElementById(`fila-datos-${tag}`);
+                const fila = document.getElementById(`fila-${tag}`);
                 if (fila) fila.remove();
                 alert("Activo eliminado con éxito");
+                location.reload(); // Recargamos para actualizar contadores y paginación
             } else {
                 const data = await response.json();
                 alert("Error al eliminar: " + (data.error || "Desconocido"));
@@ -107,33 +94,12 @@ async function confirmarBorrado(tag) {
 }
 
 /**
- * Lógica de Ordenación (Se mantiene igual, es funcional)
+ * Envía el formulario del modal (Crear o Actualizar)
  */
-document.querySelectorAll('#tablaAssets th').forEach((header, index) => {
-    header.addEventListener('click', () => {
-        const table = header.closest('table');
-        const rows = Array.from(table.querySelectorAll('tbody tr'));
-        const isAscending = header.classList.contains('th-sort-asc');
-        
-        table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
-
-        rows.sort((a, b) => {
-            const contentA = a.children[index].textContent.trim();
-            const contentB = b.children[index].textContent.trim();
-            return isAscending ? contentB.localeCompare(contentA) : contentA.localeCompare(contentB);
-        });
-
-        header.classList.toggle('th-sort-asc', !isAscending);
-        header.classList.toggle('th-sort-desc', isAscending);
-        rows.forEach(row => table.querySelector('tbody').appendChild(row));
-    });
-});
-
 async function enviarFormularioModal() {
     const tag = document.getElementById('inputAssetTag').value;
     if (!tag) return alert("El Asset Tag es obligatorio");
 
-    // Decidimos la URL basándonos en la variable global
     const url = esNuevoAsset ? '/assets/crear' : '/assets/actualizar-datos';
     
     const payload = {
@@ -150,16 +116,60 @@ async function enviarFormularioModal() {
         posY: document.getElementById('inputPosY').value
     };
 
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
 
-    if (response.ok) {
-        location.reload(); // Recarga para ver los cambios
-    } else {
-        const error = await response.json();
-        alert("Error: " + error.error);
+        if (response.ok) {
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert("Error: " + error.error);
+        }
+    } catch (err) {
+        console.error("Error al enviar formulario:", err);
     }
 }
+
+/**
+ * LÓGICA DE NAVEGACIÓN POR DOBLE CLICK (Delegación de eventos)
+ * Sobrevive a la paginación y ordenación de la tabla
+ 
+document.addEventListener('dblclick', function(event) {
+    // Buscamos si el click fue en una fila de activo
+    const fila = event.target.closest('.fila-asset');
+    
+    // Si no hay fila, o si el click fue en un botón/input dentro de la fila, ignoramos
+    if (!fila || event.target.closest('button') || event.target.closest('input')) {
+        return;
+    }
+
+    const plantaId = fila.getAttribute('data-planta-id');
+    const assetTag = fila.getAttribute('data-tag');
+
+    console.log(`🔍 Navegando a Planta ID: ${plantaId} por activo: ${assetTag}`);
+
+    if (!plantaId || plantaId === "null" || plantaId === "undefined") {
+        alert("Este activo no tiene una planta asignada.");
+        return;
+    }
+
+    // Construcción de la URL de destino
+    // Si plantaId es 1 (Almacén), usamos la sección almacén, sino la vista de plano
+    const seccion = (plantaId === "1") ? "vista-almacen" : "vista-plano";
+    const urlDestino = `/?plantaId=${plantaId}&seccion=${seccion}`;
+
+    window.location.href = urlDestino;
+});
+*/
+
+/**
+ * Lógica de Ordenación Manual (Opcional si usas ordenarTablaPaginada en el HTML)
+ */
+document.querySelectorAll('#tablaAssets th[onclick]').forEach((header, index) => {
+    // Si ya usas funciones inline como ordenarTablaPaginada(0), este listener es preventivo
+    header.style.cursor = 'pointer';
+});

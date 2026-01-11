@@ -8,7 +8,7 @@
 			<div class="d-flex flex-column flex-grow-1 h-100 border-end">
 				<div class="zona-arrastre-almacen position-relative"
 					id="contenedor-almacen"
-					style="flex: 0 0 75%; background-color: #ffffff; overflow: hidden; border-bottom: 2px solid #dee2e6;">
+					style="flex: 0 0 75%; background-color: #ffffff; overflow: visible; border-bottom: 2px solid #dee2e6;">
 					<div class="watermark-almacen">
 						<img th:src="@{/imagenes/almacen.png}" alt="Almacén"> <span>ZONA
 							DE ALMACÉN</span>
@@ -25,7 +25,14 @@
 						ondblclick="manejarClickIcono(this, event)">
 
 						<img
-							th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}"
+							th:src="${
+    asset.tipoEquipo != null ? (
+        #strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil' ? '/imagenes/ordenador-portatil.png' :
+        #strings.toLowerCase(asset.tipoEquipo) == 'impresora' ? '/imagenes/impresora.png' :
+        #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifunción' ? '/imagenes/Impresora-multifuncion.png' :
+        '/imagenes/ordenador-sobremesa.png'
+    ) : '/imagenes/ordenador-sobremesa.png'
+}"
 							alt="Icono"> <span th:text="${asset.assetTag}"></span>
 
 						<div class="tooltip-datos shadow">

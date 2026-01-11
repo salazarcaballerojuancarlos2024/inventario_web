@@ -1,6 +1,8 @@
 @charset "UTF-8";
 
-/* Contenedor principal */
+/* ==========================================================================
+   1. CONTENEDOR Y ESTRUCTURA DE CARD
+   ========================================================================== */
 #vista-Datos .card {
     border-radius: 12px;
     height: calc(100vh - 120px); 
@@ -17,30 +19,32 @@
     position: relative;
 }
 
+/* ==========================================================================
+   2. TABLA Y CABECERA (STICKY)
+   ========================================================================== */
 #tablaAssets {
     table-layout: fixed; 
     width: 100%;
     border-collapse: collapse;
 }
 
-/* Cabecera Fija más compacta */
 #tablaAssets thead th {
     position: sticky;
     top: 0;
     z-index: 100;
     background-color: #2c3e50 !important;
     color: #81d4fa !important;
-    font-size: 0.75rem; /* Más pequeño */
+    font-size: 0.75rem;
     text-transform: uppercase;
     border-bottom: 2px solid #34495e;
     border-right: 1px solid #34495e;
-    padding: 8px 10px; /* Padding reducido */
+    padding: 8px 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    position: relative;
 }
 
+/* Resizer y ordenación */
 .resizer {
     position: absolute;
     right: 0;
@@ -58,28 +62,29 @@
 }
 
 thead th[onclick]:hover {
-    background-color: #e9ecef !important;
-    color: #0d6efd;
+    background-color: #34495e !important;
+    color: #ffffff !important;
+    cursor: pointer;
 }
 
 .sort-icon {
     font-size: 0.7rem;
     margin-left: 3px;
     color: #5c6bc0;
-    pointer-events: none;
 }
 
-/* Resalta la flecha de la columna que está ordenada actualmente */
 th.text-info .sort-icon {
     color: #0d6efd;
     font-weight: bold;
     font-size: 0.9rem;
 }
 
-/* Celdas de datos más compactas */
+/* ==========================================================================
+   3. CELDAS Y FILAS (Lógica de Doble Click Unificada)
+   ========================================================================== */
 #tablaAssets tbody td {
-    font-size: 0.80rem; /* Texto más pequeño para datos */
-    padding: 6px 10px; /* Padding reducido tipo Excel */
+    font-size: 0.80rem;
+    padding: 6px 10px;
     border-color: #2a2a2a;
     border-right: 1px solid #2a2a2a;
     color: #e0e0e0;
@@ -88,27 +93,54 @@ th.text-info .sort-icon {
     text-overflow: ellipsis;
 }
 
-#tablaAssets tbody tr:hover {
-    background-color: rgba(129, 212, 250, 0.08) !important;
+/* UNIFICACIÓN DE LA FILA ASSET */
+.fila-asset {
+    cursor: pointer !important;
+    transition: background-color 0.2s ease, outline 0.1s ease;
+    user-select: none; /* Evita selección de texto azul en double click */
 }
 
-/* Ajuste específico para los nuevos botones con texto */
+/* Efecto hover profesional */
+#tablaAssets tbody tr.fila-asset:hover {
+    background-color: rgba(129, 212, 250, 0.12) !important;
+    outline: 1px solid rgba(129, 212, 250, 0.3);
+    z-index: 5;
+}
+
+/* Feedback visual al hacer click o doble click */
+.fila-asset:active {
+    background-color: rgba(129, 212, 250, 0.25) !important;
+}
+
+/* ==========================================================================
+   4. BOTONES Y ACCIONES
+   ========================================================================== */
 .btn-compact {
-    padding: 2px 8px; /* Botones muy finos */
-    font-size: 0.7rem !important; /* Texto de botón pequeño */
+    padding: 2px 8px;
+    font-size: 0.7rem !important;
     text-transform: uppercase;
     font-weight: bold;
 }
 
-.btn-compact i {
-    font-size: 0.75rem;
+.btn-group .btn-compact {
+    margin: 0 2px;
+    border-radius: 4px !important;
 }
 
-/* --- PAGINACIÓN --- */
+#tablaAssets th:last-child, 
+#tablaAssets td:last-child {
+    width: 170px;
+    min-width: 170px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   5. PAGINACIÓN Y FOOTER
+   ========================================================================== */
 #vista-Datos .card-footer {
     background-color: #1a1a1a !important;
     border-top: 1px solid #34495e;
-    padding: 0.5rem 1rem; /* Footer más estrecho */
+    padding: 0.5rem 1rem;
 }
 
 #pagination-wrapper .page-link {
@@ -119,7 +151,9 @@ th.text-info .sort-icon {
     color: #81d4fa;
 }
 
-/* Scrollbar personalizado */
+/* ==========================================================================
+   6. MISCELÁNEA (Scroll, Animaciones, Búsqueda)
+   ========================================================================== */
 #vista-Datos .card-body::-webkit-scrollbar { width: 8px; height: 8px; }
 #vista-Datos .card-body::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 #vista-Datos .card-body::-webkit-scrollbar-thumb:hover { background: #81d4fa; }
@@ -128,41 +162,19 @@ th.text-info .sort-icon {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
 #tablaAssets tbody tr:not([style*="display: none"]) {
     animation: fadeInRow 0.3s ease forwards;
 }
 
-/* Forzar que la última columna tenga espacio suficiente para los botones */
-#tablaAssets th:last-child, 
-#tablaAssets td:last-child {
-    width: 170px;
-    min-width: 170px;
-    text-align: center;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-/* Evitar que los botones se peguen entre sí */
-.btn-group .btn-compact {
-    margin: 0 2px;
-    border-radius: 4px !important; /* Separarlos un poco visualmente */
-}
-
-/* Resaltado de la palabra encontrada */
 mark.resaltado-busqueda {
-    background-color: #ffeb3b; /* Amarillo vibrante */
+    background-color: #ffeb3b;
     color: #000;
     padding: 0;
     border-radius: 2px;
     font-weight: bold;
 }
 
-/* Efecto visual para las filas que "sobreviven" al filtro */
-.fila-asset {
-    transition: background-color 0.2s ease;
-}
-
-/* Opcional: resaltado de la celda que causó el match */
 .celda-match {
-    background-color: rgba(92, 107, 192, 0.05); /* Un tono muy suave del índigo que usas */
+    background-color: rgba(92, 107, 192, 0.05);
 }

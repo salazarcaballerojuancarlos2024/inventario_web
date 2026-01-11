@@ -1,5 +1,6 @@
-<div th:fragment="datos" id="vista-Datos" class="seccion-oculta container-fluid mt-4" style="display: none;">
-    <div class="card shadow-sm border-0 bg-dark text-white">
+<div th:fragment="datos" id="vista-Datos"
+	class="seccion-oculta container-fluid mt-4" style="display: none;">
+	<div class="card shadow-sm border-0 bg-dark text-white">
 
 		<div class="card-header border-secondary p-3">
 			<div class="row g-3 align-items-center">
@@ -26,7 +27,8 @@
 					</div>
 				</div>
 
-				<div class="d-flex justify-content-between align-items-center mb-3 px-3">
+				<div
+					class="d-flex justify-content-between align-items-center mb-3 px-3">
 					<div class="d-flex gap-2">
 						<button
 							class="btn btn-success btn-sm shadow d-flex align-items-center"
@@ -112,18 +114,28 @@
 					<tbody>
 						<th:block th:if="${todosLosAssets != null}">
 							<tr th:each="asset : ${todosLosAssets}"
-								th:id="'fila-' + ${asset.assetTag}" class="fila-asset">
-								<td style="text-align: center;"><input type="checkbox"
-									class="form-check-input check-asset"
+								th:id="'fila-' + ${asset.assetTag}" class="fila-asset"
+								th:data-planta-id="${asset.planta?.id}"
+								th:data-tag="${asset.assetTag}" style="cursor: pointer;">
+
+								<td style="text-align: center;"
+									ondblclick="event.stopPropagation();"><input
+									type="checkbox" class="form-check-input check-asset"
 									th:value="${asset.assetTag}"
 									onclick="actualizarEstadoBotonBorrar()"></td>
+
 								<td class="fw-bold text-info" th:text="${asset.assetTag}"></td>
 								<td th:text="${asset.nombreUsuario}"></td>
+
 								<td><span class="badge"
 									th:classappend="${asset.tipoEquipo == 'Portátil' ? 'bg-primary' : 'bg-secondary'}"
-									th:text="${asset.tipoEquipo}"></span></td>
-								<td
-									th:text="${asset.planta != null ? asset.planta.nombre : 'Sin Ubicación'}"></td>
+									th:text="${asset.tipoEquipo}"> </span></td>
+
+								<td class="fw-bold"
+									th:text="${asset.planta != null ? asset.planta.nombre : 'Sin Ubicación'}"
+									th:classappend="${asset.planta == null ? 'text-muted' : 'text-success'}">
+								</td>
+
 								<td th:text="${asset.ram}"></td>
 								<td th:text="${asset.cpu}"></td>
 								<td th:text="${asset.disco}"></td>
@@ -131,7 +143,7 @@
 								<td class="text-truncate" style="max-width: 150px;"
 									th:text="${asset.otros}" th:title="${asset.otros}"></td>
 
-								<td class="text-center">
+								<td class="text-center" ondblclick="event.stopPropagation();">
 									<div class="btn-group">
 										<button
 											class="btn btn-warning btn-compact d-flex align-items-center gap-1"
@@ -162,14 +174,53 @@
 			</div>
 		</div>
 
-		<div class="card-footer border-secondary d-flex justify-content-between align-items-center bg-darker p-2">
-            <div>
-                <nav><ul class="pagination pagination-sm mb-0" id="pagination-wrapper"></ul></nav>
-            </div>
-            <div class="text-muted small">
-                Mostrando <span id="countPage" class="text-info fw-bold">0</span> de 
-                <span id="countTotal" class="text-white fw-bold" th:text="${todosLosAssets != null ? #lists.size(todosLosAssets) : 0}">0</span> activos
-            </div>
-        </div>
-    </div>
+		<div
+			class="card-footer border-secondary d-flex justify-content-between align-items-center bg-darker p-2">
+			<div>
+				<nav>
+					<ul class="pagination pagination-sm mb-0" id="pagination-wrapper"></ul>
+				</nav>
+			</div>
+			<div class="text-muted small">
+				Mostrando <span id="countPage" class="text-info fw-bold">0</span> de
+				<span id="countTotal" class="text-white fw-bold"
+					th:text="${todosLosAssets != null ? #lists.size(todosLosAssets) : 0}">0</span>
+				activos
+			</div>
+		</div>
+	</div>
+	<script th:inline="javascript">
+    // Usamos una función autoejecutable para no ensuciar el entorno global
+    (function() {
+        console.log("✅ Script de navegación por doble clic cargado en la vista");
+
+        // Capturamos el clic en el documento para que funcione siempre (incluso tras paginar)
+        document.addEventListener('dblclick', function (e) {
+            // Buscamos la fila
+            const fila = e.target.closest('.fila-asset');
+            
+            // Si no hay fila o el clic es en un botón/input, ignoramos
+            if (!fila || e.target.closest('button') || e.target.closest('input')) {
+                return;
+            }
+
+            const plantaId = fila.getAttribute('data-planta-id');
+            const assetTag = fila.getAttribute('data-tag');
+
+            console.log("🚀 Doble clic en Asset:", assetTag, "Hacia Planta ID:", plantaId);
+
+            if (plantaId && plantaId !== "null") {
+                // Construimos la URL
+                const seccion = (plantaId === "1") ? "vista-almacen" : "vista-plano";
+                const destino = `/?plantaId=${plantaId}&seccion=${seccion}`;
+                
+                // Redirección directa
+                window.location.href = destino;
+            } else {
+                alert("Este activo no tiene ubicación asignada en la base de datos.");
+            }
+        });
+    })();
+</script>
+	
 </div>

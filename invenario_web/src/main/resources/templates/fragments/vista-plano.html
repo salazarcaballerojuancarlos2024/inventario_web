@@ -22,7 +22,7 @@
 				<div th:if="${plantaSeleccionada != null}"
 					th:id="|contenedor-plano-${plantaSeleccionada.id}|"
 					class="plano-background-container shadow-lg"
-					th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}'); position: relative; min-height: 500px;|">
+					th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}'); position: relative; min-height: 500px; overflow: visible !important;|">
 
 					<div class="marca-agua-texto"
 						th:text="${plantaSeleccionada.nombre}"
@@ -47,7 +47,13 @@
 						ondblclick="prepararModalDesdeIcono(this)">
 
 						<img
-							th:src="${asset.tipoEquipo != null and (#strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil') ? '/imagenes/ordenador-portatil.png' : '/imagenes/ordenador-sobremesa.png'}"
+							th:src="${asset.tipoEquipo != null ? 
+    (
+        #strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil' ? '/imagenes/ordenador-portatil.png' :
+        #strings.toLowerCase(asset.tipoEquipo) == 'impresora' ? '/imagenes/impresora.png' :
+        #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifunción' ? '/imagenes/Impresora-Multifuncion.png' :
+        '/imagenes/ordenador-sobremesa.png'
+    ) : '/imagenes/ordenador-sobremesa.png'}"
 							alt="Icono"> <span th:text="${asset.assetTag}"></span>
 
 						<div class="tooltip-datos shadow">
@@ -87,6 +93,12 @@
 							<div class="mb-1">
 								<span class="label-tt">S.O:</span> <span
 									th:text="${asset.versionSo}"></span>
+							</div>
+							<div class="mb-1"
+								th:if="${asset.otros != null and !asset.otros.empty}">
+								<span class="label-tt">Otros:</span> <span
+									th:text="${asset.otros}"
+									style="color: #eee; font-size: 0.65rem;"></span>
 							</div>
 
 							<div

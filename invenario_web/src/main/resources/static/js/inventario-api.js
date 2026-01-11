@@ -165,29 +165,21 @@ async function guardarPosicionesPlanta(plantaId) {
     
     if (items.length === 0) return alert("No hay equipos para guardar.");
 
-    const textoOriginal = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> GUARDANDO...`;
+    // Bloqueamos animaciones en todos los iconos para que no "bailen" al guardar
+    items.forEach(i => i.style.transition = 'none');
 
-    const movimientos = Array.from(items).map(i => {
-        // LEER DIRECTAMENTE DEL STYLE (que ya está en %)
-        // Esto evita tener que medir el contenedor con getBoundingClientRect()
-        let pX = i.style.left.replace('%', '');
-        let pY = i.style.top.replace('%', '');
+	const movimientos = Array.from(items).map(i => {
+	    // Leemos el valor exacto del atributo de seguridad que creamos en el drag-end
+	    let pX = i.getAttribute('data-x-pct') || i.style.left.replace('%', '');
+	    let pY = i.getAttribute('data-y-pct') || i.style.top.replace('%', '');
 
-        // Si por alguna razón el style está vacío, usamos los atributos data
-        if (!pX || !pY) {
-            pX = i.getAttribute('data-x-pct') || 0;
-            pY = i.getAttribute('data-y-pct') || 0;
-        }
-
-        return {
-            assetTag: i.getAttribute('data-tag'),
-            posX: parseFloat(pX),
-            posY: parseFloat(pY),
-            plantaId: plantaId 
-        };
-    });
+	    return {
+	        assetTag: i.getAttribute('data-tag'),
+	        posX: parseFloat(pX), // Mantenemos los decimales (importante: NO usar parseInt)
+	        posY: parseFloat(pY),
+	        plantaId: plantaId 
+	    };
+	});
 
     try {
         const res = await fetch(CONFIG.endpoints.actualizarPosiciones, {
@@ -197,14 +189,13 @@ async function guardarPosicionesPlanta(plantaId) {
         });
 
         if (res.ok) {
-            btn.innerHTML = "✅ ¡GUARDADO!";
-            // RECARGA INMEDIATA: Evitamos que el usuario vea el "salto" del DOM antiguo
-            window.location.reload();
+            // En lugar de reload inmediato, damos un feedback visual
+            btn.innerHTML = "✅ GUARDADO";
+            setTimeout(() => window.location.reload(), 150); // Pequeño delay para que el usuario vea el éxito
         }
     } catch (error) {
         console.error("Error:", error);
         btn.disabled = false;
-        btn.innerHTML = textoOriginal;
     }
 }
 

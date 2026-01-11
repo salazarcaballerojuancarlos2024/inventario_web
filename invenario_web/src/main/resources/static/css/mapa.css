@@ -94,18 +94,27 @@
    5. ARRASTRE Y POSICIONAMIENTO
    ========================================================================== */
 .drag-item {
-    position: absolute !important;
-    z-index: 500;
-    touch-action: none;
-    user-select: none;
-    
-    /* IMPORTANTE: El transform debe permitir que Interact.js lo sobreescriba */
-    /* El translate(-50%, -50%) solo debe estar cuando NO se está arrastrando */
+    position: absolute;
+    /* IMPORTANTE: El translate mantiene el icono centrado en el cursor */
     transform: translate(-50%, -50%); 
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
     
-    /* Quitamos cualquier transición para que el movimiento sea instantáneo al ratón */
+    /* Evita que el navegador intente animar la posición al cargar la página o al soltar */
     transition: none !important; 
-    will-change: transform, left, top;
+    
+    /* Mejora el rendimiento del movimiento en el navegador */
+    will-change: left, top; 
+    
+    /* Asegura que los iconos estén por encima del mapa pero debajo de los modales */
+    z-index: 50; 
+}
+
+.drag-item:active {
+    cursor: grabbing;
+    /* Opcional: una pequeña sombra para dar feedback de que se ha levantado */
+    filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.3));
 }
 
 /* Evita que el puntero "pierda" el icono al mover rápido */

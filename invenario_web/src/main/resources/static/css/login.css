@@ -1,0 +1,132 @@
+@charset "UTF-8";
+
+/**
+ * ESTILOS PARA LA PÁGINA DE ACCESO
+ * Proyecto: Inventario Dt Salud Málaga
+ */
+
+body {
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-container {
+    background-color: #1a3d1a;
+    color: white;
+    width: 550px;
+    height: 550px;
+    border-radius: 50% / 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    padding: 20px;
+    text-align: center;
+}
+
+/* Logo con esquinas suavizadas */
+.logo-junta {
+    width: 260px;
+    height: 130px;
+    object-fit: contain;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    background-color: white;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.texto-bienvenida {
+    margin-bottom: 25px;
+}
+
+.titulo {
+    font-size: 1.5em;
+    font-weight: bold;
+    display: block;
+}
+
+.subtitulo {
+    font-size: 1.2em;
+    opacity: 0.85;
+    display: block;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    width: 60%;
+    text-align: left;
+}
+
+label { 
+    display: block; 
+    margin-bottom: 4px; 
+    font-size: 0.85em; 
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    width: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.toggle-password:hover { 
+    opacity: 1; 
+}
+
+button {
+    background-color: #2e7d32;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 12px 40px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+}
+
+button:hover { 
+    background-color: #388e3c; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
+}
+
+.error-msg { 
+    background-color: rgba(255,0,0,0.2);
+    padding: 5px 15px;
+    border-radius: 5px;
+    color: #ff8a80; 
+    font-size: 0.85em; 
+    margin-bottom: 15px; 
+}
