@@ -12,4 +12,5 @@ public interface AssetService {
     void eliminarListaDeTags(List<String> tags);
     void guardarTodos(List<Asset> assets);
     boolean existePorTag(String assetTag);
+    List<Asset> buscarPorPlantaOrdenadosPorUsuario(Long plantaId);
 }

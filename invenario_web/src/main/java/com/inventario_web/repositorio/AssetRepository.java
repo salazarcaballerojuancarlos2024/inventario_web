@@ -21,6 +21,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     // --- Validaciones ---
     boolean existsByAssetTag(String assetTag);
 
+    List<Asset> findByPlantaIdOrderByNombreUsuarioAsc(Long plantaId);
     /**
      * Eliminación por Tag.
      * @Modifying se usa para consultas que modifican la BD (INSERT, UPDATE, DELETE).

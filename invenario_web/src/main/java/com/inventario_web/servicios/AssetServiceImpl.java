@@ -14,21 +14,23 @@ public class AssetServiceImpl implements AssetService {
     @Autowired
     private AssetRepository assetRepository;
 
-    
     @Override
     public List<Asset> buscarPorPlanta(Long plantaId) {
-        // Esto asume que en tu AssetRepository existe este método
         return assetRepository.findByPlantaId(plantaId);
     }
-    /**
-     * Borrado masivo de activos por su etiqueta (Asset Tag).
-     * Se utiliza en la funcionalidad tipo Gmail de vista-Datos.html.
-     */
+
+    /* --- ESTE ES EL MÉTODO QUE FALTABA PARA EL BUSCADOR --- */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Asset> buscarPorPlantaOrdenadosPorUsuario(Long plantaId) {
+        // Llama al repositorio para obtener los datos filtrados y ordenados
+        return assetRepository.findByPlantaIdOrderByNombreUsuarioAsc(plantaId);
+    }
+
     @Override
     @Transactional
     public void eliminarListaDeTags(List<String> tags) {
         if (tags != null && !tags.isEmpty()) {
-            // Usamos el repositorio para eliminar uno a uno dentro de la misma transacción
             tags.forEach(tag -> assetRepository.deleteByAssetTag(tag));
         }
     }
@@ -51,9 +53,6 @@ public class AssetServiceImpl implements AssetService {
         return assetRepository.findByAssetTag(assetTag);
     }
 
-    /**
-     * Eliminar un equipo individual.
-     */
     @Override
     @Transactional
     public void eliminarAsset(String assetTag) {
@@ -62,10 +61,6 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
-    /**
-     * Guarda una lista completa de activos.
-     * Crucial para guardar las posiciones (posX, posY) de todos los iconos a la vez.
-     */
     @Override
     @Transactional
     public void guardarTodos(List<Asset> assets) {
