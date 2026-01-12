@@ -44,28 +44,16 @@
    4. MARCA DE AGUA (VERSION OPTIMIZADA)
    ========================================================== */
 .marca-agua-texto {
-    position: absolute !important;
-    top: 50px !important;
-    left: 50px !important;
-    color: rgba(0, 0, 0, 0.15) !important;
-    
-    /* Z-index bajo para quedar detrás de los iconos (.pc-icon tiene 50) */
-    z-index: 5 !important;
-    
-    font-family: 'Arial Black', 'Segoe UI Black', sans-serif !important;
-    font-size: 4.5rem !important;
-    font-weight: 900 !important;
-    text-transform: uppercase !important;
-    letter-spacing: -1px !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    
-    pointer-events: none !important; /* Permite arrastrar PCs por encima sin bloquear */
-    user-select: none !important;    
-    
-    border-left: 12px solid rgba(0, 0, 0, 0.08) !important;
-    padding-left: 30px !important;
-    text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 5;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.2); 
+    pointer-events: none; 
+    text-transform: uppercase;
+    font-family: sans-serif;
 }
 
 /* Ajuste para Laptops */

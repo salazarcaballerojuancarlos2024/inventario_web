@@ -1,57 +1,73 @@
 @charset "UTF-8";
 
-/* Contenedor principal con margen superior de 2mm */
+/* ==========================================================
+   1. CONTENEDOR PRINCIPAL
+   ========================================================== */
 .area-mapa-principal {
     width: 100%;
-    height: 100%;
-    padding: 2mm; 
-    background-color: #f4f7f6;
+    height: 100vh;
+    background-color: #e5e7eb; 
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    overflow: auto;
+    overflow: hidden; 
     position: relative;
+    padding: 2mm; 
 }
 
-/* --- BUSCADOR --- */
+/* ==========================================================
+   2. BUSCADOR (Contenedor externo y ajustes de grupo)
+   ========================================================== */
 .buscador-assets-container {
-    position: fixed; 
-    top: 5px;         
-    right: 5px;       
+    position: absolute; 
+    top: 15px;         
+    right: 40px; 
     z-index: 5000;  
-    width: 350px; 
+    width: 18%; /* Aumentado ligeramente para mejor lectura */
+    min-width: 280px;
 }
 
-/* --- COMBO AVATAR --- */
-.opcion-usuario {
-    display: flex !important;
-    align-items: center !important;
-    padding: 8px 10px !important;
-}
-
-.avatar-icon-div {
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-    margin-right: 12px !important;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    flex-shrink: 0 !important;
-    display: inline-block !important;
-}
-
-/* --- PLANO (ANCHO +5% Y MARCA DE AGUA) --- */
-.canvas-plano {
-    position: relative;
-    display: inline-block;
+.buscador-assets-container .input-group {
+    display: flex;
+    align-items: stretch;
     background: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-left: 2mm; 
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Marca de agua sobre la imagen */
+.buscador-assets-container .input-group-text {
+    background-color: white !important;
+    border: none !important;
+    padding: 0 12px;
+}
+
+/* ==========================================================
+   3. CONTENEDOR DEL PLANO
+   ========================================================== */
+.plano-container-public {
+    width: 80% !important; 
+    height: calc(100% - 4mm);
+    display: block;
+    position: relative;
+    flex-shrink: 0;
+    margin-left: 3%; 
+}
+
+.canvas-plano {
+    width: 100% !important;
+    height: 100% !important;
+    background-repeat: no-repeat !important;
+    background-size: contain !important; 
+    background-position: left center !important; 
+    position: relative !important;
+    background-color: white; 
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
 .marca-agua-planta {
     position: absolute;
     top: 20px;
@@ -59,24 +75,14 @@
     z-index: 5;
     font-size: 1.5rem;
     font-weight: 800;
-    color: rgba(0, 0, 0, 0.2); 
-    pointer-events: none; 
+    color: rgba(0, 0, 0, 0.1); 
     text-transform: uppercase;
-    font-family: sans-serif;
+    pointer-events: none;
 }
 
-.imagen-fondo-plano {
-    display: block;
-    /* Reducción al 11% para ganar espacio horizontal */
-    max-width: calc(100vw - 11% - 4mm); 
-    height: auto; 
-    max-height: calc(100vh - 6mm);
-    user-select: none;
-    position: relative;
-    z-index: 1;
-}
-
-/* --- ICONOS Y TOOLTIPS --- */
+/* ==========================================================
+   4. ICONOS Y TOOLTIPS EN EL PLANO
+   ========================================================== */
 .asset-icono-publico {
     position: absolute;
     width: 32px; 
@@ -87,13 +93,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-shrink: 0; 
+    transition: transform 0.3s ease;
 }
 
-/* Subir el z-index del icono que tiene el ratón encima para que su tooltip esté arriba de todo */
-.asset-icono-publico:hover {
-    z-index: 10000;
-}
+.asset-icono-publico:hover { z-index: 10000; }
 
 .img-asset-nav {
     width: 32px;
@@ -106,34 +109,30 @@
     font-size: 10px;
     font-weight: bold;
     color: #333;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 4px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1px 5px;
     border-radius: 3px;
     margin-top: 2px;
+    white-space: nowrap;
+    border: 1px solid #ddd;
 }
 
-/* --- TOOLTIP 100% OPACO --- */
 .tooltip-publico {
     visibility: hidden;
     opacity: 0;
     position: absolute;
-    bottom: 115%; 
+    bottom: 130%; 
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    width: 230px;
-    height: auto; 
-    /* Cambiado a color sólido para evitar transparencias */
+    width: 240px;
     background-color: #212529 !important; 
     color: #ffffff !important;
     padding: 15px;
     border-radius: 8px;
-    /* Sombra más marcada para separar del fondo */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+    z-index: 10001;
+    transition: all 0.2s ease;
     pointer-events: none;
-    /* Z-index superior a cualquier otro icono del plano */
-    z-index: 10001; 
-    display: block !important; 
 }
 
 .asset-icono-publico:hover .tooltip-publico {
@@ -147,8 +146,8 @@
     color: #ffc107;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     margin-bottom: 10px;
-    padding-bottom: 5px;
     text-align: center;
+    padding-bottom: 5px;
 }
 
 .tooltip-body p {
@@ -156,10 +155,74 @@
     font-size: 0.8rem;
     display: flex;
     justify-content: space-between;
-    line-height: 1.2;
 }
 
 .tooltip-divider {
     margin: 8px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================
+   5. PERSONALIZACIÓN DE SELECT2 (NUEVO COMBO)
+   ========================================================== */
+
+/* 5.1. Estructura interna (Avatar + Texto) */
+.diseno-opcion-select2 {
+    display: flex !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+.avatar-select2 {
+    width: 22px !important;
+    height: 22px !important;
+    margin-right: 10px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 1px solid #ddd !important;
+    flex-shrink: 0;
+}
+
+/* 5.2. Texto: Pequeño y Negrita */
+.texto-select2-personalizado {
+    font-size: 0.75rem !important; /* Más pequeño */
+    font-weight: 800 !important;   /* Extra negrita */
+    color: #333 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 5.3. Ajustes del contenedor de Select2 (Theme Bootstrap 5) */
+.select2-container--bootstrap-5 .select2-selection {
+    border: none !important; /* El borde lo da el .input-group */
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: transparent !important;
+}
+
+/* Eliminar el borde azul por defecto al hacer foco */
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* Ajuste del dropdown (la lista que cae) */
+.select2-dropdown {
+    border: 1px solid #ced4da !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    z-index: 6000 !important;
+}
+
+.select2-results__option {
+    padding: 8px 12px !important;
+}
+
+/* Estilo cuando pasas el ratón sobre una opción */
+.select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
 }

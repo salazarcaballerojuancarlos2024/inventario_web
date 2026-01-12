@@ -24,9 +24,7 @@
 					class="plano-background-container shadow-lg"
 					th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}'); position: relative; min-height: 500px; overflow: visible !important;|">
 
-					<div class="marca-agua-texto"
-						th:text="${plantaSeleccionada.nombre}"
-						style="z-index: 10 !important;"></div>
+					<div class="marca-agua-texto" th:text="${plantaSeleccionada.nombre}">NOMBRE PLANTA</div>
 
 					<div th:each="asset : ${assets}"
 						th:if="${asset.planta != null and asset.planta.id == plantaSeleccionada.id}"

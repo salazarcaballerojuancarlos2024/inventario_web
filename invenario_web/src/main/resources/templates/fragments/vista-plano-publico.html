@@ -1,126 +1,151 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-</head>
+
 <body>
-    <div th:fragment="plano_publico" id="vista-plano-publico" class="area-mapa-principal">
-        
-        <div class="buscador-assets-container">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <img th:src="@{/imagenes/buscador.png}" width="18" height="18" alt="Lupa">
-                </span>
-                <select id="buscadorAsset" placeholder="Buscar usuario..." autocomplete="off">
-                    <option value=""></option>
-                    <option th:each="a : ${assets}" 
-                            th:value="${a.assetTag}" 
-                            th:text="${a.nombreUsuario}">
-                    </option>
-                </select>
-            </div>
-        </div>
+	<div th:fragment="plano_publico" id="vista-plano-publico"
+		class="area-mapa-principal">
 
-        <div th:if="${plantaSeleccionada != null}" class="plano-container-public">
-            <div class="canvas-plano">
-                <div class="marca-agua-planta" th:text="${plantaSeleccionada.nombre}">NOMBRE PLANTA</div>
+		<div class="buscador-assets-container">
+			<div class="input-group shadow-sm">
+				<div class="input-group-text">
+					<img th:src="@{/imagenes/buscador.png}" width="18" height="18"
+						alt="Lupa">
+				</div>
+				<select id="buscadorAsset" placeholder="Buscar usuario o activo..."
+					autocomplete="off">
+					<option value=""></option>
+					<option th:each="a : ${assets}" th:value="${a.assetTag}"
+						th:text="${a.nombreUsuario + ' (' + a.assetTag + ')'}"></option>
+				</select>
+			</div>
+		</div>
 
-                <img th:if="${plantaSeleccionada.imagenNombre != null}"
-                     th:src="@{'/planos-file/' + ${plantaSeleccionada.imagenNombre}}"
-                     class="imagen-fondo-plano" 
-                     alt="Plano de planta">
+		<div th:if="${plantaSeleccionada != null}"
+			class="plano-container-public">
+			<div class="canvas-plano"
+				th:style="|background-image: url('/planos-file/${plantaSeleccionada.imagenNombre}');|">
 
-                <div th:each="asset : ${assets}" 
-                     class="asset-icono-publico"
-                     th:id="'asset-' + ${asset.assetTag}"
-                     th:data-tag="${asset.assetTag}"
-                     th:style="'left:' + ${asset.posX} + '%; top:' + ${asset.posY} + '%;'">
-                    
-                    <img class="img-asset-nav"
-                        th:src="${asset.tipoEquipo != null ? 
+				<div class="marca-agua-planta"
+					th:text="${plantaSeleccionada.nombre}">NOMBRE PLANTA</div>
+
+				<div th:each="asset : ${assets}" class="asset-icono-publico"
+					th:id="'asset-' + ${asset.assetTag}"
+					th:style="|left: ${asset.posX}%; top: ${asset.posY}%;|">
+
+					<img class="img-asset-nav"
+						th:src="${asset.tipoEquipo != null ? 
                         (
-                            #strings.toLowerCase(asset.tipoEquipo).contains('portatil') ? '/imagenes/ordenador-portatil.png' :
-                            #strings.toLowerCase(asset.tipoEquipo).contains('multifuncion') ? '/imagenes/impresora-multifuncion.png' :
-                            #strings.toLowerCase(asset.tipoEquipo).contains('impresora') ? '/imagenes/impresora.png' :
+                            #strings.toLowerCase(asset.tipoEquipo) == 'portátil' or #strings.toLowerCase(asset.tipoEquipo) == 'portatil' ? '/imagenes/ordenador-portatil.png' :
+                            #strings.toLowerCase(asset.tipoEquipo) == 'impresora' ? '/imagenes/impresora.png' :
+                            #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifunción' or #strings.toLowerCase(asset.tipoEquipo) == 'impresora-multifuncion' ? '/imagenes/Impresora-Multifuncion.png' :
                             '/imagenes/ordenador-sobremesa.png'
                         ) : '/imagenes/ordenador-sobremesa.png'}"
-                        alt="Icono">
+						alt="Icono"> <span th:text="${asset.assetTag}">TAG</span>
 
-                    <span th:text="${asset.assetTag}">TAG</span>
+					<div class="tooltip-publico shadow">
+						<div class="tooltip-header">FICHA TÉCNICA</div>
+						<div class="tooltip-body">
+							<p>
+								<strong>Tag:</strong> <span th:text="${asset.assetTag}">-</span>
+							</p>
+							<p>
+								<strong>Tipo:</strong> <span
+									th:text="${asset.tipoEquipo ?: 'PC'}">-</span>
+							</p>
+							<p>
+								<strong>Usuario:</strong> <span th:text="${asset.nombreUsuario}">-</span>
+							</p>
+							<div class="tooltip-divider"></div>
+							<p>
+								<strong>CPU:</strong> <span th:text="${asset.cpu}">-</span>
+							</p>
+							<p>
+								<strong>RAM:</strong> <span th:text="${asset.ram}">-</span>
+							</p>
+							<p>
+								<strong>Disco:</strong> <span th:text="${asset.disco}">-</span>
+							</p>
+							<p>
+								<strong>S.O:</strong> <span th:text="${asset.versionSo}">-</span>
+							</p>
+							<div
+								th:if="${asset.otros != null and !#strings.isEmpty(asset.otros)}">
+								<div class="tooltip-divider"></div>
+								<p>
+									<strong>Otros:</strong> <span th:text="${asset.otros}"></span>
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-                    <div class="tooltip-publico shadow">
-                        <div class="tooltip-header">FICHA TÉCNICA</div>
-                        <div class="tooltip-body">
-                            <p><strong>Tag:</strong> <span th:text="${asset.assetTag}">-</span></p>
-                            <p><strong>Usuario:</strong> <span th:text="${asset.nombreUsuario}">-</span></p>
-                            <p><strong>Tipo:</strong> <span th:text="${asset.tipoEquipo}">-</span></p>
-                            <div class="tooltip-divider"></div>
-                            <p><strong>CPU:</strong> <span th:text="${asset.cpu}">-</span></p>
-                            <p><strong>RAM:</strong> <span th:text="${asset.ram}">-</span></p>
-                            <p><strong>Disco:</strong> <span th:text="${asset.disco}">-</span></p>
-                            <p><strong>S.O:</strong> <span th:text="${asset.versionSo}">-</span></p>
-                            
-                            <div th:if="${asset.otros != null and !asset.otros.empty}">
-                                <div class="tooltip-divider"></div>
-                                <p><strong>Otros:</strong> <span th:text="${asset.otros}"></span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<div th:if="${plantaSeleccionada == null}"
+			style="margin: auto; text-align: center;">
+			<img th:src="@{/imagenes/plano.png}" width="100"
+				style="opacity: 0.2;">
+			<h3 class="text-muted mt-3">Seleccione una ubicación</h3>
+		</div>
+	</div>
 
-        <div th:if="${plantaSeleccionada == null}" class="bienvenida-public" style="margin: auto; text-align: center; padding-top: 100px;">
-             <img th:src="@{/imagenes/plano.png}" width="100" style="opacity: 0.5;">
-             <h2 class="mt-3">Seleccione una planta</h2>
-             <p>Use el menú lateral para visualizar la ubicación de los activos.</p>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    
-    <script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function() {
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
         const rutaAvatar = /*[[@{/imagenes/avatar.png}]]*/ '/imagenes/avatar.png';
 
-        const ts = new TomSelect('#buscadorAsset', {
-            render: {
-                option: function(data, escape) {
-                    return `
-                    <div class="opcion-usuario">
-                        <div class="avatar-icon-div" style="background-image: url('${rutaAvatar}') !important;"></div>
-                        <span class="nombre-usuario-combo">${escape(data.text)}</span>
-                    </div>`;
-                },
-                item: function(data, escape) {
-                    return `
-                    <div class="item" style="display: flex; align-items: center;">
-                        <div class="avatar-icon-div" style="width:18px; height:18px; margin-right:8px; background-image: url('${rutaAvatar}') !important;"></div>
-                        <span>${escape(data.text)}</span>
-                    </div>`;
-                }
-            },
-            onChange: function(value) {
-                if(!value) return;
-                
-                const el = document.getElementById('asset-' + value);
-                if (el) {
-                    // Resetear todos los iconos a su estado normal
-                    document.querySelectorAll('.asset-icono-publico').forEach(i => {
-                        i.style.transform = 'translate(-50%, -50%) scale(1)';
-                        i.style.zIndex = '10';
-                    });
+        // Función para renderizar el contenido del combo (Imagen + Texto)
+        function formatState (state) {
+            if (!state.id) { return state.text; }
+            
+            // Creamos un elemento jQuery con el HTML deseado
+            var $state = $(
+                '<span class="diseno-opcion-select2">' +
+                    '<img src="' + rutaAvatar + '" class="avatar-select2" /> ' +
+                    '<span class="texto-select2-personalizado">' + state.text + '</span>' +
+                '</span>'
+            );
+            return $state;
+        };
 
-                    // Resaltar el seleccionado (Escala y Z-index alto para Tooltip)
-                    el.style.transform = 'translate(-50%, -50%) scale(2.2)';
-                    el.style.zIndex = '5000'; 
+        // Inicializar Select2 con tema Bootstrap 5
+        $('#buscadorAsset').select2({
+            theme: "bootstrap-5",
+            placeholder: "Buscar usuario o activo...",
+            allowClear: true,
+            width: '100%',
+            templateResult: formatState,   // Renderizado en la lista desplegable
+            templateSelection: formatState // Renderizado cuando ya está seleccionado
+        }).on('select2:select', function (e) {
+            // Lógica para resaltar el icono en el plano
+            const assetTag = e.params.data.id;
+            const el = document.getElementById('asset-' + assetTag);
+            
+            if (el) {
+                // Limpiar otros iconos
+                $('.asset-icono-publico').css({
+                    'transform': 'translate(-50%, -50%) scale(1)',
+                    'filter': 'none',
+                    'z-index': '10'
+                });
 
-                    // Scroll suave
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                // Resaltar el seleccionado
+                $(el).css({
+                    'transform': 'translate(-50%, -50%) scale(2.5)',
+                    'filter': 'drop-shadow(0 0 10px #ffc107)',
+                    'z-index': '9999'
+                });
+
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
+        
+        console.log("Select2 inicializado correctamente con éxito.");
     });
-    </script>
+</script>
+
 </body>
 </html>
