@@ -1,0 +1,85 @@
+@charset "UTF-8";
+
+body, html {
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+	font-family: 'Segoe UI', sans-serif;
+	background-color: #f4f4f4;
+}
+
+.main-wrapper {
+    display: flex !important; /* Forzamos flex horizontal */
+    flex-direction: row;      /* Sidebar a la izquierda, Mapa a la derecha */
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;         /* Evita scroll en el body */
+}
+
+.map-area {
+	width: 88%;
+	position: relative;
+	flex-grow: 1;
+	height: 100vh;
+}
+
+.seccion-oculta {
+	display: none !important;
+}
+
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    text-align: center;
+}
+
+.welcome-icon {
+    width: 150px; /* Tamaño del icono grande */
+    height: auto;
+    opacity: 0.3;  /* Efecto marca de agua */
+    margin-bottom: 20px;
+}
+
+.welcome-text {
+    font-size: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    opacity: 0.3; /* Efecto marca de agua */
+    letter-spacing: 3px;
+}
+/* Contenedor de la opción */
+.diseno-opcion-select2 {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+/* Imagen del avatar */
+.avatar-select2 {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+    background-color: #eee;
+}
+
+/* Texto al lado del avatar */
+.texto-select2-personalizado {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Ajuste del alto de Select2 para que no se vea cortado */
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}

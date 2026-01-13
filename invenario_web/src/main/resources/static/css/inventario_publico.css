@@ -1,32 +1,25 @@
-/* Estructura Layout Base */
+@charset "UTF-8";
+
 body, html {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    overflow: hidden; 
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+	font-family: 'Segoe UI', sans-serif;
+	background-color: #f4f4f4;
 }
 
-/* El contenedor que abraza el sidebar y el contenido */
-.contenedor-publico {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    background-color: #2a9d8f; /* Fondo cian para que no haya fugas blancas */
+.main-wrapper {
+	display: flex;
+	height: 100vh;
 }
 
-/* El hueco para el sidebar */
-.sidebar-wrapper {
-    width: 12%; 
-    min-width: 220px; /* Evita que el menú se colapse demasiado */
-    flex-shrink: 0;
-    height: 100%;
+.map-area {
+	width: 88%;
+	position: relative;
+	flex-grow: 1;
+	height: 100vh;
 }
 
-/* El hueco para el plano */
-.contenido-principal {
-    flex-grow: 1;
-    height: 100%;
-    background-color: #f4f7f6;
-    position: relative;
-    overflow: auto; 
+.seccion-oculta {
+	display: none !important;
 }

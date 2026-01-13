@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar2" class="sidebar shadow">
+        <div class="sidebar-header">
+            <h5 class="m-0 fw-bold">Inventario</h5>
+            <small class="opacity-75">Dt Salud Málaga</small>
+        </div>
+
+        <div class="accordion accordion-sidebar" id="accordionMenu">
+	  <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapseVista">
+                        <img th:src="@{/imagenes/Vista.png}" class="menu-icon">
+                        Vista
+                    </button>
+                </h2>
+				<div id="collapseVista" class="accordion-collapse collapse"
+					data-bs-parent="#accordionMenu">
+					<div class="accordion-body">
+						<div th:each="p : ${plantas}"
+							th:if="${p.id != 1 and p.nombre != 'ALMACEN'}">
+							<a class="nav-link-custom" style="cursor: pointer;"
+								th:onclick="|seleccionarPlanta(${p.id})|">
+								<img th:src="@{/imagenes/plano.png}" class="submenu-icon-fixed">
+								<span th:text="${p.nombre}"></span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+
+		
+	</div>
+</body>
+</html>

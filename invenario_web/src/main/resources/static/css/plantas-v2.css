@@ -40,20 +40,47 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
+
 /* ==========================================================
-   4. MARCA DE AGUA (VERSION OPTIMIZADA)
+   4. MARCA DE AGUA (VERSIÓN PROFESIONAL)
    ========================================================== */
+/* Usamos el ID del padre para dar más fuerza a la regla */
 .marca-agua-texto {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 5;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: rgba(0, 0, 0, 0.2); 
-    pointer-events: none; 
-    text-transform: uppercase;
-    font-family: sans-serif;
+    /* Posicionamiento */
+    position: absolute !important;
+    top: 20px !important;
+    left: 20px !important;
+    
+    /* Estética de Marca de Agua */
+    color: rgba(0, 0, 0, 0.1) !important; /* Gris muy clarito y transparente */
+    font-size: 2rem !important;           /* Tamaño grande */
+    font-weight: 900 !important;          /* Muy negrita */
+    font-family: 'Arial Black', sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: -2px !important;
+    
+    /* Interacción */
+    pointer-events: none !important;      /* Para que el ratón lo ignore y puedas clicar iconos debajo */
+    z-index: 1 !important;                /* Por debajo de los iconos de los PCs */
+    user-select: none !important;         /* Para que no se pueda seleccionar el texto azul al arrastrar */
+    
+    /* Efecto Mezcla (opcional, queda muy bien en fondos claros) */
+    mix-blend-mode: multiply !important;
+}
+
+/* Ajuste dinámico según el tamaño de pantalla */
+@media (max-width: 1200px) {
+    .marca-agua-texto {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-height: 800px) {
+    .marca-agua-texto {
+        font-size: 2rem !important;
+        top: 20px !important;
+        left: 20px !important;
+    }
 }
 
 /* Ajuste para Laptops */
