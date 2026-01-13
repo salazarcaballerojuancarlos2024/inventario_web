@@ -53,33 +53,3 @@ body, html {
     opacity: 0.3; /* Efecto marca de agua */
     letter-spacing: 3px;
 }
-/* Contenedor de la opción */
-.diseno-opcion-select2 {
-    display: flex;
-    align-items: center;
-    padding: 4px;
-}
-
-/* Imagen del avatar */
-.avatar-select2 {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 10px;
-    object-fit: cover;
-    background-color: #eee;
-}
-
-/* Texto al lado del avatar */
-.texto-select2-personalizado {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #333;
-}
-
-/* Ajuste del alto de Select2 para que no se vea cortado */
-.select2-container--bootstrap-5 .select2-selection {
-    min-height: 38px;
-    display: flex;
-    align-items: center;
-}

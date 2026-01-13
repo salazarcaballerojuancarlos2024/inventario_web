@@ -1,8 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
-	<div th:fragment="plano2" id="vista-plano"
-		class="h-100 w-100">
+	<div th:fragment="plano2" id="vista-plano" class="h-100 w-100">
+<style>
+.opcion-personalizada:hover {
+	background-color: #f8f9fa;
+}
+
+.opcion-personalizada:active {
+	background-color: #e9ecef;
+}
+
+/* Scrollbar elegante para la lista */
+#listaResultados::-webkit-scrollbar {
+	width: 6px;
+}
+
+#listaResultados::-webkit-scrollbar-thumb {
+	background: #ccc;
+	border-radius: 10px;
+}
+</style>
+
 
 		<div th:if="${plantaSeleccionada == null}"
 			class="d-flex flex-column align-items-center justify-content-center h-100 w-100 bg-light">
@@ -16,19 +36,37 @@
 				lateral para visualizar los activos</p>
 		</div>
 
-		<div class="buscador-assets-container"
-			style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 280px;">
-			<div class="input-group shadow">
-				<span class="input-group-text bg-white border-end-0"> <img
-					th:src="@{/imagenes/buscador.png}" width="16" alt="Lupa">
-				</span> <select id="buscadorAsset" class="form-select border-start-0">
-					<option value="">Buscar usuario o activo...</option>
-					<option th:each="a : ${assets}" th:value="${a.assetTag}"
-						th:text="${a.nombreUsuario + ' (' + a.assetTag + ')'}"></option>
-				</select>
-			</div>
-		</div>
-
+		<div class="buscador-assets-container" style="position: absolute; top: 20px; right: 20px; z-index: 9999; width: 300px;">
+    <div class="input-group shadow">
+        <span class="input-group-text bg-white">
+            <img th:src="@{/imagenes/buscador.png}" width="18">
+        </span>
+        <input type="text" id="inputBuscador" class="form-control" 
+               placeholder="Buscar usuario..." autocomplete="off" 
+               style="font-size: 1.1rem; height: 45px; font-weight: bold;">
+    </div>
+    
+    <div id="listaResultados" 
+         style="display: none; position: absolute; width: 100%; top: 46px; max-height: 350px; overflow-y: auto; z-index: 10000; background-color: white !important; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        
+        <th:block th:each="a : ${assets}">
+            <div th:if="${plantaSeleccionada != null and a.planta != null and a.planta.id == plantaSeleccionada.id}"
+                 class="opcion-personalizada d-flex align-items-center"
+                 th:data-tag="${a.assetTag}"
+                 th:data-nombre="${a.nombreUsuario}"
+                 style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background-color: white !important;">
+                
+                <img th:src="@{/imagenes/avatar.png}" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 12px;">
+                
+                <div class="d-flex flex-column">
+                    <span class="usuario-nombre" style="font-weight: 800; color: black; font-size: 1.1rem; display: block;" 
+                          th:text="${a.nombreUsuario}"></span>
+                    <span style="color: #666; font-size: 0.85rem;" th:text="${a.assetTag}"></span>
+                </div>
+            </div>
+        </th:block>
+    </div>
+</div>
 
 
 		<div class="d-flex h-100 w-100 bg-light">
@@ -142,41 +180,80 @@
 		</div>
 	</div>
 
-	
+
 	<script th:inline="javascript">
-    // Usamos esta forma para asegurar que se ejecute incluso si el fragmento se carga dinámicamente
-    (function($) {
-        $(document).ready(function() {
-            const rutaAvatar = /*[[@{/imagenes/avatar.png}]]*/ '/imagenes/avatar.png';
+$(document).ready(function() {
+    const $input = $('#inputBuscador');
+    const $lista = $('#listaResultados');
 
-            function formatState(state) {
-                if (!state.id) return state.text;
-                return $(
-                    '<span class="diseno-opcion-select2">' +
-                        '<img src="' + rutaAvatar + '" class="avatar-select2" /> ' +
-                        '<span class="texto-select2-personalizado">' + state.text + '</span>' +
-                    '</span>'
-                );
-            };
+    // 1. Mostrar todos los resultados al hacer clic en el input vacío
+    $input.on('click', function(e) {
+        e.stopPropagation();
+        const opciones = $('.opcion-personalizada');
+        if (opciones.length > 0) {
+            opciones.show().css('display', 'flex'); // Asegura que sean flex para el avatar
+            $lista.show();
+        }
+    });
 
-            // Inicializar Select2
-            $('#buscadorAsset').select2({
-                theme: "bootstrap-5",
-                width: '100%',
-                placeholder: "Buscar usuario o activo...",
-                allowClear: true,
-                templateResult: formatState,
-                templateSelection: formatState
-            }).on('select2:select', function (e) {
-                const assetTag = e.params.data.id;
-                const el = document.getElementById(assetTag);
-                if (el) {
-                    $(el).css({'transform': 'scale(3)', 'transition': '0.5s', 'z-index': '9999'});
-                    setTimeout(() => $(el).css('transform', 'scale(1)'), 2000);
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            });
+    // 2. Filtrar mientras se escribe
+    $input.on('input', function() {
+        const val = $(this).val().toLowerCase().trim();
+        let found = 0;
+
+        $('.opcion-personalizada').each(function() {
+            const nombre = ($(this).data('nombre') || "").toString().toLowerCase();
+            const tag = ($(this).data('tag') || "").toString().toLowerCase();
+
+            if (nombre.includes(val) || tag.includes(val)) {
+                $(this).show().css('display', 'flex');
+                found++;
+            } else {
+                $(this).hide();
+            }
         });
-    })(jQuery);
+
+        if (val === "" || found > 0) $lista.show();
+        else $lista.hide();
+    });
+
+    // 3. SELECCIONAR VALOR (Usamos mousedown para evitar que el blur del input lo cierre antes)
+    $(document).on('mousedown', '.opcion-personalizada', function(e) {
+        e.preventDefault(); 
+        
+        const tag = $(this).attr('data-tag');
+        const nombre = $(this).attr('data-nombre');
+
+        console.log("Seleccionando asset:", tag);
+
+        // Reflejar en el input
+        $input.val(nombre);
+        $lista.hide();
+
+        // Localizar el icono en el mapa
+        const $target = $('#' + tag);
+        if ($target.length) {
+            $target[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Efecto visual de resaltado
+            $target.css({
+                'transform': 'scale(5)',
+                'transition': 'all 0.5s ease',
+                'z-index': '9999'
+            });
+            
+            setTimeout(() => {
+                $target.css('transform', 'scale(1)');
+            }, 3000);
+        }
+    });
+
+    // 4. Cerrar lista al hacer clic fuera
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.buscador-assets-container').length) {
+            $lista.hide();
+        }
+    });
+});
 </script>
 </body>
