@@ -4,21 +4,26 @@
 .tooltip-datos {
     visibility: hidden; 
     width: 290px; 
-    /* Fondo oscuro ultra-opaco para máximo contraste */
     background-color: #121212 !important; 
     padding: 14px; 
     position: absolute; 
     z-index: 2000 !important; 
-    bottom: 125%; 
-    left: 50%; 
-    transform: translateX(-50%) translateY(10px); 
+    
+    /* Posicionamiento a la derecha del icono */
+    top: 50%; 
+    left: calc(100% + 15px); /* Se coloca a la derecha del icono con un margen de 15px */
+    
+    /* Centrado vertical perfecto: sube el tooltip el 50% de su propia altura */
+    transform: translateY(-50%); 
+    
     border-radius: 10px; 
     opacity: 0; 
-    transition: opacity 0.3s ease, transform 0.3s ease; 
+    /* Solo transición de opacidad, eliminamos el movimiento */
+    transition: opacity 0.2s ease; 
+    
     pointer-events: none; 
     border: 2px solid #2e7d32; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    /* Forzar que todo el texto dentro sea blanco por defecto */
     color: #ffffff !important;
 }
 
@@ -74,17 +79,19 @@
 .tooltip-datos::after {
     content: "";
     position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -10px;
+    top: 50%; /* Mitad del tooltip */
+    right: 100%; /* Pegado al borde izquierdo */
+    margin-top: -10px; /* Compensa la mitad del grosor de la flecha */
     border-width: 10px;
     border-style: solid;
-    border-color: #2e7d32 transparent transparent transparent;
+    /* Apunta a la izquierda: el color verde va en el borde derecho */
+    border-color: transparent #2e7d32 transparent transparent;
 }
 
 /* Disparador al pasar el ratón por el icono */
 .pc-icon:hover .tooltip-datos { 
     visibility: visible; 
     opacity: 1;
-    transform: translateX(-50%) translateY(0); 
+    /* Mantenemos el centrado vertical igual que en el estado base */
+    transform: translateY(-50%); 
 }

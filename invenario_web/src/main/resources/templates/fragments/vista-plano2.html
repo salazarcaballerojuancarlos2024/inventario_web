@@ -3,26 +3,161 @@
 
 <body>
 	<div th:fragment="plano2" id="vista-plano" class="h-100 w-100">
-<style>
+		<input type="hidden" id="plantaActualIdHidden"
+			th:value="${plantaSeleccionada != null ? plantaSeleccionada.id : ''}">
+
+		<style>
+/* 1. ESTADO BASE DEL ICONO (Asegura el retorno perfecto) */
+.pc-icon {
+	/* Mantenemos el punto de anclaje en el centro exacto */
+	transform-origin: center center !important;
+	/* Transición suave para transform y filtro, pero instantánea para el z-index al volver */
+	transition: transform 0.5s ease, filter 0.5s ease, z-index 0s;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 2. CLASE DE RESALTADO (La que aplicaremos por JS) */
+.buscado-resaltar {
+	transform: scale(4) !important;
+	z-index: 10000 !important;
+	filter: drop-shadow(0 0 15px #ffc107) saturate(1.5) !important;
+}
+
+/* --- RESTO DE ESTILOS DEL BUSCADOR --- */
+.buscador-assets-container {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 10000;
+	width: 300px;
+}
+
+#listaResultados {
+	display: none;
+	position: absolute;
+	width: 100%;
+	top: 46px;
+	max-height: 350px;
+	overflow-y: auto;
+	background-color: white !important;
+	border: 1px solid #ddd;
+	border-radius: 0 0 8px 8px;
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+	z-index: 10001;
+}
+
+.opcion-personalizada {
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	background-color: white !important;
+	display: flex;
+	align-items: center;
+}
+
 .opcion-personalizada:hover {
-	background-color: #f8f9fa;
+	background-color: #f0f7ff !important;
 }
 
-.opcion-personalizada:active {
-	background-color: #e9ecef;
+.usuario-nombre {
+	font-weight: 800;
+	color: #2c3e50;
+	font-size: 1.05rem;
 }
 
-/* Scrollbar elegante para la lista */
+/* Scrollbar elegante */
 #listaResultados::-webkit-scrollbar {
-	width: 6px;
+	width: 8px;
+}
+
+#listaResultados::-webkit-scrollbar-track {
+	background: #f1f1f1;
 }
 
 #listaResultados::-webkit-scrollbar-thumb {
-	background: #ccc;
+	background: #bbb;
 	border-radius: 10px;
 }
-</style>
 
+/* Estilos para el Switch */
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 40px;
+	height: 22px;
+}
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: .4s;
+	border-radius: 34px;
+}
+
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 16px;
+	width: 16px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: .4s;
+	border-radius: 50%;
+}
+
+input:checked+.slider {
+	background-color: #2e7d32;
+}
+
+input:checked+.slider:before {
+	transform: translateX(18px);
+}
+
+/* --- Estilos para el Modo Usuario Activo --- */
+
+/* Solo cambia el icono a Avatar si el modo está ON Y tiene usuario asignado */
+.modo-usuario-activo .pc-icon.tiene-usuario img {
+    content: url('/imagenes/avatar.png') !important;
+    border-radius: 50%;
+    background-color: white;
+    padding: 2px;
+    border: 2px solid #2e7d32; /* Un borde verde para resaltar el avatar */
+}
+
+/* Solo cambia la etiqueta a nombre si el modo está ON Y tiene usuario asignado */
+.modo-usuario-activo .pc-icon.tiene-usuario > span {
+    color: #1b5e20 !important;
+    font-weight: 800 !important;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid #c8e6c9;
+    z-index: 5;
+    white-space: nowrap;
+}
+
+/* Opcional: Atenúa los iconos que NO tienen usuario para que no distraigan */
+.modo-usuario-activo .pc-icon:not(.tiene-usuario) {
+    opacity: 0.4;
+    filter: grayscale(100%); /* Los pone en blanco y negro para diferenciar */
+}
+</style>
 
 		<div th:if="${plantaSeleccionada == null}"
 			class="d-flex flex-column align-items-center justify-content-center h-100 w-100 bg-light">
@@ -36,38 +171,55 @@
 				lateral para visualizar los activos</p>
 		</div>
 
-		<div class="buscador-assets-container" style="position: absolute; top: 20px; right: 20px; z-index: 9999; width: 300px;">
-    <div class="input-group shadow">
-        <span class="input-group-text bg-white">
-            <img th:src="@{/imagenes/buscador.png}" width="18">
-        </span>
-        <input type="text" id="inputBuscador" class="form-control" 
-               placeholder="Buscar usuario..." autocomplete="off" 
-               style="font-size: 1.1rem; height: 45px; font-weight: bold;">
-    </div>
-    
-    <div id="listaResultados" 
-         style="display: none; position: absolute; width: 100%; top: 46px; max-height: 350px; overflow-y: auto; z-index: 10000; background-color: white !important; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        
-        <th:block th:each="a : ${assets}">
-            <div th:if="${plantaSeleccionada != null and a.planta != null and a.planta.id == plantaSeleccionada.id}"
-                 class="opcion-personalizada d-flex align-items-center"
-                 th:data-tag="${a.assetTag}"
-                 th:data-nombre="${a.nombreUsuario}"
-                 style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background-color: white !important;">
-                
-                <img th:src="@{/imagenes/avatar.png}" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 12px;">
-                
-                <div class="d-flex flex-column">
-                    <span class="usuario-nombre" style="font-weight: 800; color: black; font-size: 1.1rem; display: block;" 
-                          th:text="${a.nombreUsuario}"></span>
-                    <span style="color: #666; font-size: 0.85rem;" th:text="${a.assetTag}"></span>
-                </div>
-            </div>
-        </th:block>
-    </div>
-</div>
+		<div class="buscador-assets-container"
+			style="position: absolute; top: 20px; right: 20px; z-index: 9999; width: 300px;">
 
+			<div class="input-group shadow">
+				<span class="input-group-text bg-white"> <img
+					th:src="@{/imagenes/buscador.png}" width="18">
+				</span> <input type="text" id="inputBuscador" class="form-control"
+					placeholder="Buscar usuario..." autocomplete="off"
+					style="font-size: 1.1rem; height: 45px; font-weight: bold;">
+			</div>
+
+			<div
+				class="d-flex align-items-center justify-content-between bg-white p-2 mt-2 shadow-sm"
+				style="border-radius: 8px; border: 1px solid #ddd;">
+				<div class="d-flex align-items-center">
+					<img th:src="@{/imagenes/avatar.png}"
+						style="width: 20px; margin-right: 10px;"> <span
+						style="font-weight: bold; font-size: 0.9rem; color: #555;">Modo
+						Usuario</span>
+				</div>
+				<label class="switch" style="margin-bottom: 0;"> <input
+					type="checkbox" id="checkModoUsuario"> <span
+					class="slider round"></span>
+				</label>
+			</div>
+
+			<div id="listaResultados"
+				style="display: none; position: absolute; width: 100%; top: 46px; max-height: 350px; overflow-y: auto; z-index: 10000; background-color: white !important; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+
+				<th:block th:each="a : ${assets}">
+					<div class="opcion-personalizada d-flex align-items-center"
+						th:if="${a.planta != null}" th:data-tag="${a.assetTag}"
+						th:data-nombre="${a.nombreUsuario}"
+						th:data-planta-id="${a.planta.id}"
+						th:style="${plantaSeleccionada != null and a.planta.id == plantaSeleccionada.id ? 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background-color: white !important; display: flex;' : 'display: none;'}">
+
+						<img th:src="@{/imagenes/avatar.png}"
+							style="width: 30px; height: 30px; border-radius: 50%; margin-right: 12px;">
+
+						<div class="d-flex flex-column">
+							<span class="usuario-nombre"
+								style="font-weight: 800; color: black; font-size: 1.1rem; display: block;"
+								th:text="${a.nombreUsuario}"></span> <span
+								style="color: #666; font-size: 0.85rem;" th:text="${a.assetTag}"></span>
+						</div>
+					</div>
+				</th:block>
+			</div>
+		</div>
 
 		<div class="d-flex h-100 w-100 bg-light">
 
@@ -178,82 +330,132 @@
 
 
 		</div>
-	</div>
 
 
-	<script th:inline="javascript">
-$(document).ready(function() {
-    const $input = $('#inputBuscador');
-    const $lista = $('#listaResultados');
+		<script th:inline="javascript">
+	$(document).ready(function() {
+    // Usamos delegación de eventos para que no falle tras recargas AJAX
+    const $body = $('body');
 
-    // 1. Mostrar todos los resultados al hacer clic en el input vacío
-    $input.on('click', function(e) {
+    $body.on('click', '#inputBuscador', function(e) {
         e.stopPropagation();
-        const opciones = $('.opcion-personalizada');
-        if (opciones.length > 0) {
-            opciones.show().css('display', 'flex'); // Asegura que sean flex para el avatar
-            $lista.show();
+        const plantaId = $('#plantaActualIdHidden').val(); // Usamos el input oculto
+        console.log("Buscando para planta ID:", plantaId);
+
+        let found = 0;
+        $('.opcion-personalizada').each(function() {
+            const dataPlanta = $(this).attr('data-planta-id');
+            
+            if (plantaId && dataPlanta == plantaId) {
+                $(this).attr('style', 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background-color: white !important; display: flex !important;');
+                found++;
+            } else {
+                $(this).attr('style', 'display: none !important;');
+            }
+        });
+
+        if (found > 0) {
+            $('#listaResultados').show();
+        } else {
+            console.warn("No se encontraron assets para la planta:", plantaId);
         }
     });
 
-    // 2. Filtrar mientras se escribe
-    $input.on('input', function() {
+    $body.on('input', '#inputBuscador', function() {
         const val = $(this).val().toLowerCase().trim();
+        const plantaId = $('#plantaActualIdHidden').val();
         let found = 0;
 
         $('.opcion-personalizada').each(function() {
             const nombre = ($(this).data('nombre') || "").toString().toLowerCase();
             const tag = ($(this).data('tag') || "").toString().toLowerCase();
+            const esMismaPlanta = $(this).attr('data-planta-id') == plantaId;
 
-            if (nombre.includes(val) || tag.includes(val)) {
-                $(this).show().css('display', 'flex');
+            if (esMismaPlanta && (nombre.includes(val) || tag.includes(val))) {
+                $(this).attr('style', 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; background-color: white !important; display: flex !important;');
                 found++;
             } else {
-                $(this).hide();
+                $(this).attr('style', 'display: none !important;');
             }
         });
 
-        if (val === "" || found > 0) $lista.show();
-        else $lista.hide();
+        if (found > 0) $('#listaResultados').show();
+        else $('#listaResultados').hide();
     });
 
-    // 3. SELECCIONAR VALOR (Usamos mousedown para evitar que el blur del input lo cierre antes)
-    $(document).on('mousedown', '.opcion-personalizada', function(e) {
-        e.preventDefault(); 
-        
+ // Selección de resultado
+    $body.on('mousedown', '.opcion-personalizada', function(e) {
         const tag = $(this).attr('data-tag');
         const nombre = $(this).attr('data-nombre');
+        
+        $('#inputBuscador').val(nombre);
+        $('#listaResultados').hide();
 
-        console.log("Seleccionando asset:", tag);
-
-        // Reflejar en el input
-        $input.val(nombre);
-        $lista.hide();
-
-        // Localizar el icono en el mapa
         const $target = $('#' + tag);
         if ($target.length) {
+            // 1. Centramos la vista
             $target[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Efecto visual de resaltado
-            $target.css({
-                'transform': 'scale(5)',
-                'transition': 'all 0.5s ease',
-                'z-index': '9999'
-            });
-            
+            // 2. Aplicamos la clase de resaltado (sin tocar .css() directamente)
+            $target.addClass('buscado-resaltar');
+
+            // 3. A los 2.5 segundos quitamos la clase
             setTimeout(() => {
-                $target.css('transform', 'scale(1)');
-            }, 3000);
+                $target.removeClass('buscado-resaltar');
+                
+                // Forzamos un pequeño "refresh" de posición por si el navegador se queda perezoso
+                // Esto asegura que vuelva a su left/top original sin desplazamientos
+                const originalLeft = $target.css('left');
+                $target.css('left', originalLeft);
+            }, 2500);
         }
     });
+ 
+ // Lógica del Interruptor Modo Usuario Corregida
+    $body.on('change', '#checkModoUsuario', function() {
+    const $contenedorPlano = $('.plano-background-container');
+    const activar = $(this).is(':checked');
 
-    // 4. Cerrar lista al hacer clic fuera
+    if (activar) {
+        $contenedorPlano.addClass('modo-usuario-activo');
+        
+        $('.pc-icon').each(function() {
+            const $icono = $(this);
+            const nombreUsuario = $icono.data('user');
+
+            // Solo actuamos si el nombre existe y no es una cadena vacía
+            if (nombreUsuario && nombreUsuario.toString().trim() !== "") {
+                $icono.addClass('tiene-usuario'); 
+                $icono.children('span').text(nombreUsuario);
+            } else {
+                // Si está vacío, nos aseguramos de que NO tenga la clase de transformación
+                $icono.removeClass('tiene-usuario');
+            }
+        });
+    } else {
+        // Al apagar, restauramos todo a la normalidad
+        $contenedorPlano.removeClass('modo-usuario-activo');
+        
+        $('.pc-icon').each(function() {
+            const $icono = $(this);
+            const tagOriginal = $icono.data('tag');
+            
+            $icono.removeClass('tiene-usuario');
+            $icono.children('span').text(tagOriginal);
+            $icono.css('opacity', '1');
+            $icono.css('filter', '');
+        });
+    }
+});
+
+    // Cerrar si se hace click fuera
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.buscador-assets-container').length) {
-            $lista.hide();
+            $('#listaResultados').hide();
         }
     });
 });
-</script>
+	</script>
+	</div>
 </body>
+</html>
