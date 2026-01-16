@@ -28,19 +28,17 @@ public class PublicController {
             @RequestParam(value = "plantaId", required = false) Long plantaId, 
             Model model) {
         
-        // 1. Cargamos todas las plantas para el sidebar_public
         model.addAttribute("plantas", plantaService.listarTodas());
+        
+        // Inicializamos assets como una lista vacía por defecto
+        model.addAttribute("assets", new java.util.ArrayList<Asset>()); 
 
-        // 2. Si el usuario seleccionó una planta, cargamos sus datos
         if (plantaId != null) {
             Planta planta = plantaService.buscarPorId(plantaId);
             model.addAttribute("plantaSeleccionada", planta);
             
-            // BUSCADOR: Obtenemos los assets de ESTA planta ordenados por Usuario
-            // Asegúrate de que este método exista en tu AssetService
             List<Asset> assetsOrdenados = assetService.buscarPorPlantaOrdenadosPorUsuario(plantaId);
-            model.addAttribute("assets", assetsOrdenados);
-            
+            model.addAttribute("assets", assetsOrdenados); // Sobrescribimos con los datos reales
         } else {
             model.addAttribute("plantaSeleccionada", null);
         }
