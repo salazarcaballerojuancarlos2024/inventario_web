@@ -6,7 +6,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version> <relativePath/>
+		<version>3.2.2</version> 
+		<relativePath/>
 	</parent>
 
 	<groupId>com.inventario_web</groupId>
@@ -14,6 +15,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>inventario_web</name>
 	<description>Sistema de Inventario con Plano Interactivo</description>
+	
+	<packaging>war</packaging>
 
 	<properties>
 		<java.version>21</java.version>
@@ -55,9 +58,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+   		 	<groupId>org.springframework.boot</groupId>
+   	 		<artifactId>spring-boot-starter-tomcat</artifactId>
+   			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<finalName>inventario_web</finalName>
+		
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

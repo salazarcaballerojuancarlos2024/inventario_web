@@ -84,10 +84,19 @@
 }
 
 .watermark-almacen span {
-    font-size: 4rem;
+    /* Reducido de 4rem a 2rem (50%) */
+    font-size: 2rem; 
     font-weight: 900;
-    letter-spacing: 10px;
+    /* Reducido de 10px a 5px (50%) para mantener la proporción */
+    letter-spacing: 5px; 
     display: block;
+}
+
+/* Si tienes una imagen dentro de la marca de agua, también debemos reducirla */
+.watermark-almacen img {
+    max-width: 150px; /* Ajusta este valor al 50% de lo que mida tu imagen original */
+    height: auto;
+    margin-bottom: 10px;
 }
 
 /* ==========================================================================
