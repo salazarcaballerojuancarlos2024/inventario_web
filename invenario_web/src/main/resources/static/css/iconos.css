@@ -1,11 +1,11 @@
 @charset "UTF-8";
 
 /* ==========================================
-   1. ESTADO BASE DEL ICONO
+   1. ESTADO BASE DEL ICONO (Reducido un 25%)
    ========================================== */
 .pc-icon { 
     position: absolute !important; 
-    width: 50px; 
+    width: 37.5px; /* Reducido un 25% (antes 50px) */
     display: flex; 
     flex-direction: column; 
     align-items: center; 
@@ -18,7 +18,7 @@
        Si animamos 'all', el navegador suaviza el cambio de posición y produce el salto oblicuo. */
     transition: opacity 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease; 
     
-    padding: 6px;
+    padding: 4.5px; /* Reducido un 25% (antes 6px) */
     border-radius: 50%;
 
     /* CENTRADO: Esto asegura que el centro del icono coincida con la coordenada % */
@@ -30,21 +30,21 @@
 
 /* Imagen del equipo */
 .pc-icon img { 
-    width: 32px; 
-    height: 32px; 
+    width: 24px;  /* Reducido un 25% (antes 32px) */
+    height: 24px; /* Reducido un 25% (antes 32px) */
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
     pointer-events: none; 
 }
 
 /* Etiqueta de texto (Asset Tag) */
 .pc-icon span {
-    font-size: 10px; 
+    font-size: 8px; /* Reducido un 20% para mantener legibilidad (antes 10px) */
     font-weight: bold; 
     background: rgba(255, 255, 255, 0.95);
     color: #333;
-    padding: 1px 5px; 
-    border-radius: 4px; 
-    margin-top: 3px; 
+    padding: 1px 4px; 
+    border-radius: 3px; 
+    margin-top: 2px; 
     white-space: nowrap;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -63,7 +63,7 @@
 }
 
 .pc-icon:hover img {
-    filter: drop-shadow(0 0 8px #2e7d32) brightness(1.1);
+    filter: drop-shadow(0 0 6px #2e7d32) brightness(1.1);
 }
 
 .pc-icon:hover span {
@@ -79,7 +79,7 @@
     /* Bloqueamos TODA transición para que el movimiento sea 1:1 con el ratón */
     transition: none !important; 
     animation: none !important;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
 }
 
 /* ==========================================
@@ -89,19 +89,19 @@
 /* Pulso Verde para Hover */
 @keyframes pulse-green {
     0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
-    70% { box-shadow: 0 0 0 12px rgba(46, 125, 50, 0); }
+    70% { box-shadow: 0 0 0 9px rgba(46, 125, 50, 0); } /* Ajustado proporcionalmente */
     100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
 }
 
 /* Pulso de llegada o resaltado (Azul) */
 .pc-icon.resaltado-temporal {
     outline: 2px solid #007bff; 
-    outline-offset: 4px; 
+    outline-offset: 3px; 
     animation: pulse-blue 2s infinite;
 }
 
 @keyframes pulse-blue {
     0% { box-shadow: 0 0 0 0px rgba(0, 123, 255, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+    70% { box-shadow: 0 0 0 8px rgba(0, 123, 255, 0); } /* Ajustado proporcionalmente */
     100% { box-shadow: 0 0 0 0px rgba(0, 123, 255, 0); }
 }

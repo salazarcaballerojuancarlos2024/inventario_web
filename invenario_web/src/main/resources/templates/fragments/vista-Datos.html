@@ -29,13 +29,15 @@
 
 				<div
 					class="d-flex justify-content-between align-items-center mb-3 px-3">
-					<div class="d-flex gap-2">
+					<div class="d-flex gap-2 align-items-center flex-wrap">
+						<!-- Botón Crear Nuevo -->
 						<button
 							class="btn btn-success btn-sm shadow d-flex align-items-center"
 							onclick="abrirModalCrear()">
 							<i class="bi bi-plus-circle me-1"></i> Nuevo Activo
 						</button>
 
+						<!-- Botón Borrar Selección Actual -->
 						<button id="btnBorrarSeleccion"
 							class="btn btn-danger btn-sm shadow d-flex align-items-center gap-2"
 							onclick="borrarSeleccionados()" disabled>
@@ -45,6 +47,7 @@
 							</span>
 						</button>
 
+						<!-- Botón Exportar Vista CSV Actual -->
 						<button
 							class="btn btn-outline-info btn-sm shadow d-flex align-items-center gap-2"
 							onclick="exportarVistaActualCSV()"
@@ -53,6 +56,21 @@
 								style="width: 16px; height: 16px;"> <span>Exportar
 								CSV</span>
 						</button>
+
+						<!-- Formulario Importar CSV -->
+						<!-- Formulario e Input de Importación CSV -->
+						<div class="d-inline">
+							<input type="file" id="inputCsv" name="archivo" accept=".csv"
+								style="display: none;" onchange="ejecutarImportacionCsv(this)">
+
+							<button type="button"
+								class="btn btn-outline-success btn-sm shadow d-flex align-items-center gap-1"
+								onclick="document.getElementById('inputCsv').click();"
+								title="Cargar y volcar activos desde un archivo .csv">
+								<i class="bi bi-file-earmark-spreadsheet"></i> <span>Importar
+									CSV</span>
+							</button>
+						</div>
 					</div>
 
 					<div style="width: 350px;">
@@ -189,17 +207,67 @@
 			</div>
 		</div>
 	</div>
-	<script th:inline="javascript">
-    // Usamos una función autoejecutable para no ensuciar el entorno global
-    (function() {
-        console.log("✅ Script de navegación por doble clic cargado en la vista");
 
-        // Capturamos el clic en el documento para que funcione siempre (incluso tras paginar)
-        document.addEventListener('dblclick', function (e) {
-            // Buscamos la fila
-            const fila = e.target.closest('.fila-asset');
+	<script th:inline="javascript">
+    (function() {
+        console.log("✅ Scripts de 'vista-Datos' cargados correctamente");
+
+        // -------------------------------------------------------------
+        // 1. IMPORTACIÓN DE CSV (Hacia /assets/importar-csv)
+        // -------------------------------------------------------------
+        window.ejecutarImportacionCsv = function(input) {
+            console.log("--> 1. Detectado cambio de archivo en el input CSV");
+
+            if (!input || !input.files || input.files.length === 0) {
+                console.warn("No se ha seleccionado ningún archivo.");
+                return;
+            }
+
+            const file = input.files[0];
+            console.log("--> 2. Archivo preparado:", file.name, "| Tamaño:", file.size, "bytes");
+
+            const confirmacion = confirm(`¿Deseas importar los activos del archivo "${file.name}" a la Base de Datos?`);
             
-            // Si no hay fila o el clic es en un botón/input, ignoramos
+            if (!confirmacion) {
+                console.log("Cancelado por el usuario.");
+                input.value = '';
+                return;
+            }
+
+            console.log("--> 3. Enviando archivo POST hacia /assets/importar-csv...");
+
+            const formData = new FormData();
+            formData.append("archivo", file);
+
+            fetch('/assets/importar-csv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                console.log("--> 4. Respuesta HTTP recibida con estado:", response.status);
+                const data = await response.json();
+                
+                if (response.ok && data.exito) {
+                    alert(`¡Importación completada con éxito!\n\nSe han procesado y guardado ${data.registrosProcesados} activos en la base de datos.`);
+                    location.reload(); 
+                } else {
+                    alert("Error al importar el archivo CSV:\n\n" + (data.error || "Formato de archivo no válido."));
+                }
+            })
+            .catch(err => {
+                console.error("--> Error crítico en la petición Fetch:", err);
+                alert("Ocurrió un error al procesar el archivo en el servidor: " + err.message);
+            })
+            .finally(() => {
+                input.value = ''; // Limpiar el input para permitir volver a subir el mismo archivo si es necesario
+            });
+        };
+
+        // -------------------------------------------------------------
+        // 2. NAVEGACIÓN POR DOBLE CLIC EN FILA DE LA TABLA
+        // -------------------------------------------------------------
+        document.addEventListener('dblclick', function (e) {
+            const fila = e.target.closest('.fila-asset');
             if (!fila || e.target.closest('button') || e.target.closest('input')) {
                 return;
             }
@@ -210,11 +278,8 @@
             console.log("🚀 Doble clic en Asset:", assetTag, "Hacia Planta ID:", plantaId);
 
             if (plantaId && plantaId !== "null") {
-                // Construimos la URL
                 const seccion = (plantaId === "1") ? "vista-almacen" : "vista-plano";
                 const destino = `/?plantaId=${plantaId}&seccion=${seccion}`;
-                
-                // Redirección directa
                 window.location.href = destino;
             } else {
                 alert("Este activo no tiene ubicación asignada en la base de datos.");
@@ -222,5 +287,4 @@
         });
     })();
 </script>
-	
 </div>

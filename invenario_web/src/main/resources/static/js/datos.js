@@ -135,39 +135,59 @@ async function enviarFormularioModal() {
 }
 
 /**
- * LÓGICA DE NAVEGACIÓN POR DOBLE CLICK (Delegación de eventos)
- * Sobrevive a la paginación y ordenación de la tabla
- 
-document.addEventListener('dblclick', function(event) {
-    // Buscamos si el click fue en una fila de activo
-    const fila = event.target.closest('.fila-asset');
+ * Procesa la importación de CSV enviando los datos a AssetController
+ */
+window.ejecutarImportacionCsv = function(input) {
+    console.log("--> Evento onchange detectado en el input CSV.");
+
+    if (!input || !input.files || input.files.length === 0) {
+        console.warn("No se ha seleccionado ningún archivo.");
+        return;
+    }
+
+    const file = input.files[0];
+    console.log("--> Archivo seleccionado:", file.name, "Tamaño:", file.size, "bytes");
+
+    // Pop-up de confirmación explícita
+    const confirmacion = confirm(`¿Deseas importar y guardar los activos del archivo "${file.name}" en la base de datos?`);
     
-    // Si no hay fila, o si el click fue en un botón/input dentro de la fila, ignoramos
-    if (!fila || event.target.closest('button') || event.target.closest('input')) {
+    if (!confirmacion) {
+        console.log("Importación cancelada por el usuario.");
+        input.value = ''; 
         return;
     }
 
-    const plantaId = fila.getAttribute('data-planta-id');
-    const assetTag = fila.getAttribute('data-tag');
+    console.log("--> Enviando archivo a /assets/importar-csv...");
 
-    console.log(`🔍 Navegando a Planta ID: ${plantaId} por activo: ${assetTag}`);
+    const formData = new FormData();
+    formData.append("archivo", file);
 
-    if (!plantaId || plantaId === "null" || plantaId === "undefined") {
-        alert("Este activo no tiene una planta asignada.");
-        return;
-    }
+    fetch('/assets/importar-csv', {
+        method: 'POST',
+        body: formData
+    })
+    .then(async response => {
+        console.log("--> Estado HTTP del servidor:", response.status);
+        const data = await response.json();
+        
+        if (response.ok && data.exito) {
+            alert(`¡Importación completada con éxito!\n\nSe han registrado ${data.registrosProcesados} activos en la base de datos.`);
+            location.reload(); 
+        } else {
+            alert("Error al importar el archivo CSV:\n\n" + (data.error || "Formato no válido."));
+        }
+    })
+    .catch(err => {
+        console.error("--> Error crítico en la petición Fetch:", err);
+        alert("Ocurrió un error al procesar la comunicación con el servidor: " + err.message);
+    })
+    .finally(() => {
+        input.value = ''; 
+    });
+};
 
-    // Construcción de la URL de destino
-    // Si plantaId es 1 (Almacén), usamos la sección almacén, sino la vista de plano
-    const seccion = (plantaId === "1") ? "vista-almacen" : "vista-plano";
-    const urlDestino = `/?plantaId=${plantaId}&seccion=${seccion}`;
 
-    window.location.href = urlDestino;
-});
-*/
-
-/**
- * Lógica de Ordenación Manual (Opcional si usas ordenarTablaPaginada en el HTML)
+ /* Lógica de Ordenación Manual (Opcional si usas ordenarTablaPaginada en el HTML)
  */
 document.querySelectorAll('#tablaAssets th[onclick]').forEach((header, index) => {
     // Si ya usas funciones inline como ordenarTablaPaginada(0), este listener es preventivo

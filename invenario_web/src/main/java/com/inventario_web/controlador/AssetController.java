@@ -7,15 +7,19 @@ import com.inventario_web.servicios.AssetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller; // Cambiado para soportar vistas
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Controller // Cambiado de @RestController a @Controller
+@Controller
 @RequestMapping("/assets")
 public class AssetController {
 
@@ -46,11 +50,98 @@ public class AssetController {
             model.addAttribute("assets", new ArrayList<>());
         }
 
-        return "index"; // Renderiza index.html
+        return "index";
+    }
+
+    /**
+     * IMPORTAR CSV Y GUARDAR/ACTUALIZAR EN BD
+     */
+    @PostMapping("/importar-csv")
+    @ResponseBody
+    public ResponseEntity<?> importarCsv(@RequestParam("archivo") MultipartFile archivo) {
+        if (archivo == null || archivo.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("exito", false, "error", "El archivo proporcionado está vacío."));
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(archivo.getInputStream(), StandardCharsets.UTF_8))) {
+            String primeraLinea = br.readLine();
+            if (primeraLinea == null) {
+                return ResponseEntity.badRequest().body(Map.of("exito", false, "error", "El archivo CSV está completamente vacío."));
+            }
+
+            // Normalización de primera línea
+            primeraLinea = primeraLinea.replace("\"", "").replace("\uFEFF", "").trim();
+            String delimitador = primeraLinea.contains(";") ? ";" : ",";
+
+            List<Asset> activosParaGuardar = new ArrayList<>();
+            String linea;
+            int count = 0;
+
+            // Si la primera línea contiene cabeceras (por ej: "Tag", "Usuario"), la saltamos
+            boolean esCabecera = primeraLinea.toLowerCase().contains("tag") || primeraLinea.toLowerCase().contains("usuario");
+
+            while ((linea = br.readLine()) != null) {
+                if (linea.trim().isEmpty()) continue;
+
+                try {
+                    String[] columnas = linea.split(delimitador, -1);
+                    if (columnas.length < 1) continue;
+
+                    String tag = columnas[0].replace("\"", "").trim();
+                    if (tag.isEmpty() || tag.equalsIgnoreCase("tag")) continue; // Evitar procesar cabecera
+
+                    Asset asset = assetService.findByAssetTag(tag);
+                    if (asset == null) {
+                        asset = new Asset();
+                        asset.setAssetTag(tag);
+                        asset.setPosX(2.0);
+                        asset.setPosY(2.0);
+                    }
+
+                    if (columnas.length > 1) asset.setNombreUsuario(columnas[1].replace("\"", "").trim());
+                    if (columnas.length > 2) asset.setTipoEquipo(columnas[2].replace("\"", "").trim());
+
+                    if (columnas.length > 3) {
+                        String nombreUbicacion = columnas[3].replace("\"", "").trim();
+                        if (!nombreUbicacion.isEmpty() && !nombreUbicacion.equalsIgnoreCase("Sin Ubicación")) {
+                            Planta planta = plantaRepository.findByNombre(nombreUbicacion).orElse(null);
+                            asset.setPlanta(planta);
+                        } else {
+                            asset.setPlanta(null);
+                        }
+                    }
+
+                    if (columnas.length > 4) asset.setRam(columnas[4].replace("\"", "").trim());
+                    if (columnas.length > 5) asset.setCpu(columnas[5].replace("\"", "").trim());
+                    if (columnas.length > 6) asset.setDisco(columnas[6].replace("\"", "").trim());
+                    if (columnas.length > 7) asset.setVersionSo(columnas[7].replace("\"", "").trim());
+                    if (columnas.length > 8) asset.setOtros(columnas[8].replace("\"", "").trim());
+
+                    activosParaGuardar.add(asset);
+                    count++;
+                } catch (Exception exFila) {
+                    System.err.println("Error procesando línea CSV: " + linea + " | " + exFila.getMessage());
+                }
+            }
+
+            if (!activosParaGuardar.isEmpty()) {
+                assetService.guardarTodos(activosParaGuardar);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                "exito", true,
+                "registrosProcesados", count
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("exito", false, "error", "Error interno al guardar los registros en BD: " + e.getMessage()));
+        }
     }
     
     @PostMapping("/eliminar-multiple")
-    @ResponseBody // Añadido para asegurar que devuelve JSON correctamente
+    @ResponseBody
     public ResponseEntity<?> eliminarMultiple(@RequestBody Map<String, List<String>> payload) {
         List<String> tags = payload.get("tags");
         
@@ -59,9 +150,7 @@ public class AssetController {
         }
 
         try {
-            // CAMBIO CLAVE: Usamos el método que recibe la lista completa
             assetService.eliminarListaDeTags(tags); 
-            
             return ResponseEntity.ok(Map.of("message", "Se han eliminado " + tags.size() + " activos correctamente."));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error al procesar el borrado: " + e.getMessage()));
@@ -77,7 +166,6 @@ public class AssetController {
         try {
             String tag = (String) payload.get("assetTag");
             
-            // Verificación de duplicados
             if (assetService.findByAssetTag(tag) != null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "El Asset Tag '" + tag + "' ya existe."));
             }
@@ -86,12 +174,9 @@ public class AssetController {
             nuevo.setAssetTag(tag);
             actualizarCamposComunes(nuevo, payload);
             
-            // CORRECCIÓN: Usamos Double.parseDouble para aceptar los porcentajes decimales
-            // y ponemos 0.0 como valor por defecto.
             nuevo.setPosX(payload.containsKey("posX") ? Double.parseDouble(payload.get("posX").toString()) : 0.0);
             nuevo.setPosY(payload.containsKey("posY") ? Double.parseDouble(payload.get("posY").toString()) : 0.0);
 
-            // Asignar planta inicial
             if (payload.get("plantaId") != null && !payload.get("plantaId").toString().isEmpty()) {
                 Long pId = Long.parseLong(payload.get("plantaId").toString());
                 plantaRepository.findById(pId).ifPresent(nuevo::setPlanta);
@@ -125,12 +210,10 @@ public class AssetController {
                         Planta nuevaPlanta = plantaRepository.findById(nuevaPlantaId).orElse(null);
                         if (nuevaPlanta != null) {
                             assetExistente.setPlanta(nuevaPlanta);
-                            // CORRECCIÓN: Usar 0.0 (Double) en lugar de 0 (int)
                             assetExistente.setPosX(0.0); 
                             assetExistente.setPosY(0.0);
                         }
                     } else {
-                        // CORRECCIÓN: Usar Double.parseDouble para mantener decimales y evitar errores de tipo
                         if (payload.get("posX") != null) {
                             assetExistente.setPosX(Double.parseDouble(payload.get("posX").toString()));
                         }
@@ -149,11 +232,10 @@ public class AssetController {
         }
     }
 
-   
     /**
-     * 3. ELIMINAR ASSET - Cambiado a POST para máxima compatibilidad
+     * 3. ELIMINAR ASSET
      */
-    @PostMapping("/eliminar/{tag}") // Cambiado de @DeleteMapping a @PostMapping
+    @PostMapping("/eliminar/{tag}")
     @ResponseBody
     public ResponseEntity<?> eliminarAsset(@PathVariable String tag) {
         try {
@@ -168,9 +250,6 @@ public class AssetController {
         }
     }
 
-    /**
-     * Métodos auxiliares para evitar repetición de código
-     */
     private void actualizarCamposComunes(Asset asset, Map<String, Object> payload) {
         if (payload.containsKey("nombreUsuario")) asset.setNombreUsuario((String) payload.get("nombreUsuario"));
         if (payload.containsKey("ram")) asset.setRam((String) payload.get("ram"));
@@ -189,22 +268,18 @@ public class AssetController {
             for (Map<String, Object> mov : movimientos) {
                 Asset asset = assetService.findByAssetTag((String) mov.get("assetTag"));
                 if (asset != null) {
-                    // CORRECCIÓN: Extraer el valor como Double. 
-                    // Usamos toString() y parseDouble para manejar cualquier formato numérico del JSON.
                     if (mov.get("posX") != null) {
                         asset.setPosX(Double.parseDouble(mov.get("posX").toString()));
                     }
                     if (mov.get("posY") != null) {
                         asset.setPosY(Double.parseDouble(mov.get("posY").toString()));
                     }
-                    
                     assetsParaGuardar.add(asset);
                 }
             }
             assetService.guardarTodos(assetsParaGuardar);
             return ResponseEntity.ok(Map.of("mensaje", "Posiciones actualizadas"));
         } catch (Exception e) {
-            // Imprimir el error en consola ayuda mucho a debugear
             e.printStackTrace(); 
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
@@ -216,14 +291,12 @@ public class AssetController {
         try {
             Asset asset = assetService.findByAssetTag((String) payload.get("assetTag"));
             if (asset != null) {
-                // CORRECCIÓN: Convertir a Double usando toString() para evitar errores de casteo
                 if (payload.get("posX") != null) {
                     asset.setPosX(Double.parseDouble(payload.get("posX").toString()));
                 }
                 if (payload.get("posY") != null) {
                     asset.setPosY(Double.parseDouble(payload.get("posY").toString()));
                 }
-                
                 assetService.guardarAsset(asset);
                 return ResponseEntity.ok(Map.of("mensaje", "Posición guardada"));
             }
