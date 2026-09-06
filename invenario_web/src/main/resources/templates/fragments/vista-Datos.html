@@ -57,7 +57,6 @@
 								CSV</span>
 						</button>
 
-						<!-- Formulario Importar CSV -->
 						<!-- Formulario e Input de Importación CSV -->
 						<div class="d-inline">
 							<input type="file" id="inputCsv" name="archivo" accept=".csv"
@@ -149,17 +148,19 @@
 									th:classappend="${asset.tipoEquipo == 'Portátil' ? 'bg-primary' : 'bg-secondary'}"
 									th:text="${asset.tipoEquipo}"> </span></td>
 
+								<!-- Safe navigation con ?. para evitar EntityNotFoundException -->
 								<td class="fw-bold"
-									th:text="${asset.planta != null ? asset.planta.nombre : 'Sin Ubicación'}"
-									th:classappend="${asset.planta == null ? 'text-muted' : 'text-success'}">
+									th:text="${asset.planta?.nombre != null ? asset.planta.nombre : 'Sin Ubicación'}"
+									th:classappend="${asset.planta?.nombre == null ? 'text-muted' : 'text-success'}">
 								</td>
 
-								<td th:text="${asset.ram}"></td>
-								<td th:text="${asset.cpu}"></td>
-								<td th:text="${asset.disco}"></td>
-								<td th:text="${asset.versionSo}"></td>
+								<!-- Corregidos los getters para SnipeIT -->
+								<td th:text="${asset.snipeitRam}"></td>
+								<td th:text="${asset.snipeitCpu}"></td>
+								<td th:text="${asset.snipeitDisco}"></td>
+								<td th:text="${asset.snipeitVersionSo}"></td>
 								<td class="text-truncate" style="max-width: 150px;"
-									th:text="${asset.otros}" th:title="${asset.otros}"></td>
+									th:text="${asset.snipeitOtros}" th:title="${asset.snipeitOtros}"></td>
 
 								<td class="text-center" ondblclick="event.stopPropagation();">
 									<div class="btn-group">
@@ -167,10 +168,11 @@
 											class="btn btn-warning btn-compact d-flex align-items-center gap-1"
 											th:data-tag="${asset.assetTag}"
 											th:data-user="${asset.nombreUsuario}"
-											th:data-ram="${asset.ram}" th:data-cpu="${asset.cpu}"
-											th:data-disco="${asset.disco}"
-											th:data-so="${asset.versionSo}"
-											th:data-otros="${asset.otros}"
+											th:data-ram="${asset.snipeitRam}" 
+											th:data-cpu="${asset.snipeitCpu}"
+											th:data-disco="${asset.snipeitDisco}"
+											th:data-so="${asset.snipeitVersionSo}"
+											th:data-otros="${asset.snipeitOtros}"
 											th:data-planta-id="${asset.planta?.id}"
 											th:data-tipo="${asset.tipoEquipo}"
 											onclick="prepararModalDesdeIcono(this)">

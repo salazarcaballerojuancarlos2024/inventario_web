@@ -2,148 +2,103 @@ package com.inventario_web.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
-@Table(name = "assets")
+@Table(name = "assets", schema = "inventario_db")
 public class Asset {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // <--- ESTA ES LA CLAVE PRIMARIA REAL
+    private Long id;
 
-    @Column(name = "asset_tag", unique = true) // El tag es único, pero no es la PK
+    @Column(name = "asset_tag")
     private String assetTag;
+
+    @Column(name = "nombre")
+    private String nombre;
+
+    @Column(name = "apellido")
+    private String apellido;
 
     @Column(name = "_nombre_usuario_")
     private String nombreUsuario;
 
     @Column(name = "_snipeit_ram_2")
-    private String ram;
+    private String snipeitRam;
 
     @Column(name = "_snipeit_cpu_3")
-    private String cpu;
+    private String snipeitCpu;
 
     @Column(name = "_snipeit_disco_4")
-    private String disco;
+    private String snipeitDisco;
 
     @Column(name = "_snipeit_version_so_5")
-    private String versionSo;
+    private String snipeitVersionSo;
 
     @Column(name = "_snipeit_otros_6")
-    private String otros;
+    private String snipeitOtros;
 
     @Column(name = "pos_x")
     private Double posX;
 
     @Column(name = "pos_y")
     private Double posY;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "planta_id", referencedColumnName = "id")
-    @JsonBackReference 
-    private Planta planta;
-    
-    @Column(name = "tipo_equipo") 
+
+    @Column(name = "tipo_equipo")
     private String tipoEquipo;
 
-	public Asset() {
-	}
+    // Relación orientada a Objetos en JPA con Planta
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "planta_id")
+    @NotFound(action = NotFoundAction.IGNORE) // Si la planta no existe en la BD, establece el campo en null automáticamente
+    @JsonBackReference
+    private Planta planta;
 
-	// --- GETTERS Y SETTERS ---
-	public Long getId() {
-		return id;
-	}
+    public Asset() {}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    // --- GETTERS Y SETTERS ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-	public String getAssetTag() {
-		return assetTag;
-	}
+    public String getAssetTag() { return assetTag; }
+    public void setAssetTag(String assetTag) { this.assetTag = assetTag; }
 
-	public void setAssetTag(String assetTag) {
-		this.assetTag = assetTag;
-	}
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-	// ... (Mantén el resto de tus getters y setters exactamente igual) ...
-	public String getNombreUsuario() {
-		return nombreUsuario;
-	}
+    public String getApellido() { return apellido; }
+    public void setApellido(String apellido) { this.apellido = apellido; }
 
-	public void setNombreUsuario(String nombreUsuario) {
-		this.nombreUsuario = nombreUsuario;
-	}
+    public String getNombreUsuario() { return nombreUsuario; }
+    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
 
-	public String getRam() {
-		return ram;
-	}
+    public String getSnipeitRam() { return snipeitRam; }
+    public void setSnipeitRam(String snipeitRam) { this.snipeitRam = snipeitRam; }
 
-	public void setRam(String ram) {
-		this.ram = ram;
-	}
+    public String getSnipeitCpu() { return snipeitCpu; }
+    public void setSnipeitCpu(String snipeitCpu) { this.snipeitCpu = snipeitCpu; }
 
-	public String getCpu() {
-		return cpu;
-	}
+    public String getSnipeitDisco() { return snipeitDisco; }
+    public void setSnipeitDisco(String snipeitDisco) { this.snipeitDisco = snipeitDisco; }
 
-	public void setCpu(String cpu) {
-		this.cpu = cpu;
-	}
+    public String getSnipeitVersionSo() { return snipeitVersionSo; }
+    public void setSnipeitVersionSo(String snipeitVersionSo) { this.snipeitVersionSo = snipeitVersionSo; }
 
-	public String getDisco() {
-		return disco;
-	}
+    public String getSnipeitOtros() { return snipeitOtros; }
+    public void setSnipeitOtros(String snipeitOtros) { this.snipeitOtros = snipeitOtros; }
 
-	public void setDisco(String disco) {
-		this.disco = disco;
-	}
+    public Double getPosX() { return posX; }
+    public void setPosX(Double posX) { this.posX = posX; }
 
-	public String getVersionSo() {
-		return versionSo;
-	}
+    public Double getPosY() { return posY; }
+    public void setPosY(Double posY) { this.posY = posY; }
 
-	public void setVersionSo(String versionSo) {
-		this.versionSo = versionSo;
-	}
+    public String getTipoEquipo() { return tipoEquipo; }
+    public void setTipoEquipo(String tipoEquipo) { this.tipoEquipo = tipoEquipo; }
 
-	public String getOtros() {
-		return otros;
-	}
-
-	public void setOtros(String otros) {
-		this.otros = otros;
-	}
-
-	public Double getPosX() {
-		return posX;
-	}
-
-	public void setPosX(Double posX) {
-		this.posX = posX;
-	}
-
-	public Double getPosY() {
-		return posY;
-	}
-
-	public void setPosY(Double posY) {
-		this.posY = posY;
-	}
-
-	public Planta getPlanta() {
-		return planta;
-	}
-
-	public void setPlanta(Planta planta) {
-		this.planta = planta;
-	}
-
-	public String getTipoEquipo() {
-		return tipoEquipo;
-	}
-
-	public void setTipoEquipo(String tipoEquipo) {
-		this.tipoEquipo = tipoEquipo;
-	}
+    // Métodos para la relación con Planta
+    public Planta getPlanta() { return planta; }
+    public void setPlanta(Planta planta) { this.planta = planta; }
 }

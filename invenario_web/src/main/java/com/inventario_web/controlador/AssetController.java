@@ -77,9 +77,6 @@ public class AssetController {
             String linea;
             int count = 0;
 
-            // Si la primera línea contiene cabeceras (por ej: "Tag", "Usuario"), la saltamos
-            boolean esCabecera = primeraLinea.toLowerCase().contains("tag") || primeraLinea.toLowerCase().contains("usuario");
-
             while ((linea = br.readLine()) != null) {
                 if (linea.trim().isEmpty()) continue;
 
@@ -98,7 +95,14 @@ public class AssetController {
                         asset.setPosY(2.0);
                     }
 
-                    if (columnas.length > 1) asset.setNombreUsuario(columnas[1].replace("\"", "").trim());
+                    if (columnas.length > 1) {
+                        String usuarioStr = columnas[1].replace("\"", "").trim();
+                        asset.setNombreUsuario(usuarioStr);
+                        String[] partes = usuarioStr.split("\\s+", 2);
+                        asset.setNombre(partes[0]);
+                        asset.setApellido(partes.length > 1 ? partes[1] : "");
+                    }
+
                     if (columnas.length > 2) asset.setTipoEquipo(columnas[2].replace("\"", "").trim());
 
                     if (columnas.length > 3) {
@@ -111,11 +115,11 @@ public class AssetController {
                         }
                     }
 
-                    if (columnas.length > 4) asset.setRam(columnas[4].replace("\"", "").trim());
-                    if (columnas.length > 5) asset.setCpu(columnas[5].replace("\"", "").trim());
-                    if (columnas.length > 6) asset.setDisco(columnas[6].replace("\"", "").trim());
-                    if (columnas.length > 7) asset.setVersionSo(columnas[7].replace("\"", "").trim());
-                    if (columnas.length > 8) asset.setOtros(columnas[8].replace("\"", "").trim());
+                    if (columnas.length > 4) asset.setSnipeitRam(columnas[4].replace("\"", "").trim());
+                    if (columnas.length > 5) asset.setSnipeitCpu(columnas[5].replace("\"", "").trim());
+                    if (columnas.length > 6) asset.setSnipeitDisco(columnas[6].replace("\"", "").trim());
+                    if (columnas.length > 7) asset.setSnipeitVersionSo(columnas[7].replace("\"", "").trim());
+                    if (columnas.length > 8) asset.setSnipeitOtros(columnas[8].replace("\"", "").trim());
 
                     activosParaGuardar.add(asset);
                     count++;
@@ -139,7 +143,7 @@ public class AssetController {
                     .body(Map.of("exito", false, "error", "Error interno al guardar los registros en BD: " + e.getMessage()));
         }
     }
-    
+
     @PostMapping("/eliminar-multiple")
     @ResponseBody
     public ResponseEntity<?> eliminarMultiple(@RequestBody Map<String, List<String>> payload) {
@@ -251,12 +255,23 @@ public class AssetController {
     }
 
     private void actualizarCamposComunes(Asset asset, Map<String, Object> payload) {
-        if (payload.containsKey("nombreUsuario")) asset.setNombreUsuario((String) payload.get("nombreUsuario"));
-        if (payload.containsKey("ram")) asset.setRam((String) payload.get("ram"));
-        if (payload.containsKey("cpu")) asset.setCpu((String) payload.get("cpu"));
-        if (payload.containsKey("disco")) asset.setDisco((String) payload.get("disco"));
-        if (payload.containsKey("versionSo")) asset.setVersionSo((String) payload.get("versionSo"));
-        if (payload.containsKey("otros")) asset.setOtros((String) payload.get("otros"));
+        if (payload.containsKey("nombreUsuario")) {
+            String u = (String) payload.get("nombreUsuario");
+            asset.setNombreUsuario(u);
+            if (u != null && !u.trim().isEmpty()) {
+                String[] partes = u.trim().split("\\s+", 2);
+                asset.setNombre(partes[0]);
+                asset.setApellido(partes.length > 1 ? partes[1] : "");
+            } else {
+                asset.setNombre("");
+                asset.setApellido("");
+            }
+        }
+        if (payload.containsKey("ram")) asset.setSnipeitRam((String) payload.get("ram"));
+        if (payload.containsKey("cpu")) asset.setSnipeitCpu((String) payload.get("cpu"));
+        if (payload.containsKey("disco")) asset.setSnipeitDisco((String) payload.get("disco"));
+        if (payload.containsKey("versionSo")) asset.setSnipeitVersionSo((String) payload.get("versionSo"));
+        if (payload.containsKey("otros")) asset.setSnipeitOtros((String) payload.get("otros"));
         if (payload.containsKey("tipoEquipo")) asset.setTipoEquipo((String) payload.get("tipoEquipo"));
     }
 

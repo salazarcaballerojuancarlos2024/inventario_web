@@ -26,8 +26,6 @@ public class DatabaseAdminService {
 
     private static final String CABECERA_ESPERADA = "Tag,Usuario,Tipo,Ubicación,RAM,CPU,Disco,S.O.,Otros";
 
-    
-
     /**
      * Valida la cabecera e importa masivamente los activos desde el archivo CSV
      */
@@ -36,7 +34,7 @@ public class DatabaseAdminService {
         List<Asset> listaNuevos = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(archivo.getInputStream(), StandardCharsets.UTF_8))) {
-            // Eliminar el caracter BOM si el CSV viene codificado en UTF-8 con BOM (muy común en Excel)
+            // Eliminar el caracter BOM si el CSV viene codificado en UTF-8 con BOM
             br.mark(1);
             if (br.read() != 0xFEFF) {
                 br.reset();
@@ -76,7 +74,19 @@ public class DatabaseAdminService {
 
                 Asset asset = new Asset();
                 asset.setAssetTag(getDatoSeguro(datos, 0));
-                asset.setNombreUsuario(getDatoSeguro(datos, 1));
+                
+                // Mapeo del campo Usuario: lo asignamos a nombreUsuario y separamos nombre y apellido si es posible
+                String usuarioCompleto = getDatoSeguro(datos, 1);
+                asset.setNombreUsuario(usuarioCompleto);
+                if (!usuarioCompleto.isEmpty()) {
+                    String[] partesNombre = usuarioCompleto.split("\\s+", 2);
+                    asset.setNombre(partesNombre[0]);
+                    asset.setApellido(partesNombre.length > 1 ? partesNombre[1] : "");
+                } else {
+                    asset.setNombre("");
+                    asset.setApellido("");
+                }
+
                 asset.setTipoEquipo(getDatoSeguro(datos, 2));
 
                 // Mapear la columna Ubicación a la entidad Planta
@@ -88,12 +98,16 @@ public class DatabaseAdminService {
                     asset.setPlanta(null);
                 }
 
-                // Mapear el resto de especificaciones técnicas
-                asset.setRam(getDatoSeguro(datos, 4));
-                asset.setCpu(getDatoSeguro(datos, 5));
-                asset.setDisco(getDatoSeguro(datos, 6));
-                asset.setVersionSo(getDatoSeguro(datos, 7));
-                asset.setOtros(getDatoSeguro(datos, 8));
+                // Mapear las especificaciones técnicas a los nombres de setters de la entidad Asset
+                asset.setSnipeitRam(getDatoSeguro(datos, 4));
+                asset.setSnipeitCpu(getDatoSeguro(datos, 5));
+                asset.setSnipeitDisco(getDatoSeguro(datos, 6));
+                asset.setSnipeitVersionSo(getDatoSeguro(datos, 7));
+                asset.setSnipeitOtros(getDatoSeguro(datos, 8));
+
+                // Posiciones por defecto
+                asset.setPosX(0.0);
+                asset.setPosY(0.0);
 
                 listaNuevos.add(asset);
             }
